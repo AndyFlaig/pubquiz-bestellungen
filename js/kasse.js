@@ -146,6 +146,17 @@
       "</div>";
   }
 
+  // Verständlicher Fehlergrund (Supabase-Meldung mit Hinweis)
+  function grund(e) {
+    const m = (e && e.message) || "";
+    if (/row-level security|violates check constraint|ziel_check/i.test(m))
+      return "Datenbank lässt es nicht zu – bitte supabase/update-snacks.sql in Supabase ausführen. (" + m + ")";
+    if (/column .*positionen|schema cache/i.test(m))
+      return "Datenbank veraltet – bitte supabase/update-v3.sql ausführen. (" + m + ")";
+    if (/fetch|network|Failed/i.test(m) || !m) return "keine Verbindung – bitte nochmal.";
+    return m;
+  }
+
   async function snacksErfassen() {
     if (sperre) return;
     const t = CFG.TISCHE.find((x) => x.nr === tisch);
@@ -167,7 +178,7 @@
         },
       });
     } catch (e) {
-      toast("Snacks NICHT erfasst – keine Verbindung? Bitte nochmal.", { art: "fehler", dauer: 6000 });
+      toast("Snacks NICHT erfasst: " + grund(e), { art: "fehler", bleibt: true });
     } finally { sperre = false; }
     await laden();
   }
@@ -200,7 +211,7 @@
       toast("✓ " + euro(betragCent / 100) + " für Tisch " + tisch + " verbucht", { art: "ok" });
       auswahl = new Map();
     } catch (e) {
-      toast("NICHT verbucht – keine Verbindung (oder Kasse in Supabase nicht aktualisiert). Bitte nochmal.", { art: "fehler", dauer: 7000 });
+      toast("NICHT verbucht: " + grund(e), { art: "fehler", bleibt: true });
     } finally { sperre = false; }
     await laden();
   }
