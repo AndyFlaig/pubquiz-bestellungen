@@ -45,16 +45,23 @@ create table public.zahlungen (
   erstellt_am  timestamptz not null default now()
 );
 -- dazu RLS-Regeln und Realtime wie bei "bestellungen"
+-- Snacks: in "bestellungen" zusätzlich ziel = 'kasse' erlauben:
+--   alter table public.bestellungen drop constraint bestellungen_ziel_check;
+--   alter table public.bestellungen add constraint bestellungen_ziel_check check (ziel in ('kueche','theke','kasse'));
 ```
 
-## Offene Fragen
+## Entscheidungen (19.11.2026)
 
-1. **Wer kassiert?** Jeder Kellner selbst (Bargeld im eigenen Portemonnaie) oder zentral an der Theke?
-2. **Snacks auf den Tischen (1,00 €):** sollen die mit erfasst werden? Dann als Artikel ohne Küche/Theke-Ziel
-   („nur kassieren“) in die Preisliste aufnehmen.
-3. **Kartenzahlung / PayPal?** Nur als Vermerk „bar / Karte“ an der Zahlung, oder gar nicht.
-4. **Pfand, Gutscheine, Freigetränke** (z. B. für Helfer oder Gewinnerteam)? → evtl. Artikel mit Preis 0 bzw. „Rabatt“-Position.
-5. **Beleg nötig?** Falls ja: Anzeige zum Abfotografieren reicht meist, echter Bon-Druck ist deutlich aufwendiger.
+| Frage | Entscheidung | Folge für die Umsetzung |
+|---|---|---|
+| Wer kassiert? | **Jeder Kellner selbst** (eigenes Portemonnaie) | Zahlung wird dem kassierenden Kellner zugeordnet; Auswertung zeigt „Bargeld pro Kellner“ zum Abgleich am Ende. Jeder Kellner darf jeden Tisch kassieren. |
+| Snacks auf den Tischen (1,00 €) | **Werden erfasst** | Neuer Artikel „Snack“ mit Ziel `kasse`: erscheint in der Kellner-Ansicht in eigener Kategorie, wird aber **nicht** an Küche oder Theke geschickt, sondern landet direkt als „bestellt/erledigt“ auf der Rechnung des Tisches. |
+| Zahlungsarten | **Nur bar** | Kein Feld für Zahlungsart. Optional Rückgeld-Rechner („Gegeben: 20 €“). |
+
+Noch offen (kann bei der Umsetzung mit Standardwert entschieden werden):
+- **Freigetränke / Helfer / Gewinnerteam:** Vorschlag: Position „Rabatt“ mit frei eingebbarem Betrag, nur mit PIN.
+- **Beleg:** Vorschlag: keiner; der Betrag steht groß auf dem Bildschirm.
+- **Kassensturz:** Vorschlag: Seite „Mein Kassenstand“ pro Kellner (Summe aller eigenen Zahlungen) – am Ende mit dem Portemonnaie vergleichen.
 
 ## Aufwand und Risiko
 
