@@ -24,6 +24,7 @@
     <button class="aktiv" data-seite="artikel">Artikel</button>
     <button data-seite="tische">Tische</button>
     <button data-seite="kellner">Kellner</button>
+    <button data-seite="zitate">Zitate</button>
     <button data-seite="allgemein">Allgemein</button>
   </nav>
 
@@ -51,6 +52,13 @@
         Nach einer Umbenennung muss der Kellner seinen Namen am Handy neu wählen.</p>
       <div id="kellner-liste" class="admin-liste"></div>
       <button class="gross" data-neu="kellner">+ Kellner hinzufügen</button>
+    </section>
+
+    <section id="seite-zitate" hidden>
+      <p class="klein-hinweis">Zitate erscheinen auf dem Beamer nach je 2 Statistik-Folien: erst das Zitat (5 Sekunden),
+        dann kommt der Name dazu (3 Sekunden). Reihenfolge mit ↑ ↓. Neue Zitate sind nach spätestens 30 Sekunden auf dem Beamer.</p>
+      <div id="zitate-liste" class="admin-liste"></div>
+      <button class="gross" data-neu="zitat">+ Zitat hinzufügen</button>
     </section>
 
     <section id="seite-allgemein" hidden>

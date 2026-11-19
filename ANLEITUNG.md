@@ -150,6 +150,9 @@ und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit ei
   neue Artikel anlegen, Artikel löschen.
 - **Tische:** Nummer und Teamname.
 - **Kellner:** Namen und Revier (z. B. `1-5, 9`).
+- **Zitate:** je ein Feld für das Zitat und den Namen; Reihenfolge mit ↑ ↓. Auf dem Beamer kommt nach je 2 Statistik-Folien
+  ein Zitat: erst das Zitat allein (5 Sekunden), dann blendet der Name ein (3 Sekunden). Nach dem Speichern sind neue
+  Zitate innerhalb von 30 Sekunden auf dem Beamer – ohne Neuladen.
 - **Allgemein:** Veranstaltungsname, Sicherung als JSON herunterladen/einspielen, „Auf Standard aus config.js zurücksetzen“.
 - **Speichern** prüft alles (Preise, doppelte Tischnummern, Reviere …) und zeigt Fehler rot an.
 - Gespeicherte Änderungen gelten auf allen Geräten nach dem **Neuladen**. Offene Seiten zeigen innerhalb einer Minute
