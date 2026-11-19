@@ -1,70 +1,129 @@
-/* Beamer-Ansicht (immer dunkel, für Leinwand/Fernseher) */
+/* Beamer-Ansicht (immer dunkel, für Leinwand/Fernseher, 16:9) */
 body.beamer {
-  margin: 0; min-height: 100vh; overflow-x: hidden;
+  margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column;
   background: radial-gradient(ellipse at top, #2c2c2c 0%, #111 70%); color: #fff;
-  font-size: clamp(14px, 1.6vw, 26px);
+  font-size: clamp(12px, 1.45vw, 28px);
 }
-.b-kopf { display: flex; align-items: center; gap: 1.2em; padding: 1em 2em; border-bottom: 4px solid var(--gold); }
-.b-logo { height: 4.2em; width: auto; border-radius: .6em; border: 3px solid var(--gold); background: #fff; }
-.b-titel { font-size: 2.2em; font-weight: 800; line-height: 1; }
-.b-untertitel { color: #e9d29b; font-size: 1.05em; margin-top: .2em; }
-.b-uhr { margin-left: auto; font-size: 2.4em; font-weight: 800; color: #e9d29b; font-variant-numeric: tabular-nums; }
+.b-kopf { display: flex; align-items: center; gap: 1.2em; padding: .8em 2em; border-bottom: 4px solid var(--gold); flex: none; }
+.b-logo { height: 3.6em; width: auto; border-radius: .6em; border: 3px solid var(--gold); background: #fff; }
+.b-titel { font-size: 1.8em; font-weight: 800; line-height: 1; }
+.b-untertitel { color: #e9d29b; font-size: 1em; margin-top: .25em; }
+.b-uhr { margin-left: auto; font-size: 2.2em; font-weight: 800; color: #e9d29b; font-variant-numeric: tabular-nums; }
 
-.b-inhalt { display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.5em; padding: 1.5em 2em; align-items: stretch; }
-@media (max-aspect-ratio: 1/1) { .b-inhalt { grid-template-columns: 1fr; } }
-.b-karte { background: rgba(255,255,255,.05); border: 2px solid rgba(255,255,255,.1); border-radius: 1.2em; padding: 1.2em 1.5em; }
-.b-karte h2 { margin: 0 0 .6em; font-size: 1.8em; color: var(--gold); }
+/* ---------- Folien ---------- */
+.b-folien { flex: 1; min-height: 0; padding: 1.2em 2.5em .5em; cursor: pointer; }
+.b-folie { height: 100%; display: flex; flex-direction: column; animation: b-rein .7s ease-out; }
+@keyframes b-rein { from { opacity: 0; transform: translateY(1.5em); } to { opacity: 1; transform: none; } }
+.b-folien-titel { margin: 0; font-size: 3em; color: var(--gold); line-height: 1.1; }
+.b-folien-titel span { display: inline-block; animation: b-wackeln 2.5s ease-in-out infinite; }
+@keyframes b-wackeln { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
+.b-folien-unter { margin: .2em 0 0; font-size: 1.3em; color: #cfcfcf; }
+.b-folien-inhalt { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: safe center; padding-top: .8em; }
+.b-zwei { display: grid; grid-template-columns: 1fr 1.3fr; gap: 3em; align-items: center; }
+.b-mini { margin: 0 0 .4em; font-size: 1.5em; color: #e9d29b; text-align: center; }
+.b-leer { text-align: center; color: #aaa; font-size: 1.4em; }
 
-/* Bierglas */
-.b-glas-zeile { display: flex; align-items: center; gap: 2em; }
-.b-glas { margin-right: 3.6em; }
-.b-glas { position: relative; width: 9em; height: 15em; flex: none; border: .35em solid rgba(255,255,255,.85); border-top: 0;
-  border-radius: 0 0 1.4em 1.4em; overflow: visible; background: rgba(255,255,255,.04); }
-.b-fuellung { position: absolute; left: 0; right: 0; bottom: 0; height: 3%; border-radius: 0 0 1em 1em; overflow: hidden;
-  background: linear-gradient(180deg, #f6c445 0%, #e19a1c 100%); transition: height 1.6s cubic-bezier(.2,.8,.2,1); }
-.b-schaum { position: absolute; top: -.2em; left: -.3em; right: -.3em; height: 1.6em; background: #fffdf5;
-  border-radius: 1em 1em .4em .4em; box-shadow: 0 .2em .4em rgba(0,0,0,.15); }
+/* ---------- Bierglas ---------- */
+.b-glas-zeile { display: flex; align-items: center; gap: 2em; justify-content: center; }
+.b-glas { position: relative; width: 9em; height: 15em; flex: none; margin-right: 3.6em; border: .35em solid rgba(255,255,255,.85);
+  border-top: 0; border-radius: 0 0 1.4em 1.4em; background: rgba(255,255,255,.04); }
+.b-fuellung { position: absolute; left: 0; right: 0; bottom: 0; height: 0; border-radius: 0 0 1em 1em; overflow: hidden;
+  background: linear-gradient(180deg, #f6c445 0%, #e19a1c 100%); transition: height 2.2s cubic-bezier(.2,.8,.2,1); }
+.b-schaum { position: absolute; top: -.2em; left: -.3em; right: -.3em; height: 1.6em; background: #fffdf5; border-radius: 1em 1em .4em .4em; }
 .b-henkel { position: absolute; right: -3.2em; top: 3em; width: 2.8em; height: 7em; border: .35em solid rgba(255,255,255,.85);
   border-left: 0; border-radius: 0 2em 2em 0; }
-.b-blasen i { position: absolute; bottom: 0; width: .45em; height: .45em; border-radius: 50%; background: rgba(255,255,255,.7);
-  animation: blase 3.5s linear infinite; }
-.b-blasen i:nth-child(1) { left: 15%; animation-delay: 0s; } .b-blasen i:nth-child(2) { left: 35%; animation-delay: .8s; }
+.b-blasen i { position: absolute; bottom: 0; width: .45em; height: .45em; border-radius: 50%; background: rgba(255,255,255,.7); animation: blase 3.5s linear infinite; }
+.b-blasen i:nth-child(1) { left: 15%; } .b-blasen i:nth-child(2) { left: 35%; animation-delay: .8s; }
 .b-blasen i:nth-child(3) { left: 55%; animation-delay: 1.6s; } .b-blasen i:nth-child(4) { left: 75%; animation-delay: .4s; }
 .b-blasen i:nth-child(5) { left: 25%; animation-delay: 2.2s; } .b-blasen i:nth-child(6) { left: 65%; animation-delay: 2.8s; }
 @keyframes blase { from { transform: translateY(0); opacity: .9; } to { transform: translateY(-14em); opacity: 0; } }
 
-.b-zahlen { min-width: 0; }
-.b-liter { font-size: 5em; font-weight: 900; line-height: 1; color: #f6c445; font-variant-numeric: tabular-nums; }
-.b-liter small { font-size: .35em; color: #fff; font-weight: 700; }
-.b-unter { font-size: 1.3em; color: #ddd; margin-top: .2em; }
-.b-ziel { margin-top: 1em; font-size: 1.15em; color: #e9d29b; }
-.b-klein { margin-top: .6em; color: #aaa; }
+/* ---------- Weinglas (Spritz) ---------- */
+.b-weinglas { position: relative; width: 11em; flex: none; display: flex; flex-direction: column; align-items: center; }
+.b-kelch { position: relative; width: 11em; height: 11em; border: .35em solid rgba(255,255,255,.85); border-top: 0;
+  border-radius: 0 0 50% 50% / 0 0 60% 60%; overflow: hidden; background: rgba(255,255,255,.04); }
+.b-fuellung.spritz { border-radius: 0; background: linear-gradient(180deg, #ff9a3c 0%, #ff5a1a 100%); }
+.b-orange { position: absolute; top: .4em; right: .3em; width: 3.4em; height: 3.4em; border-radius: 50%;
+  background: radial-gradient(circle, #ffd27a 0 45%, #ff8c1a 46% 70%, #fff3 71%); border: .25em solid #ff8c1a; }
+.b-stiel { width: .5em; height: 4.5em; background: rgba(255,255,255,.85); }
+.b-fuss { width: 6em; height: .5em; border-radius: .5em; background: rgba(255,255,255,.85); }
 
-/* Siegertreppchen */
-.b-podest { display: grid; grid-template-columns: 1fr 1.15fr 1fr; align-items: end; gap: .8em; min-height: 14em; }
-.b-platz { display: grid; text-align: center; gap: .2em; }
+.b-zahlen { min-width: 0; }
+.b-liter { font-size: 5em; font-weight: 900; line-height: 1; color: #f6c445; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.b-liter.spritz { color: #ff8c3a; }
+.b-liter small { font-size: .35em; color: #fff; font-weight: 700; }
+.b-ziel { margin-top: 1em; font-size: 1.15em; color: #e9d29b; }
+
+/* ---------- Siegertreppchen ---------- */
+.b-podest { display: grid; grid-template-columns: 1fr 1.15fr 1fr; align-items: end; gap: .8em; }
+.b-platz { display: grid; text-align: center; gap: .15em; animation: b-hoch .9s ease-out both; }
+.b-platz.p3 { animation-delay: .2s; } .b-platz.p2 { animation-delay: .5s; } .b-platz.p1 { animation-delay: .9s; }
+@keyframes b-hoch { from { opacity: 0; transform: translateY(3em); } to { opacity: 1; transform: none; } }
 .b-medaille { font-size: 2.6em; line-height: 1; }
-.b-team { font-size: 1.3em; font-weight: 800; overflow-wrap: anywhere; }
+.b-team { font-size: 1.3em; font-weight: 800; overflow-wrap: break-word; hyphens: auto; }
 .b-team.leer { color: #666; }
 .b-anzahl { font-size: 2em; font-weight: 900; color: #f6c445; line-height: 1.1; }
 .b-anzahl small { font-size: .45em; color: #ccc; font-weight: 600; }
 .b-tischnr { color: #aaa; font-size: .9em; }
 .b-sockel { margin-top: .4em; border-radius: .5em .5em 0 0; font-size: 2.2em; font-weight: 900; color: rgba(0,0,0,.55);
   display: flex; align-items: center; justify-content: center; }
-.p1 .b-sockel { height: 3.2em; background: linear-gradient(#f1d27a, #b7821a); }
-.p2 .b-sockel { height: 2.3em; background: linear-gradient(#e4e4e4, #9a9a9a); }
-.p3 .b-sockel { height: 1.6em; background: linear-gradient(#e2a46f, #9c5a24); }
+.p1 .b-sockel { height: 3em; background: linear-gradient(#f1d27a, #b7821a); }
+.p2 .b-sockel { height: 2.1em; background: linear-gradient(#e4e4e4, #9a9a9a); }
+.p3 .b-sockel { height: 1.5em; background: linear-gradient(#e2a46f, #9c5a24); }
 .p1 .b-team { font-size: 1.5em; }
-.b-weitere { margin: 1em 0 0; padding-left: 1.6em; display: grid; gap: .3em; font-size: 1.1em; }
-.b-weitere li span { display: inline-block; min-width: 70%; }
-.b-weitere li b { color: #f6c445; }
-.b-leer { text-align: center; color: #aaa; grid-column: 1 / -1; font-size: 1.3em; }
-.b-fuss { margin: 1em 0 0; color: #888; font-size: .85em; }
+.b-weitere { margin: .8em auto 0; padding-left: 1.6em; display: grid; gap: .25em; font-size: 1.15em; max-width: 30em; width: 100%; }
+.b-weitere li { display: flex; justify-content: space-between; gap: 1em; }
+.b-weitere li b { color: #f6c445; white-space: nowrap; }
+.spritz-folie .b-anzahl, .spritz-folie .b-weitere li b { color: #ff8c3a; }
+.wasser-folie .b-anzahl, .wasser-folie .b-weitere li b { color: #6cc6ff; }
+.wasser-folie .b-folien-titel { color: #6cc6ff; }
 
-.b-vollbild { position: fixed; right: 1em; bottom: 1em; padding: .5em .9em; border-radius: .6em; border: 0;
+/* ---------- Duell ---------- */
+.b-duell { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 2em; text-align: center; }
+.b-duell-seite { padding: 1.2em; border-radius: 1em; background: rgba(255,255,255,.05); border: 3px solid transparent; }
+.b-duell-seite.sieger { border-color: var(--gold); background: rgba(183,130,26,.15); }
+.b-duell-emoji { font-size: 4.5em; line-height: 1.1; }
+.b-duell-name { font-size: 2.2em; font-weight: 800; }
+.b-duell-wert { font-size: 2.6em; font-weight: 900; color: #f6c445; }
+.b-vs { font-size: 3.5em; font-weight: 900; color: var(--gold); animation: b-puls 1.2s ease-in-out infinite; }
+@keyframes b-puls { 50% { transform: scale(1.2); } }
+.b-duell-balken { margin-top: 1.5em; height: 1.4em; border-radius: 1em; background: #6cc6ff33; overflow: hidden; }
+.b-duell-balken div { height: 100%; background: linear-gradient(90deg, #b7821a, #f6c445); transition: width 1.5s ease-out; }
+
+/* ---------- Kellner-Rennen ---------- */
+.b-rennen { display: grid; gap: 1em; }
+.b-bahn { display: grid; grid-template-columns: 9em 1fr; align-items: center; gap: 1em; }
+.b-bahn-name { font-size: 1.6em; font-weight: 800; text-align: right; }
+.b-bahn-spur { background: rgba(255,255,255,.06); border-radius: 1em; height: 2.6em; overflow: hidden; }
+.b-bahn-balken { height: 100%; width: 0; border-radius: 1em; background: linear-gradient(90deg, #006837, #1fa35c);
+  display: flex; align-items: center; justify-content: flex-end; padding-right: .8em; transition: width 2s cubic-bezier(.2,.8,.2,1); }
+.b-bahn-balken span { font-size: 1.5em; font-weight: 900; }
+.b-bahn-balken::after { content: "🏃"; font-size: 1.6em; margin-left: .3em; }
+
+/* ---------- Der Abend in Zahlen ---------- */
+.b-kacheln { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em; }
+.b-kachel { background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.1); border-radius: 1em; padding: .7em 1.1em;
+  animation: b-hoch .8s ease-out both; display: grid; grid-template-columns: auto 1fr; column-gap: .7em; align-items: center; }
+.b-kachel:nth-child(2) { animation-delay: .1s; } .b-kachel:nth-child(3) { animation-delay: .2s; } .b-kachel:nth-child(4) { animation-delay: .3s; }
+.b-kachel:nth-child(5) { animation-delay: .4s; } .b-kachel:nth-child(6) { animation-delay: .5s; } .b-kachel:nth-child(7) { animation-delay: .6s; }
+.b-kachel:nth-child(8) { animation-delay: .7s; } .b-kachel:nth-child(9) { animation-delay: .8s; }
+.b-kachel-emoji { font-size: 2.4em; grid-row: span 2; }
+.b-kachel-wert { font-size: 2em; font-weight: 900; color: #f6c445; line-height: 1.1; overflow-wrap: break-word; min-width: 0; }
+.b-kachel-text { color: #ccc; min-width: 0; }
+
+/* ---------- Fortschritt ---------- */
+.b-fuss-leiste { flex: none; padding: .4em 2.5em .8em; }
+.b-punkte { display: flex; gap: .5em; justify-content: center; margin-bottom: .5em; }
+.b-punkte i { width: .7em; height: .7em; border-radius: 50%; background: rgba(255,255,255,.25); }
+.b-punkte i.an { background: var(--gold); transform: scale(1.3); }
+.b-fortschritt { height: .35em; background: rgba(255,255,255,.1); border-radius: 1em; overflow: hidden; }
+.b-fortschritt div { height: 100%; width: 0; background: var(--gold); }
+@keyframes b-laufen { from { width: 0; } to { width: 100%; } }
+
+.b-vollbild { position: fixed; left: 1em; bottom: .6em; padding: .5em .9em; border-radius: .6em; border: 0;
   background: rgba(255,255,255,.12); color: #fff; font-size: .9em; }
 
-/* Konfetti bei Meilensteinen */
+/* ---------- Konfetti ---------- */
 .b-konfetti { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 50; overflow: hidden; }
 .b-konfetti.an { display: block; }
 .b-konfetti i { position: absolute; top: -2em; width: .7em; height: 1.1em; border-radius: .15em; animation: faellt linear forwards; }
@@ -72,3 +131,10 @@ body.beamer {
 .b-feier { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 4.5em; font-weight: 900;
   color: #fff; text-shadow: 0 .1em .4em rgba(0,0,0,.6); white-space: nowrap; animation: feier 1s ease-out; }
 @keyframes feier { from { transform: translate(-50%, -50%) scale(.3); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+/* Hochformat (z. B. Tablet hochkant) */
+@media (max-aspect-ratio: 1/1) {
+  body.beamer { height: auto; min-height: 100vh; overflow: auto; font-size: 2.2vw; }
+  .b-zwei { grid-template-columns: 1fr; }
+  .b-kacheln { grid-template-columns: repeat(2, 1fr); }
+}

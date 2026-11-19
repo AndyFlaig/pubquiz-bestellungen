@@ -171,14 +171,30 @@ Im **Admin → Tische** Einträge anlegen und **„👤 Eigenverzehr“** ankreu
 
 Voraussetzung: einmal [`supabase/update-v5.sql`](supabase/update-v5.sql) ausführen.
 
-## Beamer: Bier-Barometer und Durstigstes Team
+## Beamer: Pausen-Show mit Zwischenständen
 
-`beamer.html` am Laptop/Fernseher öffnen, unten rechts **⛶ Vollbild**.
-- **Bier-Barometer:** Liter Bier (alle Artikel mit Pils/Weizen/Bier im Namen, nach Menge), mit Glas, das sich bis zum
-  nächsten Ziel füllt (10 / 25 / 50 Liter-Schritte). Beim Erreichen eines Ziels: Konfetti.
-  Test des Konfettis: `beamer.html#feiern`.
-- **Durstigstes Team:** Siegertreppchen (Top 3) und Plätze 4–8 nach Anzahl Getränke. Eigenverzehr zählt nicht mit.
-- Aktualisiert sich von selbst; zeigt keine Preise oder Umsätze.
+`beamer.html` am Laptop/Fernseher öffnen, unten links **⛶ Vollbild**. Die Folien wechseln **alle 15 Sekunden in
+Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden übersprungen.
+
+| Folie | Was gezählt wird |
+|---|---|
+| 🍺 Bier-Barometer + Top-Zapfer | Liter aller Artikel mit Pils/Weizen/Bier im Namen |
+| 🍹 Spritz-O-Meter + Spritz-Society | Liter Aperol und aller Weine/Weinschorlen |
+| 🏆 Durstigstes Team | Anzahl Getränke |
+| 🍽 Hungrigster Tisch | Anzahl Speisen |
+| 💧 Die Wassertrinker des Abends | Sprudel sauer/süß |
+| ⚡ Koffein-Kommando | Cola, Cola Zero, Spezi |
+| 🥨 Snack-Monster | Snacks |
+| 🥊 Wurstsalat-Duell | Straßburger gegen Schwäbischen |
+| ⚔️ Bier-Duell | Liter Pils gegen Weizen |
+| 🏃 Kellner-Rennen | Bestellungen pro Kellner |
+| 📊 Der Abend in Zahlen | Summen, alkoholfrei-Quote, Early Bird, Ø Wartezeit Theke/Küche |
+
+- Ranglisten zählen nur Gäste (kein Eigenverzehr); die Liter-Anzeigen zählen alles, was gezapft wurde.
+- Konfetti, wenn Bier oder Spritz ein Ziel erreichen (10/25/50-Liter-Schritte). Test: `beamer.html#feiern`.
+- Bedienung: Klick oder → = nächste Folie, ← = zurück, **P** = Pause.
+- Optionen: `beamer.html?sekunden=20` (andere Dauer), `beamer.html?folie=spritz` (nur eine Folie).
+- Es werden keine Preise oder Umsätze angezeigt.
 
 ## Durchsage an alle Geräte
 
