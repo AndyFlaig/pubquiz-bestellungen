@@ -3,19 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1f2a44">
-  <title>Pub-Quiz Bestellungen</title>
+  <meta name="theme-color" content="#2b2b2b">
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Pub-Quiz – Gutholz Schiltach</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="start">
   <main class="startseite">
+    <img class="start-logo" src="img/logo.jpg" alt="Gutholz Schiltach – since 2019">
     <h1>Pub-Quiz Bestellungen</h1>
-    <p id="veranstaltung"></p>
+    <p id="veranstaltung" class="untertitel"></p>
     <p id="demo-hinweis" class="demo" hidden>DEMO-MODUS – Supabase ist noch nicht in <code>config.js</code> eingetragen.</p>
-    <a class="gross primaer" href="kellner.html">📝 Kellner</a>
-    <a class="gross" href="kueche.html">🍽 Küche</a>
-    <a class="gross" href="theke.html">🍺 Theke</a>
-    <a class="gross" href="auswertung.html">📊 Auswertung</a>
+    <a class="gross primaer" href="kellner.html">📝 Kellner<span class="pfeil">›</span></a>
+    <a class="gross" href="kueche.html">🍽 Küche<span class="pfeil">›</span></a>
+    <a class="gross" href="theke.html">🍺 Theke<span class="pfeil">›</span></a>
+    <a class="gross" href="auswertung.html">📊 Auswertung<span class="pfeil">›</span></a>
+    <p class="start-fuss">gutholz Schiltach · since 2019</p>
   </main>
   <script src="config.js"></script>
   <script>
