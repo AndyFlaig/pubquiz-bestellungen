@@ -179,6 +179,10 @@
   // ---------- Diashow ----------
   let index = -1, timer = null, pause = false, sichtbar = [];
   let letzteWarCountdown = false;
+  // Countdown nur alle 2 Minuten für eine Folie (10 s) einblenden – plus beim Start und bei "Weiter geht's!"
+  const COUNTDOWN_ABSTAND = 2 * 60 * 1000;
+  let letzterCountdown = 0;       // Zeitpunkt, wann der Countdown zuletzt gezeigt wurde
+  let vorbeiGezeigt = false;      // "Weiter geht's!" schon einmal groß gezeigt?
 
   // ---------- Pausen-Countdown ----------
   let quizPause = null; // { ende: ISO, minuten } aus der Datenbank
@@ -225,17 +229,24 @@
     const neueStartet = neu && (!quizPause || quizPause.ende !== neu.ende);
     quizPause = neu;
     countdownAktualisieren();
-    if (neueStartet && pauseAktiv() && D) { letzteWarCountdown = false; zeige(0); } // sofort zum Countdown springen
+    if (neueStartet && pauseAktiv() && D) { letzterCountdown = 0; vorbeiGezeigt = false; letzteWarCountdown = false; zeige(0); } // sofort zum Countdown springen
   }
 
   function zeige(richtung) {
     if (!D) return;
     sichtbar = FOLIEN.filter((f) => (!NUR_FOLIE || f.id === NUR_FOLIE) && f.html(D) !== null);
     const box = $("#folien");
-    if (!NUR_FOLIE && pauseAktiv() && (!letzteWarCountdown || !sichtbar.length) && richtung !== -1) {
-      // Während der Pause: Countdown im Wechsel mit den Statistiken
+    const r = restSek();
+    const countdownFaellig = pauseAktiv() && (
+      Date.now() - letzterCountdown >= COUNTDOWN_ABSTAND ||   // alle 2 Minuten
+      (r !== null && r <= 0 && !vorbeiGezeigt) ||             // einmal "Weiter geht's!"
+      !sichtbar.length);
+    if (!NUR_FOLIE && countdownFaellig && (!letzteWarCountdown || !sichtbar.length) && richtung !== -1) {
+      // Während der Pause: Countdown alle 2 Minuten für eine Folie
       box.innerHTML = countdownFolie();
       letzteWarCountdown = true;
+      letzterCountdown = Date.now();
+      if (r !== null && r <= 0) vorbeiGezeigt = true;
       countdownAktualisieren();
     } else {
       if (!sichtbar.length) return;
