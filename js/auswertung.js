@@ -149,64 +149,8 @@
   $("#aktualisieren").onclick = laden;
   $("#durchsage").onclick = () => App.durchsageDialog("Orga");
 
-  // ------------------------------------------------------------------
-  // Pause mit Countdown (wird auf dem Beamer angezeigt)
-  // ------------------------------------------------------------------
-  let pause = null; // { ende: ISO, minuten }
-  const restSek = () => pause ? Math.round((new Date(pause.ende) - Date.now()) / 1000) : 0;
-  const mmss = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
-  function pauseKnopfZeigen() {
-    const k = $("#pause-knopf"), r = restSek();
-    k.textContent = pause && r > 0 ? "⏸ Pause " + mmss(r) : "⏸ Pause";
-    k.classList.toggle("pause-aktiv", !!(pause && r > 0));
-  }
-  async function pauseLaden() {
-    try { pause = await DB.ladeEinstellung("pause"); } catch (e) { /* egal */ }
-    if (pause && !pause.ende) pause = null;
-    pauseKnopfZeigen();
-  }
-  async function pauseSetzen(minuten) {
-    const wert = minuten ? { ende: new Date(Date.now() + minuten * 60000).toISOString(), minuten } : null;
-    try {
-      await DB.speichereEinstellung("pause", wert);
-      pause = wert; pauseKnopfZeigen();
-      toast(minuten ? "⏸ Pause gestartet: " + minuten + " Minuten – läuft auf dem Beamer" : "▶ Pause beendet", { art: "ok" });
-    } catch (e) {
-      toast("Nicht gespeichert – keine Verbindung (oder update-v4.sql fehlt)", { art: "fehler", dauer: 6000 });
-    }
-  }
-  $("#pause-knopf").onclick = () => {
-    const r = restSek();
-    const ov = document.createElement("div");
-    ov.className = "overlay";
-    ov.innerHTML = '<div class="dialog"><h2>⏸ Pause mit Countdown</h2>' +
-      (pause && r > 0 ? '<p class="pause-laeuft">Läuft noch <b>' + mmss(r) + "</b> Minuten</p>" : "") +
-      '<p class="klein-hinweis">Der Beamer zeigt den Countdown groß, im Wechsel mit den Statistiken.</p>' +
-      '<div class="pause-wahl">' + [5, 10, 15, 20].map((m) => '<button class="gross" data-min="' + m + '">' + m + " Min</button>").join("") + "</div>" +
-      '<div class="pause-eigen"><input type="number" min="1" max="120" inputmode="numeric" placeholder="eigene Minuten"><button class="gross" data-eigen>Start</button></div>' +
-      (pause && r > 0 ? '<button class="gross" data-plus>+ 5 Minuten verlängern</button><button class="gross warnung-knopf" data-stopp>▶ Pause jetzt beenden</button>' : "") +
-      '<button class="gross" data-zu>Schließen</button></div>';
-    document.body.appendChild(ov);
-    ov.addEventListener("click", async (e) => {
-      const b = e.target.closest("button");
-      if (e.target === ov || (b && b.hasAttribute("data-zu"))) { ov.remove(); return; }
-      if (!b) return;
-      if (b.dataset.min) { ov.remove(); pauseSetzen(Number(b.dataset.min)); }
-      else if (b.hasAttribute("data-eigen")) {
-        const m = Number(ov.querySelector("input").value);
-        if (!(m >= 1 && m <= 120)) { toast("Bitte 1–120 Minuten eingeben", { art: "fehler" }); return; }
-        ov.remove(); pauseSetzen(m);
-      } else if (b.hasAttribute("data-plus")) {
-        ov.remove();
-        const neu = { ende: new Date(new Date(pause.ende).getTime() + 5 * 60000).toISOString(), minuten: (pause.minuten || 0) + 5 };
-        try { await DB.speichereEinstellung("pause", neu); pause = neu; pauseKnopfZeigen(); toast("⏸ Pause um 5 Minuten verlängert", { art: "ok" }); }
-        catch (err) { toast("Nicht gespeichert – keine Verbindung", { art: "fehler" }); }
-      } else if (b.hasAttribute("data-stopp")) { ov.remove(); pauseSetzen(0); }
-    });
-  };
-  pauseLaden();
-  setInterval(pauseLaden, 15000);
-  setInterval(pauseKnopfZeigen, 1000);
+  // Pause mit Countdown (wird auf dem Beamer angezeigt) – Logik in common.js
+  App.pauseKnopf($("#pause-knopf"));
 
   // ------------------------------------------------------------------
   // Excel-Export

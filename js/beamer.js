@@ -302,7 +302,18 @@
     try { await (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement); } catch (e) { /* egal */ }
     App.wachHalten();
   };
-  document.addEventListener("fullscreenchange", () => { $("#vollbild").hidden = !!document.fullscreenElement; });
+  // Im Vollbild die Knöpfe ausblenden; Mausbewegung zeigt sie kurz wieder
+  const steuerung = document.querySelector(".b-steuerung");
+  let mausTimer = null;
+  document.addEventListener("fullscreenchange", () => { steuerung.classList.toggle("versteckt", !!document.fullscreenElement); });
+  document.addEventListener("mousemove", () => {
+    if (!document.fullscreenElement) return;
+    steuerung.classList.remove("versteckt"); clearTimeout(mausTimer);
+    mausTimer = setTimeout(() => steuerung.classList.add("versteckt"), 3000);
+  });
+  App.pauseKnopf($("#pause-knopf"), () => pauseLaden());
+  // Klicks auf die Knöpfe nicht als "nächste Folie" werten
+  steuerung.addEventListener("click", (e) => e.stopPropagation());
 
   function uhr() { $("#uhr").textContent = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }); }
   $("#veranstaltung").textContent = CFG.VERANSTALTUNG;

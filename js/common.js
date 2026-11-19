@@ -550,6 +550,68 @@
     };
   }
 
+  // ------------------------------------------------------------------
+  // Pause mit Countdown auf dem Beamer (Auswertung und Beamer haben den Knopf)
+  // ------------------------------------------------------------------
+  function pauseKnopf(knopf, beiAenderung) {
+    let pause = null; // { ende: ISO, minuten }
+    const restSek = () => pause ? Math.round((new Date(pause.ende) - Date.now()) / 1000) : 0;
+    const mmss = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    function zeigen() {
+      const r = restSek();
+      knopf.textContent = pause && r > 0 ? "⏸ Pause " + mmss(r) : "⏸ Pause";
+      knopf.classList.toggle("pause-aktiv", !!(pause && r > 0));
+    }
+    async function laden() {
+      try { pause = await DB.ladeEinstellung("pause"); } catch (e) { /* egal */ }
+      if (pause && !pause.ende) pause = null;
+      zeigen();
+    }
+    async function speichern(wert, meldung) {
+      try {
+        await DB.speichereEinstellung("pause", wert);
+        pause = wert; zeigen();
+        toast(meldung, { art: "ok" });
+        if (beiAenderung) beiAenderung();
+      } catch (e) {
+        toast("Nicht gespeichert – keine Verbindung (oder update-v4.sql fehlt)", { art: "fehler", dauer: 6000 });
+      }
+    }
+    const starten = (m) => speichern({ ende: new Date(Date.now() + m * 60000).toISOString(), minuten: m },
+      "⏸ Pause gestartet: " + m + " Minuten – Countdown läuft auf dem Beamer");
+    knopf.onclick = () => {
+      const r = restSek();
+      const ov = document.createElement("div");
+      ov.className = "overlay";
+      ov.innerHTML = '<div class="dialog"><h2>⏸ Pause mit Countdown</h2>' +
+        (pause && r > 0 ? '<p class="pause-laeuft">Läuft noch <b>' + mmss(r) + "</b> Minuten</p>" : "") +
+        '<p class="klein-hinweis">Der Beamer zeigt den Countdown groß, im Wechsel mit den Statistiken.</p>' +
+        '<div class="pause-wahl">' + [5, 10, 15, 20].map((m) => '<button class="gross" data-min="' + m + '">' + m + " Min</button>").join("") + "</div>" +
+        '<div class="pause-eigen"><input type="number" min="1" max="120" inputmode="numeric" placeholder="eigene Minuten"><button class="gross" data-eigen>Start</button></div>' +
+        (pause && r > 0 ? '<button class="gross" data-plus>+ 5 Minuten verlängern</button><button class="gross warnung-knopf" data-stopp>▶ Pause jetzt beenden</button>' : "") +
+        '<button class="gross" data-zu>Schließen</button></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (e.target === ov || (b && b.hasAttribute("data-zu"))) { ov.remove(); return; }
+        if (!b) return;
+        if (b.dataset.min) { ov.remove(); starten(Number(b.dataset.min)); }
+        else if (b.hasAttribute("data-eigen")) {
+          const m = Number(ov.querySelector("input").value);
+          if (!(m >= 1 && m <= 120)) { toast("Bitte 1–120 Minuten eingeben", { art: "fehler" }); return; }
+          ov.remove(); starten(m);
+        } else if (b.hasAttribute("data-plus")) {
+          ov.remove();
+          speichern({ ende: new Date(new Date(pause.ende).getTime() + 5 * 60000).toISOString(), minuten: (pause.minuten || 0) + 5 },
+            "⏸ Pause um 5 Minuten verlängert");
+        } else if (b.hasAttribute("data-stopp")) { ov.remove(); speichern(null, "▶ Pause beendet"); }
+      });
+    };
+    laden();
+    setInterval(laden, 15000);
+    setInterval(zeigen, 1000);
+  }
+
   // Lädt die Stammdaten und danach die Skripte der Seite (der Reihe nach)
   async function starte(skripte, opts) {
     await stammdatenLaden();
@@ -568,6 +630,7 @@
   const istEigen = (r) => r && r.eigenverzehr === true;
 
   window.App = {
+    pauseKnopf,
     istEigen, durchsageDialog, designWahlHtml, designSetzen,
     starte, stammdatenLaden, stammdatenGueltig, STANDARD,
     get stammQuelle() { return stammQuelle; }, get stammVersion() { return stammVersion; },
