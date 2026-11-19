@@ -1,7 +1,7 @@
 /* Auswertung: Umsatz pro Tisch, verkaufte Artikel, Bestellungen pro Kellner, Zahlungen */
 (function () {
   "use strict";
-  const { CFG, DB, DEMO, $, esc, euro, uhrzeit, zusammenfassen, cent } = App;
+  const { CFG, DB, DEMO, $, esc, euro, uhrzeit, zusammenfassen, cent, toast } = App;
   const verbindung = App.verbindungsAnzeige($("#verbindung"));
 
   const posText = (p) => p.name + (p.menge ? " " + p.menge : "");
@@ -98,6 +98,98 @@
     };
   });
   $("#aktualisieren").onclick = laden;
+
+  // ------------------------------------------------------------------
+  // Excel-Export
+  // ------------------------------------------------------------------
+  const ZIEL_NAME = { kueche: "Küche", theke: "Theke", kasse: "Nur Strichliste" };
+  const zeit = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }) + " " +
+      d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  };
+  const eur = (c) => Math.round(c) / 100;
+
+  async function exportieren() {
+    const knopf = $("#excel");
+    knopf.disabled = true; knopf.textContent = "…";
+    try {
+      const roh = await DB.listAlleRoh();
+      let zRoh = null;
+      try { zRoh = await DB.listZahlungenRoh(); } catch (e) { /* Kasse nicht eingerichtet */ }
+      const rows = roh.filter((r) => r.status !== "storniert");
+      const zahl = zRoh ? zRoh.filter((z) => z.status === "gueltig") : [];
+      const blaetter = [];
+
+      blaetter.push({
+        name: "Pro Tisch",
+        spalten: [{ titel: "Tisch", typ: "zahl", breite: 7 }, { titel: "Team", breite: 32 }, { titel: "Bestellt", typ: "euro", breite: 12 },
+          { titel: "Bezahlt", typ: "euro", breite: 12 }, { titel: "Offen", typ: "euro", breite: 12 }, { titel: "Artikel", breite: 80 }],
+        zeilen: CFG.TISCHE.map((t) => {
+          const pos = zusammenfassen(rows.filter((r) => r.tisch === t.nr));
+          const best = summeCent(pos);
+          const bez = zahl.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.betrag), 0);
+          return [t.nr, t.team, eur(best), eur(bez), eur(best - bez), pos.map((p) => p.anzahl + "× " + posText(p)).join(", ")];
+        }),
+      });
+
+      blaetter.push({
+        name: "Artikel",
+        spalten: [{ titel: "Artikel", breite: 28 }, { titel: "Menge", breite: 9 }, { titel: "Anzahl", typ: "zahl", breite: 9 },
+          { titel: "Einzelpreis", typ: "euro", breite: 12 }, { titel: "Umsatz", typ: "euro", breite: 12 }],
+        zeilen: zusammenfassen(rows).map((p) => [p.name, p.menge || "", p.anzahl, p.preis, eur(p.cent)]),
+      });
+
+      blaetter.push({
+        name: "Kellner",
+        spalten: [{ titel: "Kellner", breite: 16 }, { titel: "Bestellungen", typ: "zahl", breite: 13 },
+          { titel: "Umsatz", typ: "euro", breite: 12 }, { titel: "Kassiert (bar)", typ: "euro", breite: 14 }],
+        zeilen: CFG.KELLNER.map((k) => {
+          const kr = rows.filter((r) => r.kellner === k);
+          return [k, new Set(kr.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size, summe(zusammenfassen(kr)),
+            eur(zahl.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.betrag), 0))];
+        }),
+      });
+
+      const posZeilen = [];
+      roh.forEach((r) => r.positionen.forEach((p) => posZeilen.push([
+        r.id, zeit(r.erstellt_am), r.tisch, r.team, r.kellner, ZIEL_NAME[r.ziel] || r.ziel, r.status,
+        p.anzahl, p.name, p.menge || "", Number(p.preis) || 0, eur(p.anzahl * cent(p.preis)), r.kommentar || "", zeit(r.geaendert_am),
+      ])));
+      blaetter.push({
+        name: "Bestellpositionen",
+        spalten: [{ titel: "Nr", typ: "zahl", breite: 6 }, { titel: "Zeit", breite: 20 }, { titel: "Tisch", typ: "zahl", breite: 7 },
+          { titel: "Team", breite: 26 }, { titel: "Kellner", breite: 12 }, { titel: "Ziel", breite: 15 }, { titel: "Status", breite: 11 },
+          { titel: "Anzahl", typ: "zahl", breite: 8 }, { titel: "Artikel", breite: 26 }, { titel: "Menge", breite: 8 },
+          { titel: "Einzelpreis", typ: "euro", breite: 12 }, { titel: "Summe", typ: "euro", breite: 11 },
+          { titel: "Kommentar", breite: 30 }, { titel: "Geändert", breite: 20 }],
+        zeilen: posZeilen,
+      });
+
+      if (zRoh) {
+        blaetter.push({
+          name: "Zahlungen",
+          spalten: [{ titel: "Nr", typ: "zahl", breite: 6 }, { titel: "Zeit", breite: 20 }, { titel: "Tisch", typ: "zahl", breite: 7 },
+            { titel: "Kellner", breite: 12 }, { titel: "Betrag", typ: "euro", breite: 11 }, { titel: "Status", breite: 11 },
+            { titel: "Artikel", breite: 60 }],
+          zeilen: zRoh.map((z) => [z.id, zeit(z.erstellt_am), z.tisch, z.kellner, Number(z.betrag), z.status,
+            Array.isArray(z.positionen) ? z.positionen.map((p) => p.anzahl + "× " + posText(p)).join(", ") : ""]),
+        });
+      }
+
+      const d = new Date();
+      const stempel = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") +
+        "_" + String(d.getHours()).padStart(2, "0") + String(d.getMinutes()).padStart(2, "0");
+      App.excelHerunterladen("pubquiz_" + stempel + ".xlsx", blaetter);
+      toast("Excel-Datei erstellt", { art: "ok" });
+    } catch (e) {
+      toast("Export fehlgeschlagen – keine Verbindung?", { art: "fehler" });
+    } finally {
+      knopf.disabled = false; knopf.textContent = "⬇ Excel";
+    }
+  }
+  $("#excel").onclick = exportieren;
 
   (async function start() {
     await App.pinPruefen("auswertung");

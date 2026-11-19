@@ -81,6 +81,22 @@
           .order("id", { ascending: true }).limit(5000));
       },
       // ---- Zahlungen (Kasse) ----
+      // ---- Ausverkauft-Schalter ----
+      async listAusverkauft() {
+        return check(await client.from("ausverkauft").select("artikel_id").eq("ausverkauft", true)).map((r) => r.artikel_id);
+      },
+      async setAusverkauft(artikelId, wert) {
+        check(await client.from("ausverkauft").upsert(
+          { artikel_id: artikelId, ausverkauft: wert, geaendert_am: new Date().toISOString() },
+          { onConflict: "artikel_id" }));
+      },
+      // Alle Bestellungen inkl. stornierte (für den Excel-Export)
+      async listAlleRoh() {
+        return check(await client.from(T).select("*").order("id", { ascending: true }).limit(10000));
+      },
+      async listZahlungenRoh() {
+        return check(await client.from("zahlungen").select("*").order("id", { ascending: true }).limit(10000));
+      },
       async listZahlungen() {
         return check(await client.from("zahlungen").select("*").eq("status", "gueltig")
           .order("id", { ascending: true }).limit(5000));
@@ -142,6 +158,14 @@
       async listZahlungen() {
         return (load().zahlungen || []).filter((z) => z.status === "gueltig");
       },
+      async listAusverkauft() {
+        return Object.keys(load().ausverkauft || {}).filter((k) => load().ausverkauft[k]);
+      },
+      async setAusverkauft(artikelId, wert) {
+        const db = load(); db.ausverkauft = db.ausverkauft || {}; db.ausverkauft[artikelId] = wert; save(db); notify();
+      },
+      async listAlleRoh() { return load().rows; },
+      async listZahlungenRoh() { return load().zahlungen || []; },
       async insertZahlung(row) {
         const db = load();
         db.zahlungen = db.zahlungen || [];

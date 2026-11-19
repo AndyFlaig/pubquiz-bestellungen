@@ -23,7 +23,8 @@ Repository `pubquiz-bestellungen` liegt. Alles ist kostenlos.
    - ⚠️ **Niemals** den „secret“- bzw. „service_role“-Key verwenden!
 
 > **Bestehende Datenbank (vor dem 19.11. eingerichtet)?** Zusätzlich einmal im SQL Editor ausführen:
-> [`supabase/update-snacks.sql`](supabase/update-snacks.sql) (Snacks) und [`supabase/update-kasse.sql`](supabase/update-kasse.sql) (Kasse).
+> [`supabase/update-snacks.sql`](supabase/update-snacks.sql) (Snacks), [`supabase/update-kasse.sql`](supabase/update-kasse.sql) (Kasse)
+> und danach [`supabase/update-v3.sql`](supabase/update-v3.sql) (Ausverkauft, Abrechnung pro Artikel).
 
 ## Schritt 2: Zugangsdaten und Namen in `config.js` eintragen
 
@@ -104,13 +105,20 @@ Bestellung absenden. Ein falsch erfasster Snack kann nicht storniert werden – 
 
 **Kasse (Reiter „💶 Kasse“ in der Kellner-Ansicht):** Jeder Kellner kassiert selbst, nur bar.
 Die Tischübersicht zeigt pro Tisch den offenen Betrag (orange) bzw. „✓ bezahlt“ (grün). Tisch antippen →
-alle bestellten Artikel, Bestellt / Bezahlt / **Offen**.
-- **„✓ Alles bezahlt“** verbucht den kompletten offenen Betrag.
-- **Teilbetrag:** zahlt ein Gast einzeln, Betrag eintippen (z. B. `12,50`) → „Teilbetrag kassieren“. Der Rest bleibt offen.
-- **Gegeben:** zeigt das Rückgeld.
+alle Artikel mit „x offen / y bezahlt“, darunter Bestellt / Bezahlt / **Offen**.
+- **Ein Gast zahlt einzeln:** seine Artikel mit **+** auswählen → „Auswahl kassieren – 13,00 €“. Der Rest bleibt offen.
+- **„✓ Alles bezahlt“** verbucht alle noch offenen Artikel.
+- **Gegeben:** zeigt das Rückgeld (für die Auswahl, sonst für den ganzen offenen Betrag).
 - Eigene Zahlungen können storniert werden (z. B. vertippt).
 - Oben steht der eigene **Kassenstand** = so viel Bargeld sollte im Portemonnaie sein.
 - Noch nicht gelieferte Bestellungen sind schon mitgerechnet. Wird danach noch etwas bestellt, ist der Tisch wieder „offen“.
+
+**Ausverkauft:** In Küche und Theke oben auf **🚫 Ausverkauft** tippen → Artikel antippen schaltet zwischen
+„verfügbar“ und „AUSVERKAUFT“ um. Bei den Kellnern ist der Artikel dann durchgestrichen und nicht mehr bestellbar
+(spätestens nach 10 Sekunden). Liegt er schon in einer angefangenen Bestellung, muss er vor dem Senden entfernt werden.
+
+**Excel-Export:** In der Auswertung oben **⬇ Excel** → Datei `pubquiz_DATUM_UHRZEIT.xlsx` mit den Blättern
+Pro Tisch, Artikel, Kellner, Bestellpositionen (inkl. stornierter) und Zahlungen. Am iPhone landet sie unter „Dateien → Downloads“.
 
 **Auswertung:** zeigt pro Tisch alles Bestellte mit Summe (Abgleich mit der Strichliste), die verkauften Artikel
 und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit eigenem PIN (`PIN.auswertung` in `config.js`).

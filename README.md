@@ -9,7 +9,8 @@ Kassiert wird nicht über die App (Strichliste auf Papier).
 - **Küche:** `kueche.html`
 - **Theke:** `theke.html`
 - **Auswertung:** `auswertung.html` – Umsatz pro Tisch, verkaufte Artikel, Bestellungen und Kassenstand pro Kellner
-- **Kasse:** Reiter in der Kellner-Ansicht – Tisch ganz oder mit Teilbetrag abrechnen (nur bar)
+- **Kasse:** Reiter in der Kellner-Ansicht – Tisch ganz oder pro Artikel abrechnen (nur bar)
+- **Ausverkauft-Schalter** in Küche/Theke, **Excel-Export** in der Auswertung (eigener .xlsx-Schreiber, `js/xlsx.js`)
 
 👉 **Einrichtung Schritt für Schritt:** [ANLEITUNG.md](ANLEITUNG.md)
 👉 **Test vor Freitag:** [TESTPLAN.md](TESTPLAN.md)
