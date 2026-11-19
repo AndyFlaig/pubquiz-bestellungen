@@ -13,6 +13,9 @@
   let aktiv = false;           // Reiter sichtbar?
   let laedt = false, sperre = false;
   let auswahl = new Map();     // key -> Anzahl, die jetzt bezahlt wird
+  let snackWahl = new Map();   // Artikel-id -> Anzahl, die jetzt auf die Rechnung kommt
+  // Artikel, die nur erfasst werden (z. B. Snacks auf dem Tisch) – können direkt in der Kasse dazukommen
+  const kassenArtikel = () => CFG.ARTIKEL.filter((a) => a.ziel === "kasse");
 
   const bestelltCent = (nr) => zusammenfassen(rows.filter((r) => r.tisch === nr)).reduce((s, p) => s + p.cent, 0);
   const bezahltCent = (nr) => zahlungen.filter((z) => z.tisch === nr).reduce((s, z) => s + cent(z.betrag), 0);
@@ -81,6 +84,7 @@
     $("#kasse-inhalt").innerHTML =
       '<article class="karte kasse-karte">' +
         '<header><div class="tisch">Tisch ' + t.nr + '</div><div class="team">' + esc(t.team) + "</div></header>" +
+        snackBox() +
         (stand.length ? '<p class="klein-hinweis">Was zahlt der Gast? Artikel mit <b>+</b> auswählen.</p>' +
           '<div class="kasse-artikel">' + stand.map((x) => {
             const a = auswahl.get(x.key) || 0;
@@ -124,6 +128,50 @@
     rueckgeldRechnen();
   }
 
+  // Box "Snacks vom Tisch": Anzahl wählen und auf die Rechnung setzen
+  function snackBox() {
+    const liste = kassenArtikel();
+    if (!liste.length) return "";
+    const summe = liste.reduce((s, a) => s + (snackWahl.get(a.id) || 0) * cent(a.preis), 0);
+    return '<div class="snack-box"><h4>🥨 Vom Tisch genommen? Auf die Rechnung setzen</h4>' +
+      liste.map((a) => {
+        const n = snackWahl.get(a.id) || 0;
+        return '<div class="kasse-zeile' + (n ? " gewaehlt" : "") + '"><div class="kasse-name"><span>' + esc(a.name + (a.menge ? " " + a.menge : "")) +
+          "</span><small>" + euro(a.preis) + "</small></div>" +
+          '<div class="stepper"><button class="minus" data-s-minus="' + esc(a.id) + '" aria-label="weniger">−</button>' +
+          '<span class="anzahl">' + (n || "") + "</span>" +
+          '<button class="plus" data-s-plus="' + esc(a.id) + '" aria-label="mehr">+</button></div></div>';
+      }).join("") +
+      (summe ? '<button class="gross" id="snacks-erfassen">+ ' + euro(summe / 100) + " auf die Rechnung</button>" : "") +
+      "</div>";
+  }
+
+  async function snacksErfassen() {
+    if (sperre) return;
+    const t = CFG.TISCHE.find((x) => x.nr === tisch);
+    const pos = kassenArtikel().filter((a) => (snackWahl.get(a.id) || 0) > 0)
+      .map((a) => ({ id: a.id, name: a.name, menge: a.menge, preis: Number(a.preis), anzahl: snackWahl.get(a.id) }));
+    if (!pos.length || !t) return;
+    sperre = true;
+    try {
+      const neu = await DB.insert([{ gruppe: App.uuid(), ziel: "kasse", tisch: t.nr, team: t.team, kellner: kellner(),
+        positionen: pos, kommentar: null, status: "erledigt" }]);
+      snackWahl = new Map();
+      const id = neu && neu[0] && neu[0].id;
+      toast("✓ " + pos.map((p) => p.anzahl + "× " + p.name).join(", ") + " auf Tisch " + t.nr, {
+        art: "ok", dauer: 10000, knopf: id ? "Rückgängig" : null,
+        aktion: async () => {
+          try { await DB.setStatus(id, "erledigt", "storniert"); toast("Rückgängig gemacht", { art: "ok" }); }
+          catch (err) { toast("Rückgängig fehlgeschlagen – keine Verbindung", { art: "fehler" }); }
+          laden();
+        },
+      });
+    } catch (e) {
+      toast("Snacks NICHT erfasst – keine Verbindung? Bitte nochmal.", { art: "fehler", dauer: 6000 });
+    } finally { sperre = false; }
+    await laden();
+  }
+
   function betragLesen(text) {
     const v = Number(String(text || "").replace(/€/g, "").replace(/\s/g, "").replace(",", "."));
     return isFinite(v) && v > 0 ? cent(v) : 0;
@@ -163,7 +211,7 @@
     const tb = e.target.closest("[data-kasse-nr]");
     if (tb) {
       const neu = Number(tb.dataset.kasseNr);
-      if (neu !== tisch) auswahl = new Map();
+      if (neu !== tisch) { auswahl = new Map(); snackWahl = new Map(); }
       tisch = neu; render();
       $("#kasse-inhalt").scrollIntoView({ behavior: "smooth", block: "start" });
       return;
@@ -178,6 +226,14 @@
       render();
       return;
     }
+    const sp = e.target.closest("[data-s-plus]"), sm = e.target.closest("[data-s-minus]");
+    if (sp || sm) {
+      const id = (sp || sm).dataset[sp ? "sPlus" : "sMinus"];
+      snackWahl.set(id, Math.max(0, Math.min(99, (snackWahl.get(id) || 0) + (sp ? 1 : -1))));
+      render();
+      return;
+    }
+    if (e.target.closest("#snacks-erfassen")) return snacksErfassen();
     if (e.target.closest("#auswahl-leeren")) { auswahl = new Map(); render(); return; }
     if (e.target.closest("#auswahl-bezahlt")) {
       const stand = artikelStand(tisch);
@@ -205,7 +261,8 @@
   // Reiter-Wechsel aus kellner.js
   window.addEventListener("reiter", (e) => { aktiv = e.detail === "kasse"; if (aktiv) laden(); });
   // Aktualisieren, solange die Kasse offen ist – aber nicht, während jemand auswählt oder tippt
-  const darfNeuLaden = () => aktiv && ![...auswahl.values()].some((n) => n > 0) && !($("#gegeben") && $("#gegeben").value);
+  const darfNeuLaden = () => aktiv && ![...auswahl.values()].some((n) => n > 0) && ![...snackWahl.values()].some((n) => n > 0)
+    && !($("#gegeben") && $("#gegeben").value);
   setInterval(() => { if (darfNeuLaden()) laden(); }, 15000);
   DB.onChange(() => { if (darfNeuLaden()) laden(); });
 })();
