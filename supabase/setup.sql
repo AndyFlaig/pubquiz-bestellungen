@@ -31,12 +31,12 @@ drop policy if exists "bestellungen status"  on public.bestellungen;
 
 create policy "bestellungen lesen"   on public.bestellungen for select to anon, authenticated using (true);
 create policy "bestellungen anlegen" on public.bestellungen for insert to anon, authenticated
-  with check (status = 'offen' or (ziel = 'kasse' and status = 'erledigt'));
+  with check (status = 'offen' or (ziel = 'kasse' and status = 'erledigt'));   -- 'kasse' = Snacks, direkt erledigt
+create policy "bestellungen status"  on public.bestellungen for update to anon, authenticated using (true) with check (true);
 
--- Erweiterung für Snacks auch bei schon bestehender Tabelle
+-- Snacks (ziel = 'kasse') erlauben – auch bei schon bestehender Tabelle
 alter table public.bestellungen drop constraint if exists bestellungen_ziel_check;
 alter table public.bestellungen add constraint bestellungen_ziel_check check (ziel in ('kueche', 'theke', 'kasse'));
-create policy "bestellungen status"  on public.bestellungen for update to anon, authenticated using (true) with check (true);
 
 grant select, insert, update on public.bestellungen to anon, authenticated;
 
@@ -114,6 +114,20 @@ begin
     alter publication supabase_realtime add table public.bestellungen;
   end if;
 end $$;
+
+-- ---------------------------------------------------------------------
+--  Kontrolle: zeigt unten eine Tabelle. Erwartet werden 14 Zeilen, darunter
+--  "bestellungen anlegen" mit ... ziel = 'kasse' ... und
+--  "bestellungen_ziel_check" mit ... 'kueche', 'theke', 'kasse' ...
+-- ---------------------------------------------------------------------
+select c.relname as tabelle, p.polname as regel_oder_pruefung,
+       coalesce(pg_get_expr(p.polwithcheck, p.polrelid), pg_get_expr(p.polqual, p.polrelid), '') as bedingung
+from pg_policy p join pg_class c on c.oid = p.polrelid
+where c.relname in ('bestellungen', 'zahlungen', 'ausverkauft', 'einstellungen')
+union all
+select 'bestellungen', conname, pg_get_constraintdef(oid)
+from pg_constraint where conrelid = 'public.bestellungen'::regclass and conname = 'bestellungen_ziel_check'
+order by 1, 2;
 
 -- ---------------------------------------------------------------------
 --  Nach dem Testen: alle Test-Bestellungen löschen
