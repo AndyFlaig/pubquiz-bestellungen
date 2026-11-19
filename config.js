@@ -32,7 +32,7 @@ window.APP_CONFIG = {
   // ---------------------------------------------------------------
   // 4) Die vier Kellner (Namen einfach ändern)
   // ---------------------------------------------------------------
-  KELLNER: ["Kellner 1", "Kellner 2", "Kellner 3", "Kellner 4"],
+  KELLNER: ["Maurice", "Marvin", "Axel", "Patrick"],
 
   // ---------------------------------------------------------------
   // 5) Tische: Nummer und Teamname
