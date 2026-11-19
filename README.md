@@ -22,7 +22,8 @@ Kassiert wird nicht über die App (Strichliste auf Papier).
 |---|---|
 | Supabase-Zugang, Kellnernamen, PINs, Tische, Preisliste | `config.js` |
 | Datenbank-Tabelle anlegen | `supabase/setup.sql` |
-| Aussehen | `style.css` |
+| Aussehen (Farben aus dem Vereinslogo) | `style.css` |
+| Logo und App-Symbole | `img/` |
 
 ## Technik (kurz)
 
