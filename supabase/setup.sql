@@ -7,7 +7,7 @@
 create table if not exists public.bestellungen (
   id            bigint generated always as identity primary key,
   gruppe        uuid        not null,               -- verbindet Küchen- und Theken-Teil einer Bestellung
-  ziel          text        not null check (ziel in ('kueche', 'theke')),
+  ziel          text        not null check (ziel in ('kueche', 'theke', 'kasse')),  -- kasse = nur erfassen (Snacks)
   tisch         int         not null,
   team          text        not null,
   kellner       text        not null,
@@ -30,7 +30,12 @@ drop policy if exists "bestellungen anlegen" on public.bestellungen;
 drop policy if exists "bestellungen status"  on public.bestellungen;
 
 create policy "bestellungen lesen"   on public.bestellungen for select to anon, authenticated using (true);
-create policy "bestellungen anlegen" on public.bestellungen for insert to anon, authenticated with check (status = 'offen');
+create policy "bestellungen anlegen" on public.bestellungen for insert to anon, authenticated
+  with check (status = 'offen' or (ziel = 'kasse' and status = 'erledigt'));
+
+-- Erweiterung für Snacks auch bei schon bestehender Tabelle
+alter table public.bestellungen drop constraint if exists bestellungen_ziel_check;
+alter table public.bestellungen add constraint bestellungen_ziel_check check (ziel in ('kueche', 'theke', 'kasse'));
 create policy "bestellungen status"  on public.bestellungen for update to anon, authenticated using (true) with check (true);
 
 grant select, insert, update on public.bestellungen to anon, authenticated;

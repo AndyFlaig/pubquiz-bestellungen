@@ -82,7 +82,7 @@
       // Letzte (nicht stornierte) Bestellung eines Tisches, alle Teile (Küche + Theke)
       async lastForTable(tisch) {
         const rows = check(await client.from(T).select("*").eq("tisch", tisch).neq("status", "storniert")
-          .order("id", { ascending: false }).limit(10));
+          .neq("ziel", "kasse").order("id", { ascending: false }).limit(10));
         if (!rows.length) return [];
         return rows.filter((r) => r.gruppe === rows[0].gruppe);
       },
@@ -125,7 +125,7 @@
         return load().rows.filter((r) => r.status !== "storniert");
       },
       async lastForTable(tisch) {
-        const rows = load().rows.filter((r) => r.tisch === tisch && r.status !== "storniert").reverse();
+        const rows = load().rows.filter((r) => r.tisch === tisch && r.status !== "storniert" && r.ziel !== "kasse").reverse();
         return rows.length ? rows.filter((r) => r.gruppe === rows[0].gruppe) : [];
       },
       async insert(rows) {

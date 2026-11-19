@@ -63,7 +63,7 @@ window.APP_CONFIG = {
   // ---------------------------------------------------------------
   // 6) Preisliste
   //    id:     eindeutiges Kürzel (nicht doppelt vergeben!)
-  //    ziel:   "theke" (Getränk) oder "kueche" (Speise)
+  //    ziel:   "theke" (Getränk), "kueche" (Speise) oder "kasse" (nur erfassen, z. B. Snacks)
   //    preis:  in Euro, mit PUNKT statt Komma (3.50)
   //    Die Reihenfolge hier = Reihenfolge in der Kellner-Ansicht.
   // ---------------------------------------------------------------
@@ -92,5 +92,9 @@ window.APP_CONFIG = {
     { id: "wurstsal",  kategorie: "Für den Hunger", name: "Wurstsalat",              menge: "", preis: 9.00, ziel: "kueche" },
     { id: "kaesesal",  kategorie: "Für den Hunger", name: "Käsesalat",               menge: "", preis: 9.00, ziel: "kueche" },
     { id: "baguette",  kategorie: "Für den Hunger", name: "Schinken-Käse-Baguette",  menge: "", preis: 5.00, ziel: "kueche" },
+
+    // Snacks stehen schon auf den Tischen: werden nur für die Strichliste/Auswertung erfasst,
+    // NICHT an Küche oder Theke geschickt (ziel: "kasse").
+    { id: "snack",     kategorie: "Snacks (stehen auf dem Tisch)", name: "Snack", menge: "", preis: 1.00, ziel: "kasse" },
   ],
 };

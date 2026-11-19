@@ -22,6 +22,9 @@ Repository `pubquiz-bestellungen` liegt. Alles ist kostenlos.
      Einer von beiden genügt.
    - ⚠️ **Niemals** den „secret“- bzw. „service_role“-Key verwenden!
 
+> **Bestehende Datenbank (vor dem 19.11. eingerichtet)?** Für die Snacks einmal zusätzlich den Inhalt von
+> [`supabase/update-snacks.sql`](supabase/update-snacks.sql) im SQL Editor ausführen.
+
 ## Schritt 2: Zugangsdaten und Namen in `config.js` eintragen
 
 1. Auf **github.com** das Repository `pubquiz-bestellungen` öffnen → Datei **`config.js`** anklicken → Stift-Symbol (✏️ „Edit this file“).
@@ -94,6 +97,10 @@ Meldet Küche oder Theke „Erledigt“, bekommt der Kellner einen grünen Hinwe
 **Küche / Theke:** Neue Bestellung = Ton + gelbes Aufblinken, älteste steht oben. Rahmen orange ab 8 Min, rot ab 15 Min.
 **✓ Erledigt** blendet die Bestellung aus (10 Sekunden lang „Rückgängig“ möglich).
 Storniert ein Kellner, erscheint ein großer roter Hinweis (antippen zum Schließen).
+
+**Snacks:** stehen in der Kellner-Ansicht ganz unten („Snacks – stehen auf dem Tisch“, 1,00 €). Sie werden **nicht** an Küche
+oder Theke geschickt, sondern nur erfasst und in der Auswertung pro Tisch mitgezählt. Einzeln oder zusammen mit einer
+Bestellung absenden. Ein falsch erfasster Snack kann nicht storniert werden – einfach auf der Papierliste korrigieren.
 
 **Auswertung:** zeigt pro Tisch alles Bestellte mit Summe (Abgleich mit der Strichliste), die verkauften Artikel
 und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit eigenem PIN (`PIN.auswertung` in `config.js`).
