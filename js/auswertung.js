@@ -62,7 +62,7 @@
     $("#kellner-tabelle").innerHTML =
       "<tr><th>Kellner</th><th class='zahl'>Bestellungen</th><th class='zahl'>Umsatz</th>" +
       (zahlungen ? "<th class='zahl'>Kassiert (bar)</th>" : "") + "</tr>" +
-      CFG.KELLNER.map((k) => {
+      alleKellner(rows, zahlungen).map((k) => {
         const kr = rows.filter((r) => r.kellner === k);
         return "<tr><td>" + esc(k) + "</td><td class='zahl'>" + new Set(kr.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size +
           "</td><td class='zahl'>" + euro(summe(zusammenfassen(kr))) + "</td>" +
@@ -71,6 +71,14 @@
       }).join("");
 
     document.title = "Auswertung (" + uhrzeit(new Date().toISOString()) + ") – Pub-Quiz";
+  }
+
+  // Kellner aus der Liste + alle, die in den Daten vorkommen (z. B. nach Umbenennung im Admin)
+  function alleKellner(rows, zahlungen) {
+    const n = [...CFG.KELLNER];
+    rows.forEach((r) => { if (!n.includes(r.kellner)) n.push(r.kellner); });
+    (zahlungen || []).forEach((z) => { if (!n.includes(z.kellner)) n.push(z.kellner); });
+    return n;
   }
 
   function kachel(titel, wert) {
@@ -145,7 +153,7 @@
         name: "Kellner",
         spalten: [{ titel: "Kellner", breite: 16 }, { titel: "Bestellungen", typ: "zahl", breite: 13 },
           { titel: "Umsatz", typ: "euro", breite: 12 }, { titel: "Kassiert (bar)", typ: "euro", breite: 14 }],
-        zeilen: CFG.KELLNER.map((k) => {
+        zeilen: alleKellner(rows, zahl).map((k) => {
           const kr = rows.filter((r) => r.kellner === k);
           return [k, new Set(kr.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size, summe(zusammenfassen(kr)),
             eur(zahl.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.betrag), 0))];
@@ -155,7 +163,7 @@
       const posZeilen = [];
       roh.forEach((r) => r.positionen.forEach((p) => posZeilen.push([
         r.id, zeit(r.erstellt_am), r.tisch, r.team, r.kellner, ZIEL_NAME[r.ziel] || r.ziel, r.status,
-        p.anzahl, p.name, p.menge || "", Number(p.preis) || 0, eur(p.anzahl * cent(p.preis)), r.kommentar || "", zeit(r.geaendert_am),
+        p.anzahl, p.name, p.menge || "", Number(p.preis) || 0, eur(p.anzahl * cent(p.preis)), p.notiz || "", r.kommentar || "", zeit(r.geaendert_am),
       ])));
       blaetter.push({
         name: "Bestellpositionen",
@@ -163,7 +171,7 @@
           { titel: "Team", breite: 26 }, { titel: "Kellner", breite: 12 }, { titel: "Ziel", breite: 15 }, { titel: "Status", breite: 11 },
           { titel: "Anzahl", typ: "zahl", breite: 8 }, { titel: "Artikel", breite: 26 }, { titel: "Menge", breite: 8 },
           { titel: "Einzelpreis", typ: "euro", breite: 12 }, { titel: "Summe", typ: "euro", breite: 11 },
-          { titel: "Kommentar", breite: 30 }, { titel: "Geändert", breite: 20 }],
+          { titel: "Notiz (Artikel)", breite: 24 }, { titel: "Kommentar", breite: 30 }, { titel: "Geändert", breite: 20 }],
         zeilen: posZeilen,
       });
 

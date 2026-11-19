@@ -27,7 +27,8 @@
         ' · <span class="alter">' + (min < 1 ? "gerade eben" : "vor " + min + " Min") + "</span></div>" +
         '<ul class="positionen">' +
           r.positionen.map((p) => '<li><b>' + esc(p.anzahl) + "×</b> " + esc(p.name) +
-            (p.menge ? ' <small>' + esc(p.menge) + "</small>" : "") + "</li>").join("") +
+            (p.menge ? ' <small>' + esc(p.menge) + "</small>" : "") +
+            (p.notiz ? '<div class="pos-notiz">➜ ' + esc(p.notiz) + "</div>" : "") + "</li>").join("") +
         "</ul>" +
         (r.kommentar ? '<div class="kommentar">' + esc(r.kommentar) + "</div>" : "") +
         '<button class="erledigt-knopf" data-id="' + r.id + '">✓ Erledigt</button>' +

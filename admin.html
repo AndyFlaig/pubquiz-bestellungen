@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2b2b2b">
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Admin – Pub-Quiz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin">
+  <header class="kopf">
+    <a href="./" class="home-knopf logo-knopf" aria-label="Zur Auswahl" title="Zur Auswahl"><img src="img/logo-klein.jpg" alt="Gutholz Schiltach"></a>
+    <div class="kopf-titel gross-titel">⚙️ Admin</div>
+    <span id="verbindung" class="verbindung">…</span>
+  </header>
+  <p id="demo-hinweis" class="demo" hidden>DEMO-MODUS – Änderungen gelten nur auf diesem Gerät.</p>
+  <p id="pin-warnung" class="demo" hidden>⚠️ Kein Admin-PIN gesetzt – bitte in <code>config.js</code> unter <code>PIN.admin</code> eintragen.</p>
+
+  <nav class="reiter admin-reiter">
+    <button class="aktiv" data-seite="artikel">Artikel</button>
+    <button data-seite="tische">Tische</button>
+    <button data-seite="kellner">Kellner</button>
+    <button data-seite="allgemein">Allgemein</button>
+  </nav>
+
+  <main class="admin-inhalt">
+    <p id="quelle" class="klein-hinweis quelle"></p>
+    <div id="fehler" class="admin-fehler" hidden></div>
+
+    <section id="seite-artikel">
+      <p class="klein-hinweis">Reihenfolge mit ↑ ↓ ändern. Gleiche Kategorie = gleiche Gruppe in der Kellner-Ansicht.
+        „Nur Strichliste“ = wird nicht an Küche/Theke geschickt (z. B. Snacks).</p>
+      <div id="artikel-liste" class="admin-liste"></div>
+      <button class="gross" data-neu="artikel">+ Artikel hinzufügen</button>
+    </section>
+
+    <section id="seite-tische" hidden>
+      <div id="tische-liste" class="admin-liste"></div>
+      <button class="gross" data-neu="tisch">+ Tisch hinzufügen</button>
+    </section>
+
+    <section id="seite-kellner" hidden>
+      <p class="klein-hinweis">Revier = Tische, die der Kellner zuerst sieht, z. B. <code>1-5, 9</code>. Leer = alle Tische gleich.
+        Nach einer Umbenennung muss der Kellner seinen Namen am Handy neu wählen.</p>
+      <div id="kellner-liste" class="admin-liste"></div>
+      <button class="gross" data-neu="kellner">+ Kellner hinzufügen</button>
+    </section>
+
+    <section id="seite-allgemein" hidden>
+      <div class="block">
+        <label class="admin-feld">Veranstaltung (steht auf der Startseite)
+          <input id="veranstaltung" type="text" maxlength="120">
+        </label>
+      </div>
+      <div class="block admin-werkzeuge">
+        <h2>Werkzeuge</h2>
+        <button class="gross" id="json-export">⬇ Sicherung herunterladen (JSON)</button>
+        <label class="gross datei-knopf">⬆ Sicherung einspielen (JSON)<input id="json-import" type="file" accept="application/json,.json" hidden></label>
+        <button class="gross warnung-knopf" id="zuruecksetzen">↺ Auf Standard aus config.js zurücksetzen</button>
+        <p class="klein-hinweis">Änderungen gelten auf allen Geräten nach dem Neuladen der Seite. Geöffnete Seiten
+          zeigen innerhalb einer Minute einen Hinweis „Neu laden“.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="fusszeile admin-fuss">
+    <span id="status">Keine Änderungen</span>
+    <button id="verwerfen" class="gross" disabled>Verwerfen</button>
+    <button id="speichern" class="gross primaer" disabled>Speichern</button>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-js-2.117.3.js"></script>
+  <script src="js/common.js"></script>
+  <script>App.starte(["js/admin.js"], { ohneBeobachter: true });</script>
+</body>
+</html>
