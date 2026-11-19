@@ -80,6 +80,9 @@ Tipp: Link per WhatsApp verschicken oder als QR-Code ausdrucken. Auf dem iPhone 
 Oben rechts in jeder Ansicht steht der Verbindungsstatus: **Live** (grün) = alles gut, **Keine Verbindung** (rot, blinkt) = WLAN/Mobilfunk prüfen.
 Steht dort **Demo**, sind die Supabase-Daten in `config.js` noch nicht eingetragen.
 
+**Anleitung in der App:** https://pubquiz-bestellungen.vercel.app/hilfe.html – auch über „❓ Anleitung“ auf der Startseite
+und das ❓ in jeder Ansicht. Kellner bekommen beim ersten Öffnen eine Kurz-Tour (4 Schritte).
+
 ## Schritt 5: Geräte für Küche und Theke vorbereiten
 
 - Seite öffnen → großen Knopf **Start (Ton testen)** tippen → es muss piepen.

@@ -538,3 +538,36 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .personen-wahl button { width: 34px; height: 34px; border-radius: 8px; border: 2px solid var(--gold); background: var(--karte); color: var(--gold-text); font-weight: 800; font-size: 1.1rem; line-height: 1; }
 .personen-wahl b { min-width: 1.4em; text-align: center; font-size: 1.1rem; }
 .anteil-wahl { flex-basis: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; font-weight: 600; }
+
+/* ---------- Anleitung ---------- */
+.hilfe .zurueck-knopf { margin-left: auto; background: rgba(255,255,255,.15); color: #fff; border: 0; border-radius: 10px; padding: 8px 12px; font-weight: 700; white-space: nowrap; }
+.hilfe-reiter { position: sticky; top: 0; z-index: 15; overflow-x: auto; scrollbar-width: none; }
+.hilfe-reiter button { flex: 1 0 auto; padding: 13px 10px; font-size: .95rem; white-space: nowrap; }
+.hilfe-inhalt { max-width: 760px; margin: 0 auto; padding: 14px 16px 60px; line-height: 1.5; }
+.hilfe-inhalt h2 { font-size: 1.35rem; margin: 6px 0 12px; }
+.hilfe-inhalt h3 { font-size: 1.05rem; margin: 22px 0 8px; color: var(--gold-text); text-transform: uppercase; letter-spacing: .04em; }
+.schritte { counter-reset: schritt; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.schritte li { counter-increment: schritt; position: relative; background: var(--karte); border-radius: 12px; padding: 12px 14px 12px 54px; border: 1px solid var(--linie); }
+.schritte li::before { content: counter(schritt); position: absolute; left: 12px; top: 11px; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--gold); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.punkte { padding-left: 20px; margin: 0; display: grid; gap: 8px; }
+.tipp { display: block; margin-top: 6px; font-size: .92rem; background: var(--gold-hell); border-radius: 8px; padding: 6px 10px; }
+.hinweis-box { background: var(--tint-gruen); border-left: 5px solid var(--primaer); border-radius: 10px; padding: 10px 14px; }
+.hilfe details { background: var(--karte); border: 1px solid var(--linie); border-radius: 12px; margin-bottom: 8px; }
+.hilfe summary { padding: 14px 16px; font-weight: 700; cursor: pointer; list-style: none; }
+.hilfe summary::-webkit-details-marker { display: none; }
+.hilfe summary::before { content: "▸ "; color: var(--gold); }
+.hilfe details[open] summary::before { content: "▾ "; }
+.hilfe details p { margin: 0; padding: 0 16px 14px; }
+.hilfe-fuss { text-align: center; margin-top: 30px; }
+.hilfe-link { display: inline-block; margin: 0 0 10px; color: var(--gold-text); font-weight: 700; text-decoration: none; }
+.kopf .hilfe-knopf { color: #e9d29b; text-decoration: none; font-size: 1.15rem; padding: 0 4px; }
+
+/* ---------- Kurz-Tour ---------- */
+.tour { max-width: 400px; text-align: center; }
+.tour-symbol { font-size: 3.2rem; line-height: 1; }
+.tour h2 { margin: 6px 0 0; }
+.tour p { margin: 0; color: var(--leise); font-size: 1.05rem; }
+.tour-punkte { display: flex; justify-content: center; gap: 6px; }
+.tour-punkte i { width: 9px; height: 9px; border-radius: 50%; background: var(--rand); }
+.tour-punkte i.an { background: var(--gold); }

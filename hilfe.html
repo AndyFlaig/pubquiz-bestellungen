@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2b2b2b">
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <title>Anleitung – Pub-Quiz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="hilfe">
+  <header class="kopf">
+    <a href="./" class="home-knopf logo-knopf" aria-label="Zur Auswahl" title="Zur Auswahl"><img src="img/logo-klein.jpg" alt="Gutholz Schiltach"></a>
+    <div class="kopf-titel gross-titel">❓ Anleitung</div>
+    <button class="zurueck-knopf" onclick="history.length > 1 ? history.back() : (location.href = './')">← Zurück</button>
+  </header>
+
+  <nav class="reiter hilfe-reiter">
+    <button data-seite="kellner" class="aktiv">📝 Kellner</button>
+    <button data-seite="kasse">💶 Kasse</button>
+    <button data-seite="station">🍽 Küche & Theke</button>
+    <button data-seite="orga">⚙️ Orga</button>
+    <button data-seite="probleme">🆘 Probleme?</button>
+  </nav>
+
+  <main class="hilfe-inhalt">
+
+    <!-- ============================ KELLNER ============================ -->
+    <section id="seite-kellner">
+      <h2>📝 Bestellungen aufnehmen</h2>
+      <ol class="schritte">
+        <li><b>Namen wählen</b> – beim ersten Öffnen einmal antippen. Bleibt auf dem Handy gespeichert. Falsch? Oben auf <i>„wechseln“</i>.</li>
+        <li><b>Tisch antippen</b> – deine Tische (Revier) stehen oben, alle anderen unter <i>„▼ Andere Tische“</i>.
+          <span class="tipp">💡 Hat der Tisch schon bestellt, erscheint <b>„↻ Wie zuletzt“</b> – ein Tipp übernimmt die letzte Runde.</span></li>
+        <li><b>Artikel hinzufügen</b> – auf <b>+</b> oder auf den Namen tippen, mit <b>−</b> zurück.
+          <span class="tipp">🔍 Suchfeld nutzen (z. B. „wurst“, „0,33“) · ⭐ Oben stehen deine 8 häufigsten Artikel.</span></li>
+        <li><b>Sonderwunsch?</b> Unter dem gewählten Artikel <b>„✎ Notiz“</b> (z. B. „1× ohne Zwiebeln“). Für die ganze Bestellung gibt es unten das Kommentarfeld.</li>
+        <li><b>Absenden</b> → Kontrollansicht prüfen → <b>Senden</b>. Speisen gehen automatisch an die Küche, Getränke an die Theke.</li>
+      </ol>
+
+      <h3>Nach dem Senden</h3>
+      <ul class="punkte">
+        <li><b>„Offen“</b>: deine noch nicht erledigten Bestellungen. <b>Stornieren</b> geht, solange Küche/Theke noch nicht „Erledigt“ getippt hat.</li>
+        <li><b>„🍽 Tisch 7: Essen ist fertig!“</b> – grüner Hinweis mit Ton, sobald Küche oder Theke fertig ist (Android vibriert). Antippen zum Schließen.</li>
+        <li><b>🚫 Durchgestrichen = ausverkauft</b> – nicht bestellbar, bis Küche/Theke es wieder freigibt.</li>
+        <li><b>📢 Durchsage</b> (z. B. „Letzte Runde!“) erscheint groß mit Ton – <b>OK</b> tippen.</li>
+      </ul>
+
+      <h3>Sonderfälle</h3>
+      <ul class="punkte">
+        <li><b>🥨 Snacks</b> (stehen auf dem Tisch): normal bestellen oder beim Abrechnen in der Kasse dazubuchen – gehen nicht an Küche/Theke.</li>
+        <li><b>👤 Eigenverzehr</b> (Personal/Helfer): unten im lila Bereich auswählen. Wird gezählt, aber nicht kassiert.</li>
+        <li><b>Kein Netz?</b> Die Bestellung bleibt erhalten → rote Meldung → später <b>„Nochmal senden“</b>.</li>
+        <li><b>🌓</b> neben „wechseln“ schaltet Hell/Dunkel um.</li>
+      </ul>
+    </section>
+
+    <!-- ============================ KASSE ============================ -->
+    <section id="seite-kasse" hidden>
+      <h2>💶 Tisch abrechnen (nur Bargeld)</h2>
+      <p class="hinweis-box">Jeder Kellner kassiert selbst. Oben steht dein <b>Kassenstand</b> – so viel Bargeld sollte in deinem Portemonnaie sein.</p>
+      <ol class="schritte">
+        <li>Reiter <b>„💶 Kasse“</b> öffnen. Orange = Tisch hat offen, grün = <b>✓ bezahlt</b>.</li>
+        <li><b>Tisch antippen</b> → alle Artikel mit „x offen / y bezahlt“, darunter <b>Offen</b>.</li>
+        <li><b>🥨 Snacks vom Tisch?</b> Oben in der Box Anzahl wählen → <b>„auf die Rechnung“</b>.</li>
+        <li><b>🎟 Startgeld:</b> bei <b>„👥 Personen am Tisch“</b> die Anzahl einstellen – das Startgeld wird in Anteile geteilt.</li>
+        <li><b>Ein Gast zahlt einzeln:</b> seine Artikel mit <b>+</b> auswählen und bei <b>„Anteile zahlen“</b> 1 Anteil → <b>„Auswahl kassieren“</b>.
+          <br><b>Alle zahlen zusammen:</b> <b>„✓ Alles bezahlt“</b>.</li>
+        <li><b>Gegeben</b> eintragen → Rückgeld wird angezeigt.
+          <span class="tipp">💶 Trinkgeld: Betrag eintippen oder <b>„Stimmt so“</b> (Rest wird Trinkgeld) bzw. <b>„Aufrunden auf 5 €“</b>.</span></li>
+        <li>Bestätigen – fertig. Vertippt? Unten bei der Zahlung <b>„stornieren“</b> und neu kassieren.</li>
+      </ol>
+      <h3>Gut zu wissen</h3>
+      <ul class="punkte">
+        <li>Noch nicht gelieferte Bestellungen sind schon mitgerechnet.</li>
+        <li>Bestellt der Tisch danach noch etwas, ist er wieder <b>orange</b>.</li>
+        <li>Trinkgeld zählt zu deinem Kassenstand, aber nicht zum Warenbetrag des Tisches.</li>
+      </ul>
+    </section>
+
+    <!-- ============================ KÜCHE & THEKE ============================ -->
+    <section id="seite-station" hidden>
+      <h2>🍽 Küche & 🍺 Theke</h2>
+      <h3>Vor dem Start</h3>
+      <ul class="punkte">
+        <li>🔇 <b>iPhone/iPad: Stummschalter aus</b>, Lautstärke hoch.</li>
+        <li>🔒 <b>Automatische Sperre auf „Nie“</b> (Einstellungen → Anzeige & Helligkeit) und Ladekabel anschließen.</li>
+        <li>Seite öffnen → großen Knopf <b>„Start (Ton testen)“</b> tippen → es muss piepen.</li>
+      </ul>
+      <h3>Während des Abends</h3>
+      <ol class="schritte">
+        <li><b>Neue Bestellung</b> = Ton + gelbes Aufblinken. Älteste steht oben/links.</li>
+        <li><b>Gelber Kasten</b> = Kommentar oder Notiz zum Artikel (z. B. „ohne Zwiebeln“) – bitte beachten!</li>
+        <li>Fertig? <b>„✓ Erledigt“</b> tippen → der Kellner bekommt Bescheid. Versehentlich? 10 Sekunden lang <b>„Rückgängig“</b>.</li>
+        <li>Rahmen <b style="color:var(--orange)">orange</b> ab 8 Min, <b style="color:var(--rot)">rot</b> ab 15 Min Wartezeit.</li>
+        <li><b>Roter Hinweis „STORNIERT“</b> + tiefer Ton = Bestellung wurde zurückgenommen – nicht mehr zubereiten. Antippen zum Schließen.</li>
+        <li><b>👤 Lila Band „EIGENVERZEHR“</b> = für Personal, ganz normal zubereiten.</li>
+      </ol>
+      <h3>Knöpfe oben</h3>
+      <ul class="punkte">
+        <li><b>🚫 Ausverkauft</b>: Artikel antippen → bei den Kellnern nicht mehr bestellbar. Nochmal tippen = wieder verfügbar.</li>
+        <li><b>📢 Durchsage</b> an alle (z. B. „Kellner bitte zur Theke“).</li>
+        <li>Logo oben links = zurück zur Auswahl (mit Rückfrage – danach wieder „Start“ tippen!).</li>
+      </ul>
+    </section>
+
+    <!-- ============================ ORGA ============================ -->
+    <section id="seite-orga" hidden>
+      <h2>⚙️ Für die Orga</h2>
+      <h3>📊 Auswertung</h3>
+      <ul class="punkte">
+        <li>Umsatz (Waren + Startgeld + Trinkgeld), Kassiert, Noch offen, Eigenverzehr.</li>
+        <li>Reiter <b>Pro Tisch</b> (zum Abgleich mit der Strichliste), <b>Artikel</b> (Verkauft / Eigen / <b>Inventur</b>), <b>Kellner</b> (Kassenstand).</li>
+        <li><b>⏸ Pause</b>: Countdown auf dem Beamer (5–20 Min, verlängern, beenden).</li>
+        <li><b>📢 Durchsage</b> an alle Geräte · <b>⬇ Excel</b>: kompletter Export für Abrechnung und Inventur.</li>
+      </ul>
+      <h3>⚙️ Admin</h3>
+      <ul class="punkte">
+        <li><b>Artikel</b>: Preise, Kategorien, Ziel (Theke / Küche / Nur Strichliste), Reihenfolge.</li>
+        <li><b>Tische</b>: Nummer, Teamname, Häkchen <b>👤 Eigenverzehr</b> für Personal.</li>
+        <li><b>Kellner</b>: Namen und Revier (z. B. <code>1-5, 9</code>).</li>
+        <li><b>Zitate</b> für den Beamer · <b>Allgemein</b>: Startgeld, Veranstaltungsname, Sicherung.</li>
+        <li><b>Speichern</b> nicht vergessen – andere Geräte zeigen dann „Neu laden“.</li>
+      </ul>
+      <h3>📺 Beamer</h3>
+      <ul class="punkte">
+        <li>Am Laptop <code>beamer.html</code> öffnen → <b>⛶ Vollbild</b>. Folien wechseln alle 10 Sekunden.</li>
+        <li><b>⏸ Pause</b> unten links startet den Countdown (im Vollbild Maus bewegen).</li>
+        <li>Tastatur: <b>→</b> weiter, <b>←</b> zurück, <b>P</b> Pause der Diashow.</li>
+      </ul>
+      <h3>✅ Ablauf am Abend</h3>
+      <ol class="schritte">
+        <li>Vorher: Testdaten löschen, ausverkaufte Artikel wieder freigeben.</li>
+        <li>Küche/Theke starten (Ton!), Kellner wählen ihren Namen, Beamer auf Vollbild.</li>
+        <li>Papier-Strichliste als Reserve bereithalten.</li>
+        <li>Am Ende: <b>⬇ Excel</b> exportieren, Kassenstände der Kellner mit dem Bargeld vergleichen.</li>
+      </ol>
+    </section>
+
+    <!-- ============================ PROBLEME ============================ -->
+    <section id="seite-probleme" hidden>
+      <h2>🆘 Häufige Probleme</h2>
+      <details><summary>Oben rot „Keine Verbindung“</summary>
+        <p>WLAN/Mobilfunk prüfen. Die App versucht es automatisch weiter. Nicht gesendete Bestellungen bleiben am Handy – danach „Nochmal senden“. Notfalls auf Papier notieren.</p></details>
+      <details><summary>Küche/Theke piept nicht</summary>
+        <p>Stummschalter am iPhone/iPad aus, Lautstärke hoch. Nach dem Öffnen der Seite muss einmal „Start“ getippt werden – nach Seitenwechsel oder Neuladen erneut.</p></details>
+      <details><summary>Bildschirm geht aus</summary>
+        <p>Automatische Sperre am Gerät auf „Nie“ stellen und Ladekabel anschließen.</p></details>
+      <details><summary>Bestellung an falschen Tisch geschickt</summary>
+        <p>Unter „Offen“ stornieren (geht, solange nicht erledigt) und neu bestellen. Schon erledigt? Kurz mit Küche/Theke absprechen; die Kasse zeigt sie trotzdem beim falschen Tisch – dort beim Abrechnen weglassen bzw. Zahlung korrigieren.</p></details>
+      <details><summary>Falsch kassiert</summary>
+        <p>In der Kasse beim Tisch unten unter „Zahlungen“ deine Zahlung „stornieren“ und neu kassieren.</p></details>
+      <details><summary>Tisch steht auf „zu viel bezahlt“</summary>
+        <p>Meist wurde nach dem Bezahlen etwas storniert. Zahlung stornieren und neu kassieren.</p></details>
+      <details><summary>„Neu laden“-Hinweis erscheint</summary>
+        <p>Im Admin wurden Preise, Tische oder Kellner geändert. Antippen – fertig. Eine angefangene Bestellung bleibt erhalten.</p></details>
+      <details><summary>Mein Name fehlt in der Liste</summary>
+        <p>Der Name wurde im Admin geändert. Neuen Namen wählen – deine bisherigen Bestellungen bleiben erhalten.</p></details>
+      <details><summary>Oben steht „Demo“</summary>
+        <p>Die Datenbank ist nicht eingetragen – Daten bleiben nur auf diesem Gerät. Orga Bescheid geben.</p></details>
+      <p class="hinweis-box">🧾 <b>Notfallplan:</b> Fällt die App ganz aus – Block und Stift bzw. Papier-Strichliste nehmen und weitermachen. Nichts geht verloren, was schon gesendet wurde.</p>
+    </section>
+
+    <p class="klein-hinweis hilfe-fuss">Pub-Quiz Bestellungen · Gutholz Schiltach</p>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-js-2.117.3.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    (function () {
+      var SEITEN = ["kellner", "kasse", "station", "orga", "probleme"];
+      function zeige(s) {
+        if (SEITEN.indexOf(s) < 0) s = "kellner";
+        document.querySelectorAll(".hilfe-reiter button").forEach(function (b) { b.classList.toggle("aktiv", b.dataset.seite === s); });
+        SEITEN.forEach(function (x) { document.getElementById("seite-" + x).hidden = x !== s; });
+        if (location.hash !== "#" + s) history.replaceState(null, "", "#" + s);
+        window.scrollTo(0, 0);
+      }
+      document.querySelectorAll(".hilfe-reiter button").forEach(function (b) { b.onclick = function () { zeige(b.dataset.seite); }; });
+      zeige((location.hash || "#kellner").slice(1));
+      window.addEventListener("hashchange", function () { zeige((location.hash || "#kellner").slice(1)); });
+    })();
+  </script>
+</body>
+</html>
