@@ -57,6 +57,7 @@
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const T = "bestellungen";
+    let kanalNr = 0; // jeder Aufruf von onChange bekommt einen eigenen Kanal
 
     function check(res) {
       if (res.error) throw new Error(res.error.message || "Datenbankfehler");
@@ -79,6 +80,20 @@
         return check(await client.from(T).select("*").neq("status", "storniert")
           .order("id", { ascending: true }).limit(5000));
       },
+      // ---- Zahlungen (Kasse) ----
+      async listZahlungen() {
+        return check(await client.from("zahlungen").select("*").eq("status", "gueltig")
+          .order("id", { ascending: true }).limit(5000));
+      },
+      async insertZahlung(row) {
+        return check(await client.from("zahlungen").insert([row]).select());
+      },
+      async stornoZahlung(id) {
+        const data = check(await client.from("zahlungen")
+          .update({ status: "storniert", geaendert_am: new Date().toISOString() })
+          .eq("id", id).eq("status", "gueltig").select("id"));
+        return data.length > 0;
+      },
       // Letzte (nicht stornierte) Bestellung eines Tisches, alle Teile (Küche + Theke)
       async lastForTable(tisch) {
         const rows = check(await client.from(T).select("*").eq("tisch", tisch).neq("status", "storniert")
@@ -97,7 +112,7 @@
         return data.length > 0;
       },
       onChange(cb, onState) {
-        client.channel("bestellungen-live")
+        client.channel("bestellungen-live-" + (++kanalNr))
           .on("postgres_changes", { event: "*", schema: "public", table: T }, cb)
           .subscribe((status) => onState && onState(status === "SUBSCRIBED"));
       },
@@ -123,6 +138,24 @@
       },
       async listAll() {
         return load().rows.filter((r) => r.status !== "storniert");
+      },
+      async listZahlungen() {
+        return (load().zahlungen || []).filter((z) => z.status === "gueltig");
+      },
+      async insertZahlung(row) {
+        const db = load();
+        db.zahlungen = db.zahlungen || [];
+        db.nextZid = db.nextZid || 1;
+        const z = Object.assign({ id: db.nextZid++, status: "gueltig", erstellt_am: new Date().toISOString() }, row);
+        db.zahlungen.push(z); save(db); notify();
+        return [z];
+      },
+      async stornoZahlung(id) {
+        const db = load();
+        const z = (db.zahlungen || []).find((x) => x.id === id);
+        if (!z || z.status !== "gueltig") return false;
+        z.status = "storniert"; save(db); notify();
+        return true;
       },
       async lastForTable(tisch) {
         const rows = load().rows.filter((r) => r.tisch === tisch && r.status !== "storniert" && r.ziel !== "kasse").reverse();
@@ -275,7 +308,24 @@
     if (document.visibilityState === "visible" && wakeLock !== null) wachHalten();
   });
 
+  // Positionen mehrerer Bestellungen zusammenzählen (für Auswertung und Kasse)
+  const reihenfolge = new Map(CFG.ARTIKEL.map((a, i) => [a.id, i]));
+  function zusammenfassen(rows) {
+    const m = new Map();
+    rows.forEach((r) => r.positionen.forEach((p) => {
+      const k = p.id || p.name + "|" + (p.menge || "");
+      const e = m.get(k) || { id: p.id, name: p.name, menge: p.menge, preis: Number(p.preis) || 0, anzahl: 0, cent: 0 };
+      e.anzahl += p.anzahl;
+      e.cent += p.anzahl * Math.round((Number(p.preis) || 0) * 100);
+      m.set(k, e);
+    }));
+    return [...m.values()].map((e) => Object.assign(e, { summe: e.cent / 100 }))
+      .sort((a, b) => (reihenfolge.get(a.id) ?? 999) - (reihenfolge.get(b.id) ?? 999));
+  }
+  const cent = (euroBetrag) => Math.round((Number(euroBetrag) || 0) * 100);
+
   window.App = {
+    zusammenfassen, cent,
     CFG, DEMO, DB, $, esc, euro, uhrzeit, minutenSeit, uuid, store, positionText,
     verbindungsAnzeige, toast, pinPruefen, audioFreischalten, tonNeu, tonStorno, blinken, wachHalten,
   };

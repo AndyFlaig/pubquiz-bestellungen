@@ -265,3 +265,29 @@ body.offline .kopf { background: var(--rot); }
 .tisch-summe { margin-left: auto; font-size: 1.3rem; font-weight: 800; }
 .karte.leer-karte { opacity: .55; }
 .fuss-hinweis { text-align: center; margin: 16px 0 32px; }
+
+/* ---------- Kasse ---------- */
+.kassenstand { background: #0f766e; color: #fff; border-radius: var(--radius); padding: 12px 14px; margin: 0 0 12px; font-size: 1.05rem; }
+.kassenstand b { font-size: 1.3rem; }
+.tisch-knopf em { font-style: normal; font-size: .8rem; font-weight: 700; margin-top: 2px; color: var(--leise); }
+.tisch-knopf.schuldet { border-color: var(--orange); }
+.tisch-knopf.schuldet em { color: #b45309; }
+.tisch-knopf.bezahlt { background: #effaf1; border-color: #9fd8ae; }
+.tisch-knopf.bezahlt em { color: var(--primaer); }
+.tisch-knopf.zuviel em { color: var(--rot); }
+.kasse-karte { display: grid; gap: 10px; }
+.kasse-karte h4 { margin: 6px 0 0; }
+.kasse-summen td { font-size: 1.1rem; }
+.gross-zahl { font-size: 1.6rem !important; }
+.teilbetrag { display: grid; gap: 8px; }
+.teilbetrag label { display: grid; gap: 4px; color: var(--leise); font-size: .95rem; }
+.teilbetrag input { font: inherit; font-size: 1.3rem; padding: 10px 12px; border: 2px solid var(--rand); border-radius: 12px; }
+.rueckgeld { margin: 0; font-size: 1.4rem; font-weight: 800; }
+.zahlungen { list-style: none; margin: 0; padding: 0; }
+.zahlungen li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eceef2; }
+.zahlungen li span { flex: 1; color: var(--leise); }
+.zahl-status { margin: 6px 0 0; font-weight: 700; }
+.zahl-status.ok { color: var(--primaer); }
+.zahl-status.offen { color: #b45309; }
+.zahl-status.zuviel { color: var(--rot); }
+.gross-status { font-size: 1.3rem; text-align: center; background: #effaf1; border-radius: 12px; padding: 12px; margin: 0; }

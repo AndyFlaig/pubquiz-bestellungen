@@ -1,41 +1,30 @@
-/* Auswertung: Umsatz pro Tisch, verkaufte Artikel, Bestellungen pro Kellner */
+/* Auswertung: Umsatz pro Tisch, verkaufte Artikel, Bestellungen pro Kellner, Zahlungen */
 (function () {
   "use strict";
-  const { CFG, DB, DEMO, $, esc, euro, uhrzeit } = App;
+  const { CFG, DB, DEMO, $, esc, euro, uhrzeit, zusammenfassen, cent } = App;
   const verbindung = App.verbindungsAnzeige($("#verbindung"));
-  const reihenfolge = new Map(CFG.ARTIKEL.map((a, i) => [a.id, i]));
 
-  const key = (p) => p.id || p.name + "|" + (p.menge || "");
   const posText = (p) => p.name + (p.menge ? " " + p.menge : "");
-  const sortPos = (a, b) => (reihenfolge.get(a.id) ?? 999) - (reihenfolge.get(b.id) ?? 999);
+  const summeCent = (pos) => pos.reduce((s, p) => s + p.cent, 0);
+  const summe = (pos) => summeCent(pos) / 100;
 
-  // Positionen mehrerer Bestellungen zusammenzählen
-  function zusammenfassen(rows) {
-    const m = new Map();
-    rows.forEach((r) => r.positionen.forEach((p) => {
-      const k = key(p);
-      const e = m.get(k) || { id: p.id, name: p.name, menge: p.menge, preis: Number(p.preis) || 0, anzahl: 0, summe: 0 };
-      e.anzahl += p.anzahl;
-      e.summe += p.anzahl * (Number(p.preis) || 0);
-      m.set(k, e);
-    }));
-    return [...m.values()].sort(sortPos);
-  }
-  const summe = (pos) => pos.reduce((s, p) => s + p.summe, 0);
-
-  function render(rows) {
+  // zahlungen = null, wenn die Kasse in Supabase noch nicht eingerichtet ist
+  function render(rows, zahlungen) {
     const alle = zusammenfassen(rows);
     const gruppen = new Set(rows.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size;
     const offen = rows.filter((r) => r.status === "offen").length;
     const getraenke = summe(zusammenfassen(rows.filter((r) => r.ziel === "theke")));
     const speisen = summe(zusammenfassen(rows.filter((r) => r.ziel === "kueche")));
     const snacks = summe(zusammenfassen(rows.filter((r) => r.ziel === "kasse")));
+    const bezahltCent = zahlungen ? zahlungen.reduce((s, z) => s + cent(z.betrag), 0) : 0;
 
     $("#kacheln").innerHTML =
       kachel("Umsatz gesamt", euro(summe(alle))) +
       kachel("Getränke", euro(getraenke)) +
       kachel("Speisen", euro(speisen)) +
       kachel("Snacks", euro(snacks)) +
+      (zahlungen ? kachel("Kassiert", euro(bezahltCent / 100)) +
+        kachel("Noch offen", euro((summeCent(alle) - bezahltCent) / 100)) : "") +
       kachel("Bestellungen", gruppen + (offen ? " <small>(noch offen: " + offen + ")</small>" : ""));
 
     // Pro Tisch
@@ -43,6 +32,14 @@
       const tr = rows.filter((r) => r.tisch === t.nr);
       const pos = zusammenfassen(tr);
       const off = tr.filter((r) => r.status === "offen").length;
+      let zahlZeile = "";
+      if (zahlungen && pos.length) {
+        const bez = zahlungen.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.betrag), 0);
+        const rest = summeCent(pos) - bez;
+        zahlZeile = '<p class="zahl-status ' + (rest === 0 ? "ok" : rest > 0 ? "offen" : "zuviel") + '">' +
+          (rest === 0 ? "✓ bezahlt" : rest > 0 ? "offen: " + euro(rest / 100) + (bez ? " (bezahlt " + euro(bez / 100) + ")" : "")
+            : "zu viel bezahlt: " + euro(-rest / 100)) + "</p>";
+      }
       return '<article class="karte klein' + (pos.length ? "" : " leer-karte") + '">' +
         '<header><div class="tisch">Tisch ' + t.nr + '</div><div class="team">' + esc(t.team) + "</div>" +
         '<span class="tisch-summe">' + euro(summe(pos)) + "</span></header>" +
@@ -50,7 +47,8 @@
           ? '<table class="tabelle">' + pos.map((p) =>
               "<tr><td class='zahl'>" + p.anzahl + "×</td><td>" + esc(posText(p)) + "</td><td class='zahl'>" + euro(p.summe) + "</td></tr>").join("") + "</table>"
           : '<p class="klein-hinweis">Noch nichts bestellt</p>') +
-        (off ? '<p class="klein-hinweis">⏳ ' + "noch offen: " + off + "</p>" : "") +
+        zahlZeile +
+        (off ? '<p class="klein-hinweis">⏳ noch offen: ' + off + "</p>" : "") +
         "</article>";
     }).join("");
 
@@ -62,11 +60,14 @@
 
     // Kellner
     $("#kellner-tabelle").innerHTML =
-      "<tr><th>Kellner</th><th class='zahl'>Bestellungen</th><th class='zahl'>Umsatz</th></tr>" +
+      "<tr><th>Kellner</th><th class='zahl'>Bestellungen</th><th class='zahl'>Umsatz</th>" +
+      (zahlungen ? "<th class='zahl'>Kassiert (bar)</th>" : "") + "</tr>" +
       CFG.KELLNER.map((k) => {
         const kr = rows.filter((r) => r.kellner === k);
-        return "<tr><td>" + esc(k) + "</td><td class='zahl'>" + new Set(kr.map((r) => r.gruppe)).size +
-          "</td><td class='zahl'>" + euro(summe(zusammenfassen(kr))) + "</td></tr>";
+        return "<tr><td>" + esc(k) + "</td><td class='zahl'>" + new Set(kr.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size +
+          "</td><td class='zahl'>" + euro(summe(zusammenfassen(kr))) + "</td>" +
+          (zahlungen ? "<td class='zahl'><b>" + euro(zahlungen.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.betrag), 0) / 100) + "</b></td>" : "") +
+          "</tr>";
       }).join("");
 
     document.title = "Auswertung (" + uhrzeit(new Date().toISOString()) + ") – Pub-Quiz";
@@ -82,8 +83,10 @@
     laedt = true;
     try {
       const rows = await DB.listAll();
+      let zahlungen = null;
+      try { zahlungen = await DB.listZahlungen(); } catch (e) { /* Kasse noch nicht eingerichtet */ }
       verbindung.erfolg();
-      render(rows);
+      render(rows, zahlungen);
     } catch (e) { verbindung.fehler(); }
     finally { laedt = false; }
   }
@@ -102,7 +105,7 @@
     laden();
     let timer = null;
     DB.onChange(() => { clearTimeout(timer); timer = setTimeout(laden, 1000); }, (live) => verbindung.live(live));
-    setInterval(laden, 30000);
+    setInterval(laden, 20000);
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") laden(); });
   })();
 })();

@@ -326,10 +326,10 @@
   document.querySelectorAll(".reiter button").forEach((b) => {
     b.onclick = () => {
       document.querySelectorAll(".reiter button").forEach((x) => x.classList.toggle("aktiv", x === b));
-      $("#seite-neu").hidden = b.dataset.seite !== "neu";
-      $("#seite-offen").hidden = b.dataset.seite !== "offen";
+      ["neu", "offen", "kasse"].forEach((x) => { $("#seite-" + x).hidden = b.dataset.seite !== x; });
       $(".fusszeile").hidden = b.dataset.seite !== "neu";
       if (b.dataset.seite === "offen") offeneLaden();
+      window.dispatchEvent(new CustomEvent("reiter", { detail: b.dataset.seite }));
       window.scrollTo(0, 0);
     };
   });
