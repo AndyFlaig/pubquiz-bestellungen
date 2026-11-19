@@ -8,9 +8,11 @@ Kassiert wird nicht über die App (Strichliste auf Papier).
 - **Kellner:** `kellner.html`
 - **Küche:** `kueche.html`
 - **Theke:** `theke.html`
+- **Auswertung:** `auswertung.html` – Umsatz pro Tisch, verkaufte Artikel, Bestellungen pro Kellner
 
 👉 **Einrichtung Schritt für Schritt:** [ANLEITUNG.md](ANLEITUNG.md)
 👉 **Test vor Freitag:** [TESTPLAN.md](TESTPLAN.md)
+👉 **Idee für später:** [STRICHLISTE.md](STRICHLISTE.md) – Konzept digitale Strichliste
 
 ## Was wo ändern?
 

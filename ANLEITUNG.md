@@ -66,6 +66,7 @@ Mit deiner Adresse (Beispiel):
 | 4 Kellner (Handys) | `https://pubquiz-bestellungen.vercel.app/kellner.html` |
 | Küche (iPad/Handy) | `https://pubquiz-bestellungen.vercel.app/kueche.html` |
 | Theke (iPad/Handy) | `https://pubquiz-bestellungen.vercel.app/theke.html` |
+| Auswertung (Orga) | `https://pubquiz-bestellungen.vercel.app/auswertung.html` |
 
 Tipp: Link per WhatsApp verschicken oder als QR-Code ausdrucken. Auf dem iPhone in Safari: Teilen → **Zum Home-Bildschirm**.
 
@@ -85,11 +86,17 @@ Steht dort **Demo**, sind die Supabase-Daten in `config.js` noch nicht eingetrag
 
 **Kellner:** Name einmal wählen (bleibt gespeichert) → Tisch antippen → Artikel mit **+** / **−** → optional Kommentar →
 **Absenden** → Kontrollansicht → **Senden**. Unter **Meine offenen** sieht man eigene noch nicht erledigte Bestellungen
-und kann sie **stornieren**. Scheitert das Senden (kein Netz), bleibt die Bestellung erhalten – einfach nochmal senden.
+und kann sie **stornieren**. Hat ein Tisch schon einmal bestellt, erscheint nach der Tischwahl **„↻ Wie zuletzt“** –
+ein Tipp übernimmt die letzte Bestellung in die Auswahl (vor dem Senden noch anpassbar).
+Meldet Küche oder Theke „Erledigt“, bekommt der Kellner einen grünen Hinweis **„Tisch 7: Essen ist fertig!“**
+(mit Ton; Android vibriert zusätzlich). Hinweis antippen zum Schließen. Scheitert das Senden (kein Netz), bleibt die Bestellung erhalten – einfach nochmal senden.
 
 **Küche / Theke:** Neue Bestellung = Ton + gelbes Aufblinken, älteste steht oben. Rahmen orange ab 8 Min, rot ab 15 Min.
 **✓ Erledigt** blendet die Bestellung aus (10 Sekunden lang „Rückgängig“ möglich).
 Storniert ein Kellner, erscheint ein großer roter Hinweis (antippen zum Schließen).
+
+**Auswertung:** zeigt pro Tisch alles Bestellte mit Summe (Abgleich mit der Strichliste), die verkauften Artikel
+und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit eigenem PIN (`PIN.auswertung` in `config.js`).
 
 ## Nach dem Test: Testdaten löschen
 

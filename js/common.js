@@ -74,6 +74,18 @@
         if (!ids.length) return [];
         return check(await client.from(T).select("id,status").in("id", ids));
       },
+      // Alle nicht stornierten Bestellungen (für die Auswertung)
+      async listAll() {
+        return check(await client.from(T).select("*").neq("status", "storniert")
+          .order("id", { ascending: true }).limit(5000));
+      },
+      // Letzte (nicht stornierte) Bestellung eines Tisches, alle Teile (Küche + Theke)
+      async lastForTable(tisch) {
+        const rows = check(await client.from(T).select("*").eq("tisch", tisch).neq("status", "storniert")
+          .order("id", { ascending: false }).limit(10));
+        if (!rows.length) return [];
+        return rows.filter((r) => r.gruppe === rows[0].gruppe);
+      },
       async insert(rows) {
         return check(await client.from(T).insert(rows).select());
       },
@@ -108,6 +120,13 @@
       },
       async getByIds(ids) {
         return load().rows.filter((r) => ids.includes(r.id)).map((r) => ({ id: r.id, status: r.status }));
+      },
+      async listAll() {
+        return load().rows.filter((r) => r.status !== "storniert");
+      },
+      async lastForTable(tisch) {
+        const rows = load().rows.filter((r) => r.tisch === tisch && r.status !== "storniert").reverse();
+        return rows.length ? rows.filter((r) => r.gruppe === rows[0].gruppe) : [];
       },
       async insert(rows) {
         const db = load();
