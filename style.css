@@ -399,3 +399,8 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 @media (max-width: 420px) { .admin-fuss .gross { padding: 10px 12px; font-size: 1rem; } .admin-fuss #status { font-size: .85rem; } }
 .start-admin { text-align: center; margin-top: 4px; }
 .start-admin a { color: #9a9a9a; font-size: .9rem; }
+
+.snack-box { background: #f6f2ea; border: 2px dashed var(--gold); border-radius: 12px; padding: 8px 12px; display: grid; gap: 4px; }
+.snack-box h4 { margin: 2px 0; font-size: .95rem; color: var(--gold-text); }
+.snack-box .kasse-zeile:first-of-type { border-top: 0; }
+.snack-box .gross { margin-top: 6px; border-color: var(--gold); color: var(--gold-text); }

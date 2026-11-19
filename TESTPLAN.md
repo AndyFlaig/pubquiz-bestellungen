@@ -40,6 +40,7 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 34 | Kellner: Suche „wurst“ | Nur die Wurstsalate sichtbar | |
 | 35 | Kellner: 2× Wurstsalat, Notiz „1× ohne Zwiebeln“, senden | Küche zeigt die Notiz gelb unter dem Wurstsalat | |
 | 36 | Kellner: nach einigen Bestellungen | „⭐ Häufig bestellt“ zeigt die meistbestellten Artikel | |
+| 37 | Kasse: Tisch ohne Bestellung → 3 Snacks „auf die Rechnung“ | Offen 3,00 €, Tisch in der Übersicht orange; „Rückgängig“ entfernt sie wieder | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

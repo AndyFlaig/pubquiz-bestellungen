@@ -118,6 +118,9 @@ Bestellung absenden. Ein falsch erfasster Snack kann nicht storniert werden – 
 Die Tischübersicht zeigt pro Tisch den offenen Betrag (orange) bzw. „✓ bezahlt“ (grün). Tisch antippen →
 alle Artikel mit „x offen / y bezahlt“, darunter Bestellt / Bezahlt / **Offen**.
 - **Ein Gast zahlt einzeln:** seine Artikel mit **+** auswählen → „Auswahl kassieren – 13,00 €“. Der Rest bleibt offen.
+- **Snacks vom Tisch:** Oben im Tisch gibt es die Box „🥨 Vom Tisch genommen?“. Anzahl mit **+** wählen →
+  „+ 3,00 € auf die Rechnung“. Die Snacks stehen dann als offene Artikel in der Abrechnung
+  (10 Sekunden lang „Rückgängig“ möglich). Snacks, die schon über „Bestellen“ erfasst wurden, stehen ebenfalls dort.
 - **„✓ Alles bezahlt“** verbucht alle noch offenen Artikel.
 - **Gegeben:** zeigt das Rückgeld (für die Auswahl, sonst für den ganzen offenen Betrag).
 - Eigene Zahlungen können storniert werden (z. B. vertippt).
