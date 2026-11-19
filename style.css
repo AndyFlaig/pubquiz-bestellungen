@@ -528,3 +528,13 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .admin-reiter { overflow-x: auto; scrollbar-width: none; }
 .admin-reiter button { flex: 1 0 auto; padding: 14px 10px; font-size: .95rem; }
 @media (max-width: 420px) { .admin-reiter button { padding: 12px 7px; font-size: .88rem; } }
+.admin-feld { margin-bottom: 10px; }
+.admin-feld input.ungueltig { border-color: var(--rot); }
+
+/* ---------- Startgeld ---------- */
+.start-zeile { flex-wrap: wrap; background: var(--gold-hell); margin: 0 -8px; padding: 8px !important; border-radius: 10px; }
+.start-zeile .kasse-name > span small { color: var(--leise); font-weight: 400; }
+.personen-wahl { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: .9rem; color: var(--text); }
+.personen-wahl button { width: 34px; height: 34px; border-radius: 8px; border: 2px solid var(--gold); background: var(--karte); color: var(--gold-text); font-weight: 800; font-size: 1.1rem; line-height: 1; }
+.personen-wahl b { min-width: 1.4em; text-align: center; font-size: 1.1rem; }
+.anteil-wahl { flex-basis: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; font-weight: 600; }

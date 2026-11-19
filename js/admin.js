@@ -8,6 +8,7 @@
   const kopie = (x) => JSON.parse(JSON.stringify(x));
   const ausCfg = () => kopie({
     VERANSTALTUNG: CFG.VERANSTALTUNG, KELLNER: CFG.KELLNER, TISCHE: CFG.TISCHE, ARTIKEL: CFG.ARTIKEL, REVIERE: CFG.REVIERE || {},
+    STARTGELD: Number(CFG.STARTGELD) || 0,
   });
 
   // Arbeitskopie. Kellner intern mit Revier-Text, damit Umbenennen einfach bleibt.
@@ -19,6 +20,7 @@
   function arbeitskopie(w) {
     return {
       VERANSTALTUNG: w.VERANSTALTUNG || "",
+      STARTGELD: String(w.STARTGELD !== undefined ? w.STARTGELD : 0).replace(".", ","),
       ARTIKEL: w.ARTIKEL.map((a) => Object.assign({}, a, { preisText: String(a.preis).replace(".", ",") })),
       TISCHE: w.TISCHE.map((t) => ({ nr: t.nr, team: t.team, eigen: !!t.eigen })),
       KELLNER: w.KELLNER.map((k) => ({ name: k, revier: revierText((w.REVIERE || {})[k] || []) })),
@@ -106,6 +108,7 @@
   function renderAlles() {
     renderArtikel(); renderTische(); renderKellner(); renderZitate();
     $("#veranstaltung").value = d.VERANSTALTUNG;
+    $("#startgeld").value = d.STARTGELD;
     geaendert();
   }
 
@@ -127,6 +130,7 @@
   document.querySelector(".admin-inhalt").addEventListener("input", (e) => {
     const el = e.target;
     if (el.id === "veranstaltung") { d.VERANSTALTUNG = el.value; geaendert(); return; }
+    if (el.id === "startgeld") { d.STARTGELD = el.value; el.classList.remove("ungueltig"); geaendert(); return; }
     const zeile = el.closest("[data-i]"), liste = el.closest(".admin-liste");
     if (!zeile || !liste || !el.dataset.feld) return;
     const obj = d[LISTEN[liste.id]][Number(zeile.dataset.i)];
@@ -236,7 +240,10 @@
     d.ZITATE.forEach((z, i) => {
       if (!z.text.trim() && z.von.trim()) { fehler.push("Zitat " + (i + 1) + ": Text fehlt."); markiere("zitate-liste", i, "text"); }
     });
-    return { fehler, wert: { VERANSTALTUNG: d.VERANSTALTUNG.trim(), KELLNER: kellner, TISCHE: tische, ARTIKEL: artikel, REVIERE: reviere } };
+    const startgeld = String(d.STARTGELD).trim() === "" ? 0 : preisLesen(d.STARTGELD);
+    if (isNaN(startgeld)) { fehler.push("Startgeld ist ungültig."); $("#startgeld").classList.add("ungueltig"); }
+    return { fehler, wert: { VERANSTALTUNG: d.VERANSTALTUNG.trim(), STARTGELD: isNaN(startgeld) ? 0 : startgeld,
+      KELLNER: kellner, TISCHE: tische, ARTIKEL: artikel, REVIERE: reviere } };
   }
 
   function fehlerZeigen(liste) {

@@ -21,6 +21,9 @@ window.APP_CONFIG = {
   // ---------------------------------------------------------------
   VERANSTALTUNG: "In 50 Fragen um die Welt – Sportheim Schiltach, 20.11.2026",
 
+  // Startgeld pro Tisch in Euro (wird mit der Schlussrechnung kassiert, 0 = aus)
+  STARTGELD: 20,
+
   // ---------------------------------------------------------------
   // 3) PINs pro Ansicht. Leer lassen ("") = kein PIN.
   //    Hinweis: Der PIN ist nur ein einfacher Schutz gegen versehentliches

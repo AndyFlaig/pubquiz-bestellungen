@@ -18,13 +18,38 @@
   // Artikel, die nur erfasst werden (z. B. Snacks auf dem Tisch) – können direkt in der Kasse dazukommen
   const kassenArtikel = () => CFG.ARTIKEL.filter((a) => a.ziel === "kasse");
 
-  const bestelltCent = (nr) => zusammenfassen(rows.filter((r) => r.tisch === nr)).reduce((s, p) => s + p.cent, 0);
+  // ---------- Startgeld pro Tisch, auf die Personen am Tisch verteilt ----------
+  const START_ID = "startgeld";
+  let personen = {};  // Tisch -> Anzahl Personen (geteilt über die Einstellung "personen")
+  const personenVon = (nr) => Math.max(1, Number(personen[nr]) || 1);
+  const startgeldCent = (nr) => {
+    const t = CFG.TISCHE.find((x) => x.nr === nr);
+    return t && !t.eigen ? cent(CFG.STARTGELD || 0) : 0;
+  };
+  // Zahlungen ohne Startgeld-Positionen (für die normale Artikelrechnung)
+  const ohneStart = (zs) => zs.map((z) => Object.assign({}, z, { positionen: (z.positionen || []).filter((p) => p.id !== START_ID) }));
+  function startStand(nr) {
+    const gesamt = startgeldCent(nr);
+    if (!gesamt) return null;
+    let bezCent = 0, bezAnteile = 0;
+    zahlungen.filter((z) => z.tisch === nr && Array.isArray(z.positionen)).forEach((z) => z.positionen.forEach((p) => {
+      if (p.id === START_ID) { bezCent += cent(p.preis) * (p.anzahl || 1); bezAnteile += p.anteile || p.anzahl || 1; }
+    }));
+    const n = personenVon(nr);
+    const restCent = Math.max(0, gesamt - bezCent);
+    let restAnteile = restCent > 0 ? Math.max(1, n - bezAnteile) : 0;
+    return { gesamt, bezCent, restCent, n, bezAnteile, restAnteile };
+  }
+  // Betrag für k Anteile vom offenen Rest – der letzte Anteil nimmt den Rundungsrest, Summe ist immer exakt
+  const anteilCent = (s, k) => !k ? 0 : k >= s.restAnteile ? s.restCent : Math.round(s.restCent * k / s.restAnteile);
+
+  const bestelltCent = (nr) => zusammenfassen(rows.filter((r) => r.tisch === nr)).reduce((s, p) => s + p.cent, 0) + startgeldCent(nr);
   const bezahltCent = (nr) => zahlungen.filter((z) => z.tisch === nr).reduce((s, z) => s + cent(z.betrag), 0);
 
-  // Pro Artikel: bestellt, bezahlt, offen
+  // Pro Artikel: bestellt, bezahlt, offen (Startgeld als erste Zeile)
   function artikelStand(nr) {
     const best = zusammenfassen(rows.filter((r) => r.tisch === nr));
-    const bez = new Map(zusammenfassen(zahlungen.filter((z) => z.tisch === nr && Array.isArray(z.positionen))).map((p) => [key(p), p.anzahl]));
+    const bez = new Map(zusammenfassen(ohneStart(zahlungen.filter((z) => z.tisch === nr && Array.isArray(z.positionen)))).map((p) => [key(p), p.anzahl]));
     const liste = best.map((p) => ({ p, key: key(p), bestellt: p.anzahl, bezahlt: bez.get(key(p)) || 0 }));
     // bezahlt, aber (nach Storno) nicht mehr bestellt
     bez.forEach((n, k) => { if (!liste.some((x) => x.key === k)) {
@@ -32,6 +57,11 @@
       liste.push({ p: z, key: k, bestellt: 0, bezahlt: n });
     } });
     liste.forEach((x) => { x.offen = x.bestellt - x.bezahlt; });
+    const s = startStand(nr);
+    if (s) {
+      liste.unshift({ start: s, key: START_ID, bestellt: s.n, bezahlt: s.bezAnteile, offen: s.restAnteile,
+        p: { id: START_ID, name: "🎟 Startgeld", menge: "", preis: s.gesamt / 100 } });
+    }
     return liste;
   }
 
@@ -40,6 +70,7 @@
     laedt = true;
     try {
       rows = (await DB.listAll()).filter((r) => !App.istEigen(r)); // Eigenverzehr wird nicht kassiert
+      try { personen = (await DB.ladeEinstellung("personen")) || {}; } catch (e) { /* bleibt */ }
       try { zahlungen = await DB.listZahlungen(); fehlerKasse = false; }
       catch (e) { fehlerKasse = true; zahlungen = []; }
       render();
@@ -49,7 +80,7 @@
   }
 
   function auswahlCent(stand) {
-    return stand.reduce((s, x) => s + (auswahl.get(x.key) || 0) * cent(x.p.preis), 0);
+    return stand.reduce((s, x) => s + (x.start ? anteilCent(x.start, auswahl.get(x.key) || 0) : (auswahl.get(x.key) || 0) * cent(x.p.preis)), 0);
   }
 
   function render() {
@@ -95,6 +126,7 @@
         (stand.length ? '<p class="klein-hinweis">Was zahlt der Gast? Artikel mit <b>+</b> auswählen.</p>' +
           '<div class="kasse-artikel">' + stand.map((x) => {
             const a = auswahl.get(x.key) || 0;
+            if (x.start) return startZeile(x, a);
             const fertig = x.offen <= 0;
             return '<div class="kasse-zeile' + (fertig ? " fertig" : "") + (a ? " gewaehlt" : "") + '">' +
               '<div class="kasse-name"><span>' + esc(posText(x.p)) + "</span><small>" + euro(Number(x.p.preis)) + " · " +
@@ -139,6 +171,40 @@
     if ($("#gegeben")) $("#gegeben").value = behalten.gegeben;
     if ($("#trinkgeld")) $("#trinkgeld").value = behalten.trinkgeld;
     rueckgeldRechnen();
+  }
+
+  // Startgeld-Zeile: Personen am Tisch einstellen, Anteile auswählen
+  function startZeile(x, a) {
+    const s = x.start;
+    const proKopf = s.restAnteile ? anteilCent(s, 1) : 0;
+    return '<div class="kasse-zeile start-zeile' + (s.restCent ? "" : " fertig") + (a ? " gewaehlt" : "") + '">' +
+      '<div class="kasse-name"><span>🎟 Startgeld <small>' + euro(s.gesamt / 100) + "</small></span>" +
+      "<small>" + (s.restCent
+        ? "<b>" + euro(s.restCent / 100) + " offen</b> · " + s.restAnteile + (s.restAnteile === 1 ? " Anteil" : " Anteile") + " à ca. " + euro(proKopf / 100)
+        : "✓ bezahlt") + "</small>" +
+      '<div class="personen-wahl">👥 Personen am Tisch: <button data-pers="-" aria-label="weniger">−</button><b>' + s.n +
+        '</b><button data-pers="+" aria-label="mehr">+</button></div></div>' +
+      (s.restCent ? '<div class="anteil-wahl"><span>Anteile zahlen' + (a ? " (" + euro(anteilCent(s, a) / 100) + ")" : "") + ':</span><div class="stepper">' +
+        '<button class="minus" data-k-minus="' + START_ID + '" aria-label="weniger">−</button>' +
+        '<span class="anzahl">' + (a || "") + "</span>" +
+        '<button class="plus" data-k-plus="' + START_ID + '" aria-label="mehr">+</button></div></div>' : "") +
+      "</div>";
+  }
+  let personenTimer = null;
+  function personenAendern(delta) {
+    const n = Math.max(1, Math.min(30, personenVon(tisch) + delta));
+    personen[tisch] = n;
+    auswahl.delete(START_ID);
+    render();
+    clearTimeout(personenTimer);
+    personenTimer = setTimeout(async () => {
+      try {
+        const aktuell = (await DB.ladeEinstellung("personen")) || {};
+        aktuell[tisch] = n;
+        await DB.speichereEinstellung("personen", aktuell);
+        personen = aktuell;
+      } catch (e) { toast("Personenzahl nicht gespeichert – keine Verbindung", { art: "fehler" }); }
+    }, 600);
   }
 
   // Box "Snacks vom Tisch": Anzahl wählen und auf die Rechnung setzen
@@ -257,7 +323,10 @@
     await laden();
   }
 
-  const alsPosition = (x, anzahl) => ({ id: x.p.id, name: x.p.name, menge: x.p.menge, preis: Number(x.p.preis), anzahl });
+  const alsPosition = (x, anzahl) => x.start
+    ? { id: START_ID, name: "Startgeld", menge: anzahl + (anzahl === 1 ? " Anteil" : " Anteile"),
+        preis: anteilCent(x.start, anzahl) / 100, anzahl: 1, anteile: anzahl }
+    : { id: x.p.id, name: x.p.name, menge: x.p.menge, preis: Number(x.p.preis), anzahl };
 
   $("#seite-kasse").addEventListener("click", async (e) => {
     const tb = e.target.closest("[data-kasse-nr]");
@@ -286,6 +355,8 @@
       return;
     }
     if (e.target.closest("#snacks-erfassen")) return snacksErfassen();
+    const pers = e.target.closest("[data-pers]");
+    if (pers) { personenAendern(pers.dataset.pers === "+" ? 1 : -1); return; }
     const tgk = e.target.closest("[data-tg]");
     if (tgk) { trinkgeldSetzen(tgk.dataset.tg); return; }
     if (e.target.closest("#auswahl-leeren")) { auswahl = new Map(); render(); return; }
