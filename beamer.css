@@ -120,8 +120,12 @@ body.beamer {
 .b-fortschritt div { height: 100%; width: 0; background: var(--gold); }
 @keyframes b-laufen { from { width: 0; } to { width: 100%; } }
 
-.b-vollbild { position: fixed; left: 1em; bottom: .6em; padding: .5em .9em; border-radius: .6em; border: 0;
-  background: rgba(255,255,255,.12); color: #fff; font-size: .9em; }
+.b-steuerung { position: fixed; left: 1em; bottom: .6em; display: flex; gap: .5em; z-index: 40; transition: opacity .4s; }
+.b-steuerung.versteckt { opacity: 0; pointer-events: none; }
+.b-steuerung button { padding: .5em .9em; border-radius: .6em; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: .9em; font-weight: 700; }
+.b-steuerung button.pause-aktiv { background: var(--gold); color: #111; font-variant-numeric: tabular-nums; }
+/* Dialoge auf dem Beamer in normaler Größe */
+body.beamer .overlay { font-size: 18px; color: var(--text); }
 
 /* ---------- Konfetti ---------- */
 .b-konfetti { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 50; overflow: hidden; }
@@ -140,7 +144,7 @@ body.beamer {
 }
 
 /* ---------- Pausen-Countdown ---------- */
-.b-pause-badge { margin-left: auto; padding: .3em .8em; border-radius: .6em; background: var(--gold); color: #111; font-size: 1.6em;
+.b-pause-badge { margin-left: auto; white-space: nowrap; padding: .3em .8em; border-radius: .6em; background: var(--gold); color: #111; font-size: 1.6em;
   font-weight: 900; font-variant-numeric: tabular-nums; }
 .b-pause-badge:not([hidden]) + .b-uhr { margin-left: .6em; }
 .b-countdown { align-items: center; justify-content: center; }

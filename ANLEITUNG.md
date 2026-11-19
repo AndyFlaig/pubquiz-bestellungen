@@ -195,7 +195,8 @@ Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden 
 - Bedienung: Klick oder → = nächste Folie, ← = zurück, **P** = Pause.
 - Optionen: `beamer.html?sekunden=15` (andere Dauer), `beamer.html?folie=spritz` (nur eine Folie).
 
-**⏸ Pausen-Countdown:** In der **Auswertung** auf **„⏸ Pause“** (Leiste unter der Kopfzeile) → 5 / 10 / 15 / 20 Minuten oder eigene Dauer.
+**⏸ Pausen-Countdown:** Auf **„⏸ Pause“** tippen – entweder **direkt auf der Beamer-Seite** (unten links, neben
+„Vollbild“; im Vollbild erscheinen die Knöpfe, sobald man die Maus bewegt) oder in der **Auswertung** (Leiste unter der Kopfzeile) → 5 / 10 / 15 / 20 Minuten oder eigene Dauer.
 Der Beamer springt sofort auf einen großen Countdown mit Ring und zeigt ihn dann **im Wechsel mit den Statistiken**;
 oben neben der Uhr läuft die Restzeit mit. In der letzten Minute wird er orange („letzte Bestellungen!“),
 danach erscheint 90 Sekunden lang **„Weiter geht's!“**. Im selben Fenster: „+ 5 Minuten verlängern“ und
