@@ -10,8 +10,8 @@ window.APP_CONFIG = {
   //    Bleiben beide Felder leer, läuft die App im DEMO-MODUS:
   //    Daten nur auf diesem einen Gerät (zum Ausprobieren).
   // ---------------------------------------------------------------
-  SUPABASE_URL: "",       // z. B. "https://abcdefghijk.supabase.co"
-  SUPABASE_KEY: "",       // "anon public"-Key bzw. "Publishable key"
+  SUPABASE_URL: "https://sdokspertspkhkvxfojw.supabase.co",       // z. B. "https://abcdefghijk.supabase.co"
+  SUPABASE_KEY: "sb_publishable_PLrV5cq1cE5lWwk6BreC4Q_KagKeG8k",       // "anon public"-Key bzw. "Publishable key"
 
   // ---------------------------------------------------------------
   // 2) Veranstaltung
