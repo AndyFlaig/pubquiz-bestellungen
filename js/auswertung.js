@@ -20,13 +20,16 @@
     const speisen = summe(zusammenfassen(rows.filter((r) => r.ziel === "kueche")));
     const snacks = summe(zusammenfassen(rows.filter((r) => r.ziel === "kasse")));
     const bezahltCent = zahlungen ? zahlungen.reduce((s, z) => s + cent(z.betrag), 0) : 0;
+    const trinkgeldCent = zahlungen ? zahlungen.reduce((s, z) => s + cent(z.trinkgeld || 0), 0) : 0;
 
     $("#kacheln").innerHTML =
-      kachel("Umsatz gesamt", euro(summe(alle))) +
+      kachel("Umsatz gesamt", euro((summeCent(alle) + trinkgeldCent) / 100) +
+        (trinkgeldCent ? " <small class='tg-klein'>inkl. Trinkgeld</small>" : "")) +
       kachel("Getränke", euro(getraenke)) +
       kachel("Speisen", euro(speisen)) +
       kachel("Snacks", euro(snacks)) +
-      (zahlungen ? kachel("Kassiert", euro(bezahltCent / 100)) +
+      (zahlungen ? kachel("Trinkgeld", euro(trinkgeldCent / 100)) +
+        kachel("Kassiert (bar)", euro((bezahltCent + trinkgeldCent) / 100)) +
         kachel("Noch offen", euro((summeCent(alle) - bezahltCent) / 100)) : "") +
       kachel("Bestellungen", gruppen + (offen ? " <small>(noch offen: " + offen + ")</small>" : "")) +
       (eigenRows.length ? kachel("Eigenverzehr (Warenwert)", euro(summe(eigenPos)) + " <small class='eigen-klein'>nicht im Umsatz</small>") : "");
@@ -69,12 +72,13 @@
     // Kellner
     $("#kellner-tabelle").innerHTML =
       "<tr><th>Kellner</th><th class='zahl'>Bestellungen</th><th class='zahl'>Umsatz</th>" +
-      (zahlungen ? "<th class='zahl'>Kassiert (bar)</th>" : "") + "</tr>" +
+      (zahlungen ? "<th class='zahl'>Trinkgeld</th><th class='zahl'>Kassiert (bar)</th>" : "") + "</tr>" +
       alleKellner(rows, zahlungen).map((k) => {
         const kr = rows.filter((r) => r.kellner === k);
         return "<tr><td>" + esc(k) + "</td><td class='zahl'>" + new Set(kr.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size +
           "</td><td class='zahl'>" + euro(summe(zusammenfassen(kr))) + "</td>" +
-          (zahlungen ? "<td class='zahl'><b>" + euro(zahlungen.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.betrag), 0) / 100) + "</b></td>" : "") +
+          (zahlungen ? "<td class='zahl'>" + euro(zahlungen.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.trinkgeld || 0), 0) / 100) + "</td>" +
+            "<td class='zahl'><b>" + euro(zahlungen.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.betrag) + cent(z.trinkgeld || 0), 0) / 100) + "</b></td>" : "") +
           "</tr>";
       }).join("");
 
@@ -170,15 +174,33 @@
       const zahl = zRoh ? zRoh.filter((z) => z.status === "gueltig") : [];
       const blaetter = [];
 
+      const warenCent = summeCent(zusammenfassen(rows));
+      const tgCent = zahl.reduce((s, z) => s + cent(z.trinkgeld || 0), 0);
+      const bezCent = zahl.reduce((s, z) => s + cent(z.betrag), 0);
+      blaetter.push({
+        name: "Übersicht",
+        spalten: [{ titel: "Kennzahl", breite: 34 }, { titel: "Betrag", typ: "euro", breite: 14 }],
+        zeilen: [
+          ["Warenumsatz (Gäste)", eur(warenCent)],
+          ["Trinkgeld", eur(tgCent)],
+          ["Umsatz gesamt (Waren + Trinkgeld)", eur(warenCent + tgCent)],
+          ["Kassiert bar (Waren + Trinkgeld)", eur(bezCent + tgCent)],
+          ["Noch offen (Waren)", eur(warenCent - bezCent)],
+          ["Eigenverzehr – Warenwert (nicht im Umsatz)", eur(summeCent(zusammenfassen(eigenRows)))],
+        ],
+      });
+
       blaetter.push({
         name: "Pro Tisch",
         spalten: [{ titel: "Tisch", typ: "zahl", breite: 7 }, { titel: "Team", breite: 32 }, { titel: "Bestellt", typ: "euro", breite: 12 },
-          { titel: "Bezahlt", typ: "euro", breite: 12 }, { titel: "Offen", typ: "euro", breite: 12 }, { titel: "Artikel", breite: 80 }],
+          { titel: "Bezahlt", typ: "euro", breite: 12 }, { titel: "Offen", typ: "euro", breite: 12 },
+          { titel: "Trinkgeld", typ: "euro", breite: 11 }, { titel: "Artikel", breite: 80 }],
         zeilen: CFG.TISCHE.filter((t) => !t.eigen).map((t) => {
           const pos = zusammenfassen(rows.filter((r) => r.tisch === t.nr));
           const best = summeCent(pos);
           const bez = zahl.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.betrag), 0);
-          return [t.nr, t.team, eur(best), eur(bez), eur(best - bez), pos.map((p) => p.anzahl + "× " + posText(p)).join(", ")];
+          const tgT = zahl.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.trinkgeld || 0), 0);
+          return [t.nr, t.team, eur(best), eur(bez), eur(best - bez), eur(tgT), pos.map((p) => p.anzahl + "× " + posText(p)).join(", ")];
         }),
       });
 
@@ -208,11 +230,13 @@
       blaetter.push({
         name: "Kellner",
         spalten: [{ titel: "Kellner", breite: 16 }, { titel: "Bestellungen", typ: "zahl", breite: 13 },
-          { titel: "Umsatz", typ: "euro", breite: 12 }, { titel: "Kassiert (bar)", typ: "euro", breite: 14 }],
+          { titel: "Umsatz", typ: "euro", breite: 12 }, { titel: "Trinkgeld", typ: "euro", breite: 11 },
+          { titel: "Kassiert (bar, inkl. Trinkgeld)", typ: "euro", breite: 28 }],
         zeilen: alleKellner(rows, zahl).map((k) => {
           const kr = rows.filter((r) => r.kellner === k);
           return [k, new Set(kr.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size, summe(zusammenfassen(kr)),
-            eur(zahl.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.betrag), 0))];
+            eur(zahl.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.trinkgeld || 0), 0)),
+            eur(zahl.filter((z) => z.kellner === k).reduce((s, z) => s + cent(z.betrag) + cent(z.trinkgeld || 0), 0))];
         }),
       });
 
@@ -236,9 +260,11 @@
         blaetter.push({
           name: "Zahlungen",
           spalten: [{ titel: "Nr", typ: "zahl", breite: 6 }, { titel: "Zeit", breite: 20 }, { titel: "Tisch", typ: "zahl", breite: 7 },
-            { titel: "Kellner", breite: 12 }, { titel: "Betrag", typ: "euro", breite: 11 }, { titel: "Status", breite: 11 },
+            { titel: "Kellner", breite: 12 }, { titel: "Betrag (Waren)", typ: "euro", breite: 14 }, { titel: "Trinkgeld", typ: "euro", breite: 11 },
+            { titel: "Gesamt", typ: "euro", breite: 11 }, { titel: "Status", breite: 11 },
             { titel: "Artikel", breite: 60 }],
-          zeilen: zRoh.map((z) => [z.id, zeit(z.erstellt_am), z.tisch, z.kellner, Number(z.betrag), z.status,
+          zeilen: zRoh.map((z) => [z.id, zeit(z.erstellt_am), z.tisch, z.kellner, Number(z.betrag), Number(z.trinkgeld) || 0,
+            eur(cent(z.betrag) + cent(z.trinkgeld || 0)), z.status,
             Array.isArray(z.positionen) ? z.positionen.map((p) => p.anzahl + "× " + posText(p)).join(", ") : ""]),
         });
       }

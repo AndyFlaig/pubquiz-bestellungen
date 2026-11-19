@@ -124,6 +124,10 @@ alle Artikel mit „x offen / y bezahlt“, darunter Bestellt / Bezahlt / **Offe
   (10 Sekunden lang „Rückgängig“ möglich). Snacks, die schon über „Bestellen“ erfasst wurden, stehen ebenfalls dort.
 - **„✓ Alles bezahlt“** verbucht alle noch offenen Artikel.
 - **Gegeben:** zeigt das Rückgeld (für die Auswahl, sonst für den ganzen offenen Betrag).
+- **Trinkgeld:** Betrag eintippen oder **„Stimmt so“** (Rest vom gegebenen Geld wird Trinkgeld) bzw.
+  **„Aufrunden auf 5 €“**. Das Rückgeld wird mit Trinkgeld berechnet. Trinkgeld zählt zum **Kassenstand** des Kellners
+  und zum **Umsatz gesamt**, aber nicht zum Warenbetrag (der Tisch ist bezahlt, wenn die Waren bezahlt sind).
+  Voraussetzung: einmal [`supabase/update-v7.sql`](supabase/update-v7.sql) ausführen.
 - Eigene Zahlungen können storniert werden (z. B. vertippt).
 - Oben steht der eigene **Kassenstand** = so viel Bargeld sollte im Portemonnaie sein.
 - Noch nicht gelieferte Bestellungen sind schon mitgerechnet. Wird danach noch etwas bestellt, ist der Tisch wieder „offen“.
