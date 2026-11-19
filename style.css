@@ -136,6 +136,7 @@ textarea {
 .ziel-etikett { margin-left: auto; font-size: .8rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; color: #fff; }
 .ziel-kueche { color: #9a3412; }
 .ziel-theke { color: #1d4ed8; }
+.ziel-kasse { color: var(--leise); }
 .ziel-etikett.ziel-kueche { background: #c2410c; color: #fff; }
 .ziel-etikett.ziel-theke { background: #1d4ed8; color: #fff; }
 

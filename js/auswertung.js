@@ -25,15 +25,17 @@
 
   function render(rows) {
     const alle = zusammenfassen(rows);
-    const gruppen = new Set(rows.map((r) => r.gruppe)).size;
+    const gruppen = new Set(rows.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size;
     const offen = rows.filter((r) => r.status === "offen").length;
     const getraenke = summe(zusammenfassen(rows.filter((r) => r.ziel === "theke")));
     const speisen = summe(zusammenfassen(rows.filter((r) => r.ziel === "kueche")));
+    const snacks = summe(zusammenfassen(rows.filter((r) => r.ziel === "kasse")));
 
     $("#kacheln").innerHTML =
       kachel("Umsatz gesamt", euro(summe(alle))) +
       kachel("Getränke", euro(getraenke)) +
       kachel("Speisen", euro(speisen)) +
+      kachel("Snacks", euro(snacks)) +
       kachel("Bestellungen", gruppen + (offen ? " <small>(noch offen: " + offen + ")</small>" : ""));
 
     // Pro Tisch

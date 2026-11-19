@@ -4,7 +4,7 @@
   const { CFG, DB, DEMO, $, esc, euro, uhrzeit, minutenSeit, positionText, store, toast } = App;
 
   const ARTIKEL = new Map(CFG.ARTIKEL.map((a) => [a.id, a]));
-  const ZIEL_NAME = { kueche: "Küche", theke: "Theke" };
+  const ZIEL_NAME = { kueche: "Küche", theke: "Theke", kasse: "Nur Strichliste" };
   const verbindung = App.verbindungsAnzeige($("#verbindung"));
 
   let kellner = store.get("kellner_name", null);
@@ -67,7 +67,8 @@
       const rows = await DB.lastForTable(tisch);
       if (entwurf.tisch !== tisch) return; // inzwischen anderer Tisch gewählt
       const pos = [];
-      rows.forEach((r) => r.positionen.forEach((p) => { if (ARTIKEL.has(p.id)) pos.push(p); }));
+      rows.filter((r) => r.ziel !== "kasse")
+        .forEach((r) => r.positionen.forEach((p) => { if (ARTIKEL.has(p.id)) pos.push(p); }));
       if (!pos.length) return;
       pos.sort((x, y) => CFG.ARTIKEL.indexOf(ARTIKEL.get(x.id)) - CFG.ARTIKEL.indexOf(ARTIKEL.get(y.id)));
       letzteVorschlag = pos;
@@ -167,10 +168,12 @@
   // Absenden mit Kontroll-Dialog
   // ------------------------------------------------------------------
   let sendet = false;
+  let gesendet = {}; // merkt sich bei "Nochmal senden", welche Teile schon angekommen sind
   $("#absenden").onclick = () => {
+    gesendet = {};
     const pos = positionen();
     if (!pos.length || entwurf.tisch == null) return;
-    const teile = ["kueche", "theke"].map((z) => ({ ziel: z, pos: pos.filter((p) => p.ziel === z) })).filter((t) => t.pos.length);
+    const teile = ["kueche", "theke", "kasse"].map((z) => ({ ziel: z, pos: pos.filter((p) => p.ziel === z) })).filter((t) => t.pos.length);
     const kommentar = entwurf.kommentar.trim();
 
     const ov = document.createElement("div");
@@ -191,24 +194,51 @@
       if (sendet) return;
       sendet = true; a.disabled = true; a.textContent = "Sende…";
       const t = CFG.TISCHE.find((x) => x.nr === entwurf.tisch);
-      const gruppe = App.uuid();
-      const rows = teile.map((teil) => ({
-        gruppe, ziel: teil.ziel, tisch: t.nr, team: t.team, kellner,
+      if (!gesendet.gruppe) gesendet.gruppe = App.uuid();
+      const zeile = (teil) => ({
+        gruppe: gesendet.gruppe, ziel: teil.ziel, tisch: t.nr, team: t.team, kellner,
         positionen: teil.pos.map(({ ziel, ...rest }) => rest),
-        kommentar: kommentar || null,
-      }));
+        kommentar: teil.ziel === "kasse" ? null : (kommentar || null),
+      });
+      // Küche + Theke gemeinsam senden; Snacks ("kasse") getrennt, direkt als erledigt.
+      // So kommen Getränke/Speisen auch dann an, wenn die Snack-Erweiterung in Supabase fehlt.
+      const haupt = teile.filter((x) => x.ziel !== "kasse");
+      const kasse = teile.find((x) => x.ziel === "kasse");
       try {
-        await DB.insert(rows);
+        if (haupt.length && !gesendet.haupt) {
+          await DB.insert(haupt.map(zeile));
+          gesendet.haupt = true;
+        }
         verbindung.erfolg();
-        ov.remove();
-        toast("✓ Gesendet: Tisch " + t.nr, { art: "ok" });
-        zuruecksetzen();
-        offeneLaden();
       } catch (err) {
         verbindung.fehler();
         a.disabled = false; a.textContent = "Nochmal senden";
         toast("NICHT gesendet – keine Verbindung. Bestellung bleibt erhalten, bitte nochmal senden.", { art: "fehler", dauer: 7000 });
-      } finally { sendet = false; }
+        sendet = false;
+        return;
+      }
+      let snackFehler = false;
+      if (kasse && !gesendet.kasse) {
+        try {
+          await DB.insert([Object.assign(zeile(kasse), { status: "erledigt" })]);
+          gesendet.kasse = true;
+        } catch (err) { snackFehler = true; }
+      }
+      sendet = false;
+      if (snackFehler && !haupt.length) {
+        a.disabled = false; a.textContent = "Nochmal senden";
+        toast("Snacks NICHT erfasst – bitte nochmal senden. Klappt es weiterhin nicht: auf Papier notieren.", { art: "fehler", dauer: 8000 });
+        return;
+      }
+      ov.remove();
+      gesendet = {};
+      zuruecksetzen();
+      if (snackFehler) {
+        toast("✓ Tisch " + t.nr + " gesendet – aber Snacks NICHT erfasst! Bitte auf Papier notieren.", { art: "fehler", bleibt: true });
+      } else {
+        toast("✓ Gesendet: Tisch " + t.nr, { art: "ok" });
+      }
+      offeneLaden();
     });
   };
 

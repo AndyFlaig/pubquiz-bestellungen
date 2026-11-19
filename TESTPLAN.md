@@ -25,6 +25,8 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 18 | Theke tippt **Erledigt** | Kellner: Hinweis „Getränke stehen bereit“ | |
 | 19 | Kellner storniert selbst | **Kein** „fertig“-Hinweis | |
 | 20 | Kellner 2 wählt einen Tisch, an dem Kellner 1 schon bestellt hat | Knopf „↻ Wie zuletzt“ mit der letzten Bestellung; Tipp übernimmt die Artikel (noch nicht gesendet) | |
+| 22 | 2× Snack + 1× Cola an Tisch 5 senden | Theke bekommt nur die Cola; Auswertung Tisch 5: 2× Snack + Cola, Kachel „Snacks“ 2,00 € | |
+| 23 | Nur 1× Snack senden | Küche und Theke bleiben still, Kellner sieht „✓ Gesendet“ | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (siehe Anleitung) und Kellnernamen/PINs final prüfen.
