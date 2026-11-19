@@ -173,7 +173,7 @@ Voraussetzung: einmal [`supabase/update-v5.sql`](supabase/update-v5.sql) ausfüh
 
 ## Beamer: Pausen-Show mit Zwischenständen
 
-`beamer.html` am Laptop/Fernseher öffnen, unten links **⛶ Vollbild**. Die Folien wechseln **alle 15 Sekunden in
+`beamer.html` am Laptop/Fernseher öffnen, unten links **⛶ Vollbild**. Die Folien wechseln **alle 10 Sekunden in
 Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden übersprungen.
 
 | Folie | Was gezählt wird |
@@ -193,7 +193,13 @@ Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden 
 - Ranglisten zählen nur Gäste (kein Eigenverzehr); die Liter-Anzeigen zählen alles, was gezapft wurde.
 - Konfetti, wenn Bier oder Spritz ein Ziel erreichen (10/25/50-Liter-Schritte). Test: `beamer.html#feiern`.
 - Bedienung: Klick oder → = nächste Folie, ← = zurück, **P** = Pause.
-- Optionen: `beamer.html?sekunden=20` (andere Dauer), `beamer.html?folie=spritz` (nur eine Folie).
+- Optionen: `beamer.html?sekunden=15` (andere Dauer), `beamer.html?folie=spritz` (nur eine Folie).
+
+**⏸ Pausen-Countdown:** In der **Auswertung** oben auf **⏸** → 5 / 10 / 15 / 20 Minuten oder eigene Dauer.
+Der Beamer springt sofort auf einen großen Countdown mit Ring und zeigt ihn dann **im Wechsel mit den Statistiken**;
+oben neben der Uhr läuft die Restzeit mit. In der letzten Minute wird er orange („letzte Bestellungen!“),
+danach erscheint 90 Sekunden lang **„Weiter geht's!“**. Im selben Fenster: „+ 5 Minuten verlängern“ und
+„Pause jetzt beenden“. Der Knopf in der Auswertung zeigt die Restzeit an.
 - Es werden keine Preise oder Umsätze angezeigt.
 
 ## Durchsage an alle Geräte

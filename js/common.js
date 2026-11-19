@@ -121,6 +121,14 @@
         const data = check(await client.from("einstellungen").select("wert,geaendert_am").eq("schluessel", "stammdaten"));
         return data.length ? data[0] : null;
       },
+      // Allgemeine Einstellungen (z. B. Pause) – gleiche Tabelle wie die Stammdaten
+      async ladeEinstellung(schluessel) {
+        const data = check(await client.from("einstellungen").select("wert,geaendert_am").eq("schluessel", schluessel));
+        return data.length ? data[0].wert : null;
+      },
+      async speichereEinstellung(schluessel, wert) {
+        check(await client.from("einstellungen").upsert({ schluessel, wert, geaendert_am: new Date().toISOString() }, { onConflict: "schluessel" }));
+      },
       async speichereStammdaten(wert) {
         const jetzt = new Date().toISOString();
         check(await client.from("einstellungen").upsert({ schluessel: "stammdaten", wert, geaendert_am: jetzt }, { onConflict: "schluessel" }));
@@ -207,6 +215,8 @@
         return Object.keys(load().ausverkauft || {}).filter((k) => load().ausverkauft[k]);
       },
       async ladeStammdaten() { return load().stammdaten || null; },
+      async ladeEinstellung(k) { return (load().einst || {})[k] || null; },
+      async speichereEinstellung(k, w) { const db = load(); db.einst = db.einst || {}; db.einst[k] = w; save(db); notify(); },
       async neueDurchsagen(abId) { return (load().durchsagen || []).filter((d) => d.id > (abId || 0)); },
       async letzteDurchsageId() { const l = load().durchsagen || []; return l.length ? l[l.length - 1].id : 0; },
       async sendeDurchsage(text, von) {

@@ -506,3 +506,11 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .rueckgeld:empty { display: none; }
 .teilbetrag input { width: 100%; min-width: 0; }
 .kasse-karte, .kasse-karte > * { min-width: 0; }
+
+/* ---------- Pause ---------- */
+.kopf-knopf.pause-aktiv { background: var(--gold); color: #111; font-size: 1rem !important; font-weight: 800; font-variant-numeric: tabular-nums; }
+.pause-wahl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pause-eigen { display: flex; gap: 8px; }
+.pause-eigen input { flex: 1; min-width: 0; font: inherit; font-size: 1.1rem; padding: 10px 12px; border: 2px solid var(--rand); border-radius: 12px; background: var(--karte); color: var(--text); }
+.pause-eigen .gross { width: auto; }
+.pause-laeuft { margin: 0; font-size: 1.2rem; background: var(--gold-hell); border-radius: 10px; padding: 8px 12px; }
