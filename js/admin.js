@@ -11,7 +11,11 @@
   });
 
   // Arbeitskopie. Kellner intern mit Revier-Text, damit Umbenennen einfach bleibt.
+  // Zitate liegen getrennt (Einstellung "zitate"), stehen aber zum Bearbeiten mit in d.
   let d, original;
+  let zitateGeladen = [];
+  const mitZitaten = (x) => Object.assign(x, { ZITATE: kopie(zitateGeladen) });
+  const ohneZitate = (x) => { const k = Object.assign({}, x); delete k.ZITATE; return JSON.stringify(k); };
   function arbeitskopie(w) {
     return {
       VERANSTALTUNG: w.VERANSTALTUNG || "",
@@ -88,8 +92,19 @@
         '<div class="zeilen-knoepfe"><button data-aktion="loeschen" class="loeschen" aria-label="löschen">🗑</button></div>' +
       "</div>").join("");
   }
+  function renderZitate() {
+    $("#zitate-liste").innerHTML = d.ZITATE.length ? d.ZITATE.map((z, i) =>
+      '<div class="admin-zeile zitat-zeile" data-i="' + i + '">' +
+        '<label class="ganz">Zitat<textarea data-feld="text" rows="2" maxlength="300" placeholder="„…“">' + esc(z.text) + "</textarea></label>" +
+        '<label class="breit">Name<input data-feld="von" value="' + esc(z.von) + '" maxlength="60" placeholder="z. B. Albert Einstein"></label>' +
+        '<div class="zeilen-knoepfe">' +
+          '<button data-aktion="hoch" aria-label="nach oben"' + (i === 0 ? " disabled" : "") + ">↑</button>" +
+          '<button data-aktion="runter" aria-label="nach unten"' + (i === d.ZITATE.length - 1 ? " disabled" : "") + ">↓</button>" +
+          '<button data-aktion="loeschen" class="loeschen" aria-label="löschen">🗑</button></div>' +
+      "</div>").join("") : '<p class="klein-hinweis">Noch keine Zitate.</p>';
+  }
   function renderAlles() {
-    renderArtikel(); renderTische(); renderKellner();
+    renderArtikel(); renderTische(); renderKellner(); renderZitate();
     $("#veranstaltung").value = d.VERANSTALTUNG;
     geaendert();
   }
@@ -106,8 +121,8 @@
     if (JSON.stringify(d) !== JSON.stringify(original)) { e.preventDefault(); e.returnValue = ""; }
   });
 
-  const LISTEN = { "artikel-liste": "ARTIKEL", "tische-liste": "TISCHE", "kellner-liste": "KELLNER" };
-  const RENDER = { ARTIKEL: renderArtikel, TISCHE: renderTische, KELLNER: renderKellner };
+  const LISTEN = { "artikel-liste": "ARTIKEL", "tische-liste": "TISCHE", "kellner-liste": "KELLNER", "zitate-liste": "ZITATE" };
+  const RENDER = { ARTIKEL: renderArtikel, TISCHE: renderTische, KELLNER: renderKellner, ZITATE: renderZitate };
 
   document.querySelector(".admin-inhalt").addEventListener("input", (e) => {
     const el = e.target;
@@ -132,7 +147,8 @@
       const liste = b.closest(".admin-liste"), name = LISTEN[liste.id];
       const i = Number(b.closest("[data-i]").dataset.i), arr = d[name];
       if (b.dataset.aktion === "loeschen") {
-        const was = name === "ARTIKEL" ? arr[i].name : name === "TISCHE" ? "Tisch " + arr[i].nr : arr[i].name;
+        const was = name === "ARTIKEL" ? arr[i].name : name === "TISCHE" ? "Tisch " + arr[i].nr
+          : name === "ZITATE" ? (arr[i].text || "Zitat").slice(0, 40) : arr[i].name;
         if (!confirm("„" + was + "“ löschen?")) return;
         arr.splice(i, 1);
       } else {
@@ -156,13 +172,16 @@
       } else if (art === "tisch") {
         const nr = d.TISCHE.reduce((m, t) => Math.max(m, Number(t.nr) || 0), 0) + 1;
         d.TISCHE.push({ nr: String(nr), team: "" }); renderTische();
+      } else if (art === "zitat") {
+        d.ZITATE.push({ text: "", von: "" }); renderZitate();
       } else {
         d.KELLNER.push({ name: "", revier: "" }); renderKellner();
       }
       geaendert();
-      const felder = document.querySelectorAll("#seite-" + (art === "tisch" ? "tische" : art) + " .admin-zeile");
+      const seite = { tisch: "tische", zitat: "zitate" }[art] || art;
+      const felder = document.querySelectorAll("#seite-" + seite + " .admin-zeile");
       const letzteZeile = felder[felder.length - 1];
-      if (letzteZeile) { letzteZeile.scrollIntoView({ behavior: "smooth", block: "center" }); const f = letzteZeile.querySelector('input[data-feld="name"],input[data-feld="team"]'); f && f.focus(); }
+      if (letzteZeile) { letzteZeile.scrollIntoView({ behavior: "smooth", block: "center" }); const f = letzteZeile.querySelector('textarea[data-feld="text"],input[data-feld="name"],input[data-feld="team"]'); f && f.focus(); }
     }
   });
 
@@ -214,6 +233,9 @@
       } catch (err) { fehler.push("Revier von " + (name || "Kellner " + (i + 1)) + ": " + err.message + "."); markiere("kellner-liste", i, "revier"); }
       return name;
     });
+    d.ZITATE.forEach((z, i) => {
+      if (!z.text.trim() && z.von.trim()) { fehler.push("Zitat " + (i + 1) + ": Text fehlt."); markiere("zitate-liste", i, "text"); }
+    });
     return { fehler, wert: { VERANSTALTUNG: d.VERANSTALTUNG.trim(), KELLNER: kellner, TISCHE: tische, ARTIKEL: artikel, REVIERE: reviere } };
   }
 
@@ -225,16 +247,22 @@
     if (liste.length) box.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  async function speichern(wert, meldung) {
+  async function speichern(wert, meldung, zitate) {
     const knopf = $("#speichern");
     knopf.disabled = true; knopf.textContent = "Speichere…";
     try {
-      const zeit = await DB.speichereStammdaten(wert);
+      let zeit = null;
+      if (wert !== undefined) zeit = await DB.speichereStammdaten(wert);
+      if (zitate !== undefined) { await DB.speichereEinstellung("zitate", zitate); zitateGeladen = kopie(zitate); }
       verbindung.erfolg();
-      await App.stammdatenLaden();
-      original = arbeitskopie(ausCfg()); d = kopie(original);
+      if (wert !== undefined) await App.stammdatenLaden();
+      const offeneZitate = d.ZITATE;
+      original = mitZitaten(arbeitskopie(ausCfg()));
+      d = kopie(original);
+      if (zitate === undefined && offeneZitate) d.ZITATE = offeneZitate; // ungespeicherte Zitate nicht verwerfen
       renderAlles(); quelleZeigen(zeit);
-      toast(meldung || "✓ Gespeichert – gilt nach Neuladen auf allen Geräten", { art: "ok", dauer: 5000 });
+      toast(meldung || (wert !== undefined ? "✓ Gespeichert – gilt nach Neuladen auf allen Geräten" : "✓ Zitate gespeichert – erscheinen gleich auf dem Beamer"),
+        { art: "ok", dauer: 5000 });
     } catch (e) {
       toast("NICHT gespeichert: " + (e.message || "keine Verbindung") +
         (/einstellungen/.test(e.message || "") ? " (update-v4.sql in Supabase ausführen)" : ""), { art: "fehler", dauer: 9000 });
@@ -248,10 +276,13 @@
     fehlerZeigen(fehler);
     if (fehler.length) return;
     // Hinweis bei entfernten Kellnern / Artikeln
+    const stammGeaendert = ohneZitate(d) !== ohneZitate(original);
+    const zitateGeaendert = JSON.stringify(d.ZITATE) !== JSON.stringify(original.ZITATE);
     const weg = CFG.KELLNER.filter((k) => !wert.KELLNER.includes(k));
-    if (weg.length && !confirm("Kellner entfernt oder umbenannt: " + weg.join(", ") +
+    if (stammGeaendert && weg.length && !confirm("Kellner entfernt oder umbenannt: " + weg.join(", ") +
       "\n\nDiese müssen am Handy ihren Namen neu wählen. Bisherige Bestellungen und Zahlungen bleiben erhalten. Speichern?")) return;
-    speichern(wert);
+    const zitate = d.ZITATE.map((z) => ({ text: z.text.trim(), von: z.von.trim() })).filter((z) => z.text);
+    speichern(stammGeaendert ? wert : undefined, null, zitateGeaendert ? zitate : undefined);
   };
   $("#verwerfen").onclick = () => {
     if (!confirm("Alle ungespeicherten Änderungen verwerfen?")) return;
@@ -272,7 +303,7 @@
     try {
       const w = JSON.parse(await f.text());
       if (!App.stammdatenGueltig(w)) throw new Error("Datei enthält keine gültigen Stammdaten");
-      d = arbeitskopie(w); renderAlles();
+      d = Object.assign(arbeitskopie(w), { ZITATE: d.ZITATE }); renderAlles();
       toast("Eingelesen – bitte prüfen und speichern", { art: "ok" });
     } catch (err) { toast("Einlesen fehlgeschlagen: " + err.message, { art: "fehler", dauer: 6000 }); }
   };
@@ -287,7 +318,7 @@
   document.querySelectorAll(".admin-reiter button").forEach((b) => {
     b.onclick = () => {
       document.querySelectorAll(".admin-reiter button").forEach((x) => x.classList.toggle("aktiv", x === b));
-      ["artikel", "tische", "kellner", "allgemein"].forEach((s) => { $("#seite-" + s).hidden = b.dataset.seite !== s; });
+      ["artikel", "tische", "kellner", "zitate", "allgemein"].forEach((s) => { $("#seite-" + s).hidden = b.dataset.seite !== s; });
       window.scrollTo(0, 0);
     };
   });
@@ -303,7 +334,9 @@
     await App.pinPruefen("admin");
     if (DEMO) $("#demo-hinweis").hidden = false;
     if (!(CFG.PIN && CFG.PIN.admin)) $("#pin-warnung").hidden = false;
-    original = arbeitskopie(ausCfg()); d = kopie(original);
+    try { zitateGeladen = (await DB.ladeEinstellung("zitate")) || []; } catch (e) { zitateGeladen = []; }
+    if (!Array.isArray(zitateGeladen)) zitateGeladen = [];
+    original = mitZitaten(arbeitskopie(ausCfg())); d = kopie(original);
     renderAlles(); quelleZeigen();
     verbindung.live(true);
     if (App.stammQuelle === "Kopie auf dem Gerät") {

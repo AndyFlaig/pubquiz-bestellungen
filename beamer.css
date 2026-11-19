@@ -161,3 +161,14 @@ body.beamer .overlay { font-size: 18px; color: var(--text); }
 .b-countdown.knapp .b-cd-zeit { color: #ffb36b; animation: b-puls 1s ease-in-out infinite; }
 .b-countdown.vorbei .b-cd-zeit { color: #1fa35c; animation: b-puls 1s ease-in-out infinite; }
 .b-countdown.vorbei .b-cd-titel { color: #1fa35c; font-size: 3.4em; }
+
+/* ---------- Zitate ---------- */
+.b-zitat-folie { align-items: center; justify-content: center; }
+.b-zitat-box { position: relative; max-width: 42em; text-align: center; padding: 1em 2em; }
+.b-zitat-zeichen { position: absolute; left: -.2em; top: -.55em; font-size: 9em; line-height: 1; color: var(--gold); opacity: .35; font-family: Georgia, serif; }
+.b-zitat-text { margin: 0; font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 3.2em; line-height: 1.3; color: #fff;
+  animation: b-rein 1s ease-out both; }
+.b-zitat-text.mittel { font-size: 2.6em; }
+.b-zitat-text.lang { font-size: 2em; }
+.b-zitat-von { margin-top: 1.2em; font-size: 2em; font-weight: 800; color: var(--gold); opacity: 0; animation: b-name .9s ease-out forwards; }
+@keyframes b-name { from { opacity: 0; transform: translateY(.6em); } to { opacity: 1; transform: none; } }

@@ -232,8 +232,28 @@
     if (neueStartet && pauseAktiv() && D) { letzterCountdown = 0; vorbeiGezeigt = false; letzteWarCountdown = false; zeige(0); } // sofort zum Countdown springen
   }
 
+  // ---------- Zitate (aus dem Admin) ----------
+  const ZITAT_TEXT_SEK = 5, ZITAT_NAME_SEK = 3;   // erst Zitat 5 s, dann Name 3 s dazu
+  const ZITAT_NACH = 2;                            // nach je 2 Statistik-Folien ein Zitat
+  let zitate = [], zitatIndex = -1, seitZitat = 0;
+  async function zitateLaden() {
+    try {
+      const z = await DB.ladeEinstellung("zitate");
+      zitate = Array.isArray(z) ? z.filter((x) => x && x.text) : [];
+    } catch (e) { /* bleibt wie es ist */ }
+  }
+  function zitatFolie(z) {
+    const lang = z.text.length > 140 ? " lang" : z.text.length > 80 ? " mittel" : "";
+    return '<section class="b-folie b-zitat-folie"><div class="b-zitat-box">' +
+      '<div class="b-zitat-zeichen">“</div>' +
+      '<blockquote class="b-zitat-text' + lang + '">' + esc(z.text) + "</blockquote>" +
+      (z.von ? '<div class="b-zitat-von" style="animation-delay:' + ZITAT_TEXT_SEK + 's">– ' + esc(z.von) + "</div>" : "") +
+      "</div></section>";
+  }
+
   function zeige(richtung) {
     if (!D) return;
+    let dauer = SEKUNDEN;
     sichtbar = FOLIEN.filter((f) => (!NUR_FOLIE || f.id === NUR_FOLIE) && f.html(D) !== null);
     const box = $("#folien");
     const r = restSek();
@@ -248,8 +268,16 @@
       letzterCountdown = Date.now();
       if (r !== null && r <= 0) vorbeiGezeigt = true;
       countdownAktualisieren();
+    } else if (!NUR_FOLIE && zitate.length && seitZitat >= ZITAT_NACH && richtung !== -1 && richtung !== 0) {
+      // Zitat-Folie: Zitat 5 s allein, dann Name 3 s dazu
+      zitatIndex = (zitatIndex + 1) % zitate.length;
+      box.innerHTML = zitatFolie(zitate[zitatIndex]);
+      dauer = ZITAT_TEXT_SEK + (zitate[zitatIndex].von ? ZITAT_NAME_SEK : 0);
+      seitZitat = 0;
+      letzteWarCountdown = false;
     } else {
       if (!sichtbar.length) return;
+      seitZitat++;
       index = (index + (richtung === 0 ? 0 : richtung || 1) + sichtbar.length) % sichtbar.length;
       if (index < 0) index = 0;
       box.innerHTML = sichtbar[index].html(D);
@@ -263,9 +291,9 @@
     $("#punkte").innerHTML = sichtbar.map((x, i) => '<i class="' + (i === index && !letzteWarCountdown ? "an" : "") + '"></i>').join("");
     const balken = $("#balken");
     balken.style.animation = "none"; void balken.offsetWidth;
-    balken.style.animation = pause ? "none" : "b-laufen " + SEKUNDEN + "s linear forwards";
+    balken.style.animation = pause ? "none" : "b-laufen " + dauer + "s linear forwards";
     clearTimeout(timer);
-    if (!pause && !NUR_FOLIE) timer = setTimeout(() => zeige(1), SEKUNDEN * 1000);
+    if (!pause && !NUR_FOLIE) timer = setTimeout(() => zeige(1), dauer * 1000);
   }
 
   // Meilensteine -> Konfetti
@@ -335,5 +363,7 @@
   setInterval(laden, 15000);
   pauseLaden();
   setInterval(pauseLaden, 5000);
+  zitateLaden();
+  setInterval(zitateLaden, 30000);
   if (location.hash === "#feiern") setTimeout(() => feiern("Test: 50 Liter Bier! 🍻"), 800);
 })();
