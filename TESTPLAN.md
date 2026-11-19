@@ -1,0 +1,25 @@
+# Testplan (vor Freitag, ca. 20 Minuten)
+
+Benötigt: mindestens 4 Geräte – 2 Kellner-Handys (ideal: iPhone **und** Android), 1 Küche, 1 Theke (am besten die echten Geräte vom Abend).
+Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (grün).
+
+| # | Test | Erwartung | ✔ |
+|---|---|---|---|
+| 1 | Küche und Theke öffnen, **Start** tippen | Ton ist zu hören, Liste leer, „Live“ grün | |
+| 2 | Kellner-Handy 1: Namen wählen, Seite neu laden | Name bleibt gespeichert | |
+| 3 | Kellner 1: Tisch 7, 2× Pils 0,5 l, 1× Wurstsalat, Kommentar „ohne Zwiebeln“, senden | Küche: nur Wurstsalat; Theke: nur 2× Pils; beide mit Tisch 7 – SATALANA, Kellnername, Uhrzeit, Kommentar gelb; Ton + Aufblinken | |
+| 4 | Nur Getränke bestellen (Tisch 1) | Erscheint nur an der Theke, Küche bleibt still | |
+| 5 | Nur Speise bestellen (Tisch 19) | Erscheint nur in der Küche | |
+| 6 | Kellner 1 und Kellner 2 senden **gleichzeitig** | Beide Bestellungen kommen an, älteste oben | |
+| 7 | Theke tippt **Erledigt** | Bestellung verschwindet; beim Kellner unter „Meine offenen“ ist der Theken-Teil weg | |
+| 8 | Theke tippt **Erledigt** und dann **Rückgängig** | Bestellung ist wieder da | |
+| 9 | Kellner storniert eine offene Küchen-Bestellung | Küche: roter STORNIERT-Hinweis + Ton, Bestellung weg | |
+| 10 | Kellner versucht zu stornieren, nachdem Küche schon erledigt hat | Meldung „Geht nicht mehr – schon erledigt“ | |
+| 11 | Kellner-Handy in Flugmodus, Bestellung senden | Rote Meldung „NICHT gesendet“, Bestellung bleibt erhalten; Flugmodus aus → nochmal senden → kommt an | |
+| 12 | Küchen-Gerät 2 Minuten nicht berühren | Bildschirm bleibt an | |
+| 13 | Küchen-Gerät: WLAN kurz aus und wieder an, währenddessen Bestellung senden | Oben „Keine Verbindung“ (rot); nach Wiederverbindung erscheint die Bestellung innerhalb weniger Sekunden | |
+| 14 | Lasttest: alle Kellner senden je 5 Bestellungen schnell hintereinander | Alles kommt vollständig an, keine doppelt | |
+| 15 | Am echten Ort (Sportheim) prüfen: WLAN/Mobilfunk an Theke und in der Küche | „Live“ grün | |
+| 16 | Kommentar mit langem Text | Gut lesbar, bricht sauber um | |
+
+Danach: **Testdaten löschen** (siehe Anleitung) und Kellnernamen/PINs final prüfen.

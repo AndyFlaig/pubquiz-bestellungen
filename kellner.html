@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f2a44">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Kellner – Pub-Quiz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="kellner">
+  <header class="kopf">
+    <div>
+      <div class="kopf-titel">Kellner: <b id="kellner-name">–</b></div>
+      <button id="kellner-wechseln" class="link">wechseln</button>
+    </div>
+    <span id="verbindung" class="verbindung">…</span>
+  </header>
+  <p id="demo-hinweis" class="demo" hidden>DEMO-MODUS – Supabase noch nicht eingetragen. Daten nur auf diesem Gerät.</p>
+
+  <nav class="reiter">
+    <button class="aktiv" data-seite="neu">Neue Bestellung</button>
+    <button data-seite="offen">Meine offenen <span id="offen-zahl"></span></button>
+  </nav>
+
+  <main id="seite-neu">
+    <section class="block">
+      <h2 id="tisch-titel">1. Tisch wählen</h2>
+      <div id="tisch-gewaehlt" class="tisch-gewaehlt" hidden>
+        <span id="tisch-gewaehlt-text"></span>
+        <button id="tisch-aendern">ändern</button>
+      </div>
+      <div id="tisch-raster" class="tisch-raster"></div>
+    </section>
+
+    <section class="block">
+      <h2>2. Artikel</h2>
+      <div id="artikel"></div>
+    </section>
+
+    <section class="block">
+      <h2>3. Kommentar <small>(optional)</small></h2>
+      <textarea id="kommentar" rows="2" maxlength="300" placeholder="z. B. ohne Zwiebeln"></textarea>
+      <button id="leeren" class="link warnung" hidden>Alles verwerfen</button>
+    </section>
+  </main>
+
+  <main id="seite-offen" hidden>
+    <div id="offen-liste" class="liste einspaltig"></div>
+  </main>
+
+  <footer class="fusszeile">
+    <span id="summe"></span>
+    <button id="absenden" class="gross primaer" disabled>Absenden</button>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-js-2.117.3.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/kellner.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f2a44">
+  <title>Pub-Quiz Bestellungen</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="start">
+  <main class="startseite">
+    <h1>Pub-Quiz Bestellungen</h1>
+    <p id="veranstaltung"></p>
+    <p id="demo-hinweis" class="demo" hidden>DEMO-MODUS – Supabase ist noch nicht in <code>config.js</code> eingetragen.</p>
+    <a class="gross primaer" href="kellner.html">📝 Kellner</a>
+    <a class="gross" href="kueche.html">🍽 Küche</a>
+    <a class="gross" href="theke.html">🍺 Theke</a>
+  </main>
+  <script src="config.js"></script>
+  <script>
+    document.getElementById("veranstaltung").textContent = window.APP_CONFIG.VERANSTALTUNG;
+    if (!APP_CONFIG.SUPABASE_URL || !APP_CONFIG.SUPABASE_KEY) document.getElementById("demo-hinweis").hidden = false;
+  </script>
+</body>
+</html>
