@@ -116,11 +116,31 @@
     renderMengen();
   }
 
+  // Ausverkauft (wird von Küche/Theke geschaltet)
+  let ausverkauft = new Set();
+  let ausLaedt = false;
+  async function ausverkauftLaden() {
+    if (ausLaedt) return;
+    ausLaedt = true;
+    try {
+      const liste = await DB.listAusverkauft();
+      const neu = new Set(liste);
+      const dazu = [...neu].filter((id) => !ausverkauft.has(id) && ARTIKEL.has(id));
+      ausverkauft = neu;
+      renderMengen();
+      if (dazu.length) toast("Ausverkauft: " + dazu.map((id) => ARTIKEL.get(id).name + (ARTIKEL.get(id).menge ? " " + ARTIKEL.get(id).menge : "")).join(", "), { art: "fehler", dauer: 6000 });
+    } catch (e) { /* Tabelle fehlt oder keine Verbindung – dann eben nichts ausgegraut */ }
+    finally { ausLaedt = false; }
+  }
+
   function renderMengen() {
     document.querySelectorAll(".artikel").forEach((el) => {
       const n = entwurf.menge[el.dataset.id] || 0;
+      const aus = ausverkauft.has(el.dataset.id);
       el.querySelector(".anzahl").textContent = n || "";
       el.classList.toggle("gewaehlt", n > 0);
+      el.classList.toggle("ausverkauft", aus);
+      el.querySelectorAll("[data-plus]").forEach((b) => { b.disabled = aus; });
     });
     renderSumme();
   }
@@ -173,6 +193,11 @@
     gesendet = {};
     const pos = positionen();
     if (!pos.length || entwurf.tisch == null) return;
+    const aus = pos.filter((p) => ausverkauft.has(p.id));
+    if (aus.length) {
+      alert("Ausverkauft: " + aus.map(positionText).join(", ") + "\n\nBitte erst mit − entfernen.");
+      return;
+    }
     const teile = ["kueche", "theke", "kasse"].map((z) => ({ ziel: z, pos: pos.filter((p) => p.ziel === z) })).filter((t) => t.pos.length);
     const kommentar = entwurf.kommentar.trim();
 
@@ -350,6 +375,10 @@
     offeneLaden();
     DB.onChange(() => offeneLaden(), (live) => verbindung.live(live));
     setInterval(offeneLaden, 15000);
+    ausverkauftLaden();
+    setInterval(ausverkauftLaden, 10000);
+    DB.onChange(() => ausverkauftLaden());
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") ausverkauftLaden(); });
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") offeneLaden(); });
     window.addEventListener("online", offeneLaden);
   })();

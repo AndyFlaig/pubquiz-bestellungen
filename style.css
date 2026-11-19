@@ -291,3 +291,41 @@ body.offline .kopf { background: var(--rot); }
 .zahl-status.offen { color: #b45309; }
 .zahl-status.zuviel { color: var(--rot); }
 .gross-status { font-size: 1.3rem; text-align: center; background: #effaf1; border-radius: 12px; padding: 12px; margin: 0; }
+
+/* ---------- Ausverkauft ---------- */
+.artikel.ausverkauft .artikel-name > span, .artikel.ausverkauft .artikel-name > .preis { opacity: .45; text-decoration: line-through; }
+.artikel.ausverkauft .artikel-name::after { content: "AUSVERKAUFT"; display: inline-block;
+  font-size: .72rem; font-weight: 800; color: #fff; background: var(--rot); border-radius: 6px; padding: 1px 6px; margin-top: 2px; }
+.artikel.ausverkauft.gewaehlt { background: #fde8e8; }
+.ausverkauft-knopf { background: rgba(255,255,255,.15); border: 0; color: #fff; border-radius: 10px; padding: 8px 12px; font-weight: 700; white-space: nowrap; }
+.ausverkauft-knopf.hat { background: var(--rot); }
+.aus-liste { display: grid; gap: 8px; }
+.aus-artikel { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 56px; padding: 10px 14px;
+  border: 2px solid var(--rand); border-radius: 12px; background: #fff; font-size: 1.1rem; text-align: left; }
+.aus-artikel em { font-style: normal; font-size: .85rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; background: #e8f5ec; color: var(--primaer); white-space: nowrap; }
+.aus-artikel.aus { border-color: var(--rot); background: #fdecec; }
+.aus-artikel.aus em { background: var(--rot); color: #fff; }
+
+/* ---------- Kasse pro Artikel ---------- */
+.kasse-artikel { display: grid; }
+.kasse-zeile { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid #eceef2; }
+.kasse-zeile.gewaehlt { background: #effaf1; margin: 0 -8px; padding: 8px; border-radius: 10px; }
+.kasse-zeile.fertig { opacity: .6; }
+.kasse-name { flex: 1; display: grid; }
+.kasse-name small { color: var(--leise); }
+.kasse-name .rot { color: var(--rot); }
+.auswahl-box { display: grid; gap: 8px; background: #effaf1; border: 2px solid #9fd8ae; border-radius: 12px; padding: 12px; }
+.auswahl-summe { font-size: 1.2rem; }
+.zahlungen li > div { flex: 1; display: grid; }
+.zahlungen li small { color: var(--leise); }
+.excel-knopf { font-size: 1rem !important; font-weight: 700; }
+@media (max-width: 420px) {
+  .station .gross-titel { font-size: 1.15rem; }
+  .station .gross-titel, .station .zaehler { white-space: nowrap; }
+  .station .verbindung { padding: 4px 8px; white-space: normal; text-align: center; }
+  .station .home-knopf { width: 40px; height: 40px; }
+  .ausverkauft-knopf { padding: 8px 10px; font-size: 1rem; }
+  .aus-text { display: none; }
+  .station .kopf { gap: 8px; }
+  .station .zaehler { font-size: 1rem; }
+}

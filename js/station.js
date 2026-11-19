@@ -13,7 +13,7 @@
   const selbstErledigt = new Set(); // ids, die auf DIESEM Gerät erledigt wurden
   let laedt = false, nochmal = false;
   const neuBis = new Map(); // id -> Zeitpunkt, bis zu dem die Karte hervorgehoben wird
-  let letzteSignatur = "";
+  let letzteSignatur = null; // null = noch nie gezeichnet
 
   function karte(r) {
     const min = minutenSeit(r.erstellt_am);
@@ -114,6 +114,52 @@
     }
   });
 
+  // ------------------------------------------------------------------
+  // Ausverkauft-Schalter (nur Artikel dieser Station)
+  // ------------------------------------------------------------------
+  const MEINE_ARTIKEL = App.CFG.ARTIKEL.filter((x) => x.ziel === ZIEL);
+  let ausverkauft = new Set();
+  async function ausverkauftLaden() {
+    try { ausverkauft = new Set(await DB.listAusverkauft()); } catch (e) { return false; }
+    const n = MEINE_ARTIKEL.filter((x) => ausverkauft.has(x.id)).length;
+    const k = $("#ausverkauft-knopf");
+    k.innerHTML = '🚫<span class="aus-text"> Ausverkauft</span>' + (n ? " (" + n + ")" : "");
+    k.classList.toggle("hat", n > 0);
+    return true;
+  }
+  function ausverkauftDialog() {
+    const ov = document.createElement("div");
+    ov.className = "overlay";
+    document.body.appendChild(ov);
+    const zeichnen = (fehler) => {
+      ov.innerHTML = '<div class="dialog"><h2>Ausverkauft?</h2>' +
+        '<p class="klein-hinweis">Antippen schaltet um. Ausverkaufte Artikel können die Kellner nicht mehr bestellen.</p>' +
+        (fehler ? '<p class="fehler">' + esc(fehler) + "</p>" : "") +
+        '<div class="aus-liste">' + MEINE_ARTIKEL.map((x) => {
+          const aus = ausverkauft.has(x.id);
+          return '<button class="aus-artikel' + (aus ? " aus" : "") + '" data-aus="' + esc(x.id) + '"><span>' + esc(x.name) +
+            (x.menge ? " <small>" + esc(x.menge) + "</small>" : "") + "</span><em>" + (aus ? "AUSVERKAUFT" : "verfügbar") + "</em></button>";
+        }).join("") + "</div>" +
+        '<button class="gross primaer" data-schliessen>Fertig</button></div>';
+    };
+    zeichnen();
+    ausverkauftLaden().then((ok) => zeichnen(ok ? "" : "Nicht verfügbar – keine Verbindung oder Supabase noch nicht aktualisiert (update-v3.sql)."));
+    ov.addEventListener("click", async (e) => {
+      if (e.target.closest("[data-schliessen]") || e.target === ov) { ov.remove(); return; }
+      const b = e.target.closest("[data-aus]");
+      if (!b) return;
+      const id = b.dataset.aus, neu = !ausverkauft.has(id);
+      b.disabled = true;
+      try {
+        await DB.setAusverkauft(id, neu);
+        if (neu) ausverkauft.add(id); else ausverkauft.delete(id);
+        await ausverkauftLaden();
+        zeichnen();
+      } catch (err) { zeichnen("Fehler beim Speichern – keine Verbindung oder Supabase noch nicht aktualisiert (update-v3.sql)."); }
+    });
+  }
+  $("#ausverkauft-knopf").addEventListener("click", ausverkauftDialog);
+
   // Home-Knopf: in Küche/Theke nur nach Rückfrage verlassen
   $(".home-knopf").addEventListener("click", (e) => {
     if (!confirm("Ansicht wirklich verlassen? Danach kommt hier kein Ton mehr, bis du wieder auf Start tippst.")) e.preventDefault();
@@ -134,6 +180,8 @@
     laden();
     DB.onChange(() => laden(), (live) => verbindung.live(live));
     setInterval(laden, 5000); // Sicherheitsnetz, falls Live-Verbindung abreißt
+    ausverkauftLaden();
+    setInterval(ausverkauftLaden, 15000);
     setInterval(() => { // "vor x Min" aktualisieren
       liste.querySelectorAll(".karte").forEach((k) => {
         const r = bekannt.get(Number(k.dataset.id));

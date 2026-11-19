@@ -27,10 +27,13 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 20 | Kellner 2 wählt einen Tisch, an dem Kellner 1 schon bestellt hat | Knopf „↻ Wie zuletzt“ mit der letzten Bestellung; Tipp übernimmt die Artikel (noch nicht gesendet) | |
 | 22 | 2× Snack + 1× Cola an Tisch 5 senden | Theke bekommt nur die Cola; Auswertung Tisch 5: 2× Snack + Cola, Kachel „Snacks“ 2,00 € | |
 | 23 | Nur 1× Snack senden | Küche und Theke bleiben still, Kellner sieht „✓ Gesendet“ | |
-| 24 | Kasse: Tisch mit Bestellung antippen | Artikel und „Offen“ stimmen mit der Bestellung überein | |
-| 25 | Teilbetrag 5,00 kassieren, dann „Alles bezahlt“ | Offen erst um 5 € kleiner, dann 0 €; Tisch grün „✓ bezahlt“; Kassenstand des Kellners steigt | |
+| 24 | Kasse: Tisch mit Bestellung antippen | Artikel mit „x offen“ und „Offen“-Betrag stimmen mit der Bestellung überein | |
+| 25 | 1 Pils auswählen → „Auswahl kassieren“, dann „Alles bezahlt“ | Pils zeigt „1 bezahlt“, Offen sinkt um 4 €; danach 0 € und Tisch grün „✓ bezahlt“; Kassenstand steigt | |
 | 26 | Eine Zahlung stornieren | Betrag ist wieder offen, Kassenstand sinkt | |
 | 27 | Auswertung → Kellner | Spalte „Kassiert (bar)“ stimmt mit den Kassenständen überein | |
+| 28 | Küche: 🚫 Ausverkauft → Käsesalat antippen | Bei den Kellnern (max. 10 s) Käsesalat durchgestrichen, + gesperrt, Hinweis „Ausverkauft“ | |
+| 29 | Käsesalat wieder auf „verfügbar“ | Kellner kann wieder bestellen | |
+| 30 | Auswertung → ⬇ Excel (am PC und am iPhone) | Datei lässt sich in Excel/Numbers öffnen, 5 Blätter, Summen stimmen | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.
