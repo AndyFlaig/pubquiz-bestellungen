@@ -114,6 +114,11 @@
     }
   });
 
+  // Home-Knopf: in Küche/Theke nur nach Rückfrage verlassen
+  $(".home-knopf").addEventListener("click", (e) => {
+    if (!confirm("Ansicht wirklich verlassen? Danach kommt hier kein Ton mehr, bis du wieder auf Start tippst.")) e.preventDefault();
+  });
+
   async function start() {
     await App.pinPruefen(ZIEL);
     const ov = $("#start-overlay");
