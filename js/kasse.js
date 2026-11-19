@@ -38,7 +38,7 @@
     if (laedt) return;
     laedt = true;
     try {
-      rows = await DB.listAll();
+      rows = (await DB.listAll()).filter((r) => !App.istEigen(r)); // Eigenverzehr wird nicht kassiert
       try { zahlungen = await DB.listZahlungen(); fehlerKasse = false; }
       catch (e) { fehlerKasse = true; zahlungen = []; }
       render();
@@ -62,7 +62,7 @@
       return;
     }
 
-    $("#kasse-raster").innerHTML = CFG.TISCHE.map((t) => {
+    $("#kasse-raster").innerHTML = CFG.TISCHE.filter((t) => !t.eigen).map((t) => {
       const best = bestelltCent(t.nr), rest = best - bezahltCent(t.nr);
       const st = !best && !rest ? "" : rest === 0 ? "bezahlt" : rest > 0 ? "schuldet" : "zuviel";
       const info = !best && !rest ? "–" : rest === 0 ? "✓ bezahlt" : rest > 0 ? euro(rest / 100) : "+" + euro(-rest / 100);

@@ -9,8 +9,11 @@
   const summe = (pos) => summeCent(pos) / 100;
 
   // zahlungen = null, wenn die Kasse in Supabase noch nicht eingerichtet ist
-  function render(rows, zahlungen) {
+  function render(alleRows, zahlungen) {
+    const eigenRows = alleRows.filter(App.istEigen);
+    const rows = alleRows.filter((r) => !App.istEigen(r)); // ab hier nur Verkauf (Umsatz)
     const alle = zusammenfassen(rows);
+    const eigenPos = zusammenfassen(eigenRows);
     const gruppen = new Set(rows.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size;
     const offen = rows.filter((r) => r.status === "offen").length;
     const getraenke = summe(zusammenfassen(rows.filter((r) => r.ziel === "theke")));
@@ -25,10 +28,11 @@
       kachel("Snacks", euro(snacks)) +
       (zahlungen ? kachel("Kassiert", euro(bezahltCent / 100)) +
         kachel("Noch offen", euro((summeCent(alle) - bezahltCent) / 100)) : "") +
-      kachel("Bestellungen", gruppen + (offen ? " <small>(noch offen: " + offen + ")</small>" : ""));
+      kachel("Bestellungen", gruppen + (offen ? " <small>(noch offen: " + offen + ")</small>" : "")) +
+      (eigenRows.length ? kachel("Eigenverzehr (Warenwert)", euro(summe(eigenPos)) + " <small class='eigen-klein'>nicht im Umsatz</small>") : "");
 
     // Pro Tisch
-    $("#tische").innerHTML = CFG.TISCHE.map((t) => {
+    $("#tische").innerHTML = CFG.TISCHE.filter((t) => !t.eigen).map((t) => {
       const tr = rows.filter((r) => r.tisch === t.nr);
       const pos = zusammenfassen(tr);
       const off = tr.filter((r) => r.status === "offen").length;
@@ -50,13 +54,17 @@
         zahlZeile +
         (off ? '<p class="klein-hinweis">⏳ noch offen: ' + off + "</p>" : "") +
         "</article>";
-    }).join("");
+    }).join("") + eigenKarten(eigenRows);
 
     // Artikel
+    const inv = inventur(rows, eigenRows);
     $("#artikel-tabelle").innerHTML =
-      "<tr><th class='zahl'>Anzahl</th><th>Artikel</th><th class='zahl'>Umsatz</th></tr>" +
-      alle.map((p) => "<tr><td class='zahl'>" + p.anzahl + "</td><td>" + esc(posText(p)) + "</td><td class='zahl'>" + euro(p.summe) + "</td></tr>").join("") +
-      "<tr class='summe-zeile'><td></td><td>Summe</td><td class='zahl'>" + euro(summe(alle)) + "</td></tr>";
+      "<tr><th>Artikel</th><th class='zahl'>Ver&shy;kauft</th><th class='zahl' title='Eigenverzehr'>Eigen</th><th class='zahl' title='Gesamt für die Inventur'>Inven&shy;tur</th><th class='zahl'>Umsatz</th></tr>" +
+      inv.map((x) => "<tr><td>" + esc(posText(x)) + "</td><td class='zahl'>" + x.verkauft + "</td><td class='zahl'>" + (x.eigen || "") +
+        "</td><td class='zahl'><b>" + (x.verkauft + x.eigen) + "</b></td><td class='zahl'>" + euro(x.umsatzCent / 100) + "</td></tr>").join("") +
+      "<tr class='summe-zeile'><td>Summe</td><td class='zahl'>" + inv.reduce((s, x) => s + x.verkauft, 0) + "</td><td class='zahl'>" +
+        inv.reduce((s, x) => s + x.eigen, 0) + "</td><td class='zahl'>" + inv.reduce((s, x) => s + x.verkauft + x.eigen, 0) +
+        "</td><td class='zahl'>" + euro(summe(alle)) + "</td></tr>";
 
     // Kellner
     $("#kellner-tabelle").innerHTML =
@@ -71,6 +79,35 @@
       }).join("");
 
     document.title = "Auswertung (" + uhrzeit(new Date().toISOString()) + ") – Pub-Quiz";
+  }
+
+  // Inventur: pro Artikel verkauft + Eigenverzehr
+  function inventur(verkauf, eigen) {
+    const m = new Map();
+    const key = (p) => p.id || p.name + "|" + (p.menge || "");
+    zusammenfassen(verkauf).forEach((p) => m.set(key(p), Object.assign({}, p, { verkauft: p.anzahl, eigen: 0, umsatzCent: p.cent, eigenCent: 0 })));
+    zusammenfassen(eigen).forEach((p) => {
+      const x = m.get(key(p)) || Object.assign({}, p, { verkauft: 0, eigen: 0, umsatzCent: 0, eigenCent: 0 });
+      x.eigen += p.anzahl; x.eigenCent += p.cent; m.set(key(p), x);
+    });
+    return zusammenfassen([{ positionen: [...m.values()].map((x) => ({ id: x.id, name: x.name, menge: x.menge, preis: x.preis, anzahl: 1 })) }])
+      .map((p) => m.get(key(p)));
+  }
+
+  // Karten für Eigenverzehr (pro Bereich/Person, so wie im Admin angelegt)
+  function eigenKarten(eigenRows) {
+    if (!eigenRows.length) return "";
+    const gruppen = new Map();
+    eigenRows.forEach((r) => { const k = r.tisch + "|" + r.team; (gruppen.get(k) || gruppen.set(k, []).get(k)).push(r); });
+    return '<h3 class="eigen-ueberschrift">👤 Eigenverzehr – zählt nicht zum Umsatz</h3>' +
+      [...gruppen.values()].map((rs) => {
+        const pos = zusammenfassen(rs);
+        return '<article class="karte klein eigen-karte"><header><div class="tisch">👤</div><div class="team">' + esc(rs[0].team) + "</div>" +
+          '<span class="tisch-summe eigen-wert">' + euro(summe(pos)) + "</span></header>" +
+          '<table class="tabelle">' + pos.map((p) => "<tr><td class='zahl'>" + p.anzahl + "×</td><td>" + esc(posText(p)) +
+            "</td><td class='zahl'>" + euro(p.summe) + "</td></tr>").join("") + "</table>" +
+          '<p class="klein-hinweis">Warenwert – wird nicht kassiert</p></article>';
+      }).join("");
   }
 
   // Kellner aus der Liste + alle, die in den Daten vorkommen (z. B. nach Umbenennung im Admin)
@@ -126,7 +163,9 @@
       const roh = await DB.listAlleRoh();
       let zRoh = null;
       try { zRoh = await DB.listZahlungenRoh(); } catch (e) { /* Kasse nicht eingerichtet */ }
-      const rows = roh.filter((r) => r.status !== "storniert");
+      const gueltig = roh.filter((r) => r.status !== "storniert");
+      const rows = gueltig.filter((r) => !App.istEigen(r));   // Verkauf
+      const eigenRows = gueltig.filter(App.istEigen);         // Eigenverzehr
       const zahl = zRoh ? zRoh.filter((z) => z.status === "gueltig") : [];
       const blaetter = [];
 
@@ -134,7 +173,7 @@
         name: "Pro Tisch",
         spalten: [{ titel: "Tisch", typ: "zahl", breite: 7 }, { titel: "Team", breite: 32 }, { titel: "Bestellt", typ: "euro", breite: 12 },
           { titel: "Bezahlt", typ: "euro", breite: 12 }, { titel: "Offen", typ: "euro", breite: 12 }, { titel: "Artikel", breite: 80 }],
-        zeilen: CFG.TISCHE.map((t) => {
+        zeilen: CFG.TISCHE.filter((t) => !t.eigen).map((t) => {
           const pos = zusammenfassen(rows.filter((r) => r.tisch === t.nr));
           const best = summeCent(pos);
           const bez = zahl.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.betrag), 0);
@@ -143,11 +182,27 @@
       });
 
       blaetter.push({
-        name: "Artikel",
-        spalten: [{ titel: "Artikel", breite: 28 }, { titel: "Menge", breite: 9 }, { titel: "Anzahl", typ: "zahl", breite: 9 },
-          { titel: "Einzelpreis", typ: "euro", breite: 12 }, { titel: "Umsatz", typ: "euro", breite: 12 }],
-        zeilen: zusammenfassen(rows).map((p) => [p.name, p.menge || "", p.anzahl, p.preis, eur(p.cent)]),
+        name: "Artikel (Inventur)",
+        spalten: [{ titel: "Artikel", breite: 28 }, { titel: "Menge", breite: 9 }, { titel: "Verkauft", typ: "zahl", breite: 10 },
+          { titel: "Eigenverzehr", typ: "zahl", breite: 13 }, { titel: "Gesamt (Inventur)", typ: "zahl", breite: 17 },
+          { titel: "Einzelpreis", typ: "euro", breite: 12 }, { titel: "Umsatz", typ: "euro", breite: 12 },
+          { titel: "Warenwert Eigenverzehr", typ: "euro", breite: 22 }],
+        zeilen: inventur(rows, eigenRows).map((x) => [x.name, x.menge || "", x.verkauft, x.eigen, x.verkauft + x.eigen,
+          x.preis, eur(x.umsatzCent), eur(x.eigenCent)]),
       });
+
+      if (eigenRows.length) {
+        const ez = [];
+        eigenRows.forEach((r) => r.positionen.forEach((p) => ez.push([zeit(r.erstellt_am), r.team, r.kellner,
+          p.anzahl, p.name, p.menge || "", Number(p.preis) || 0, eur(p.anzahl * cent(p.preis)), p.notiz || ""])));
+        blaetter.push({
+          name: "Eigenverzehr",
+          spalten: [{ titel: "Zeit", breite: 20 }, { titel: "Für (Bereich/Person)", breite: 24 }, { titel: "Erfasst von", breite: 13 },
+            { titel: "Anzahl", typ: "zahl", breite: 8 }, { titel: "Artikel", breite: 26 }, { titel: "Menge", breite: 8 },
+            { titel: "Einzelpreis", typ: "euro", breite: 12 }, { titel: "Warenwert", typ: "euro", breite: 12 }, { titel: "Notiz", breite: 20 }],
+          zeilen: ez,
+        });
+      }
 
       blaetter.push({
         name: "Kellner",
@@ -162,13 +217,14 @@
 
       const posZeilen = [];
       roh.forEach((r) => r.positionen.forEach((p) => posZeilen.push([
-        r.id, zeit(r.erstellt_am), r.tisch, r.team, r.kellner, ZIEL_NAME[r.ziel] || r.ziel, r.status,
+        r.id, zeit(r.erstellt_am), r.tisch, r.team, r.kellner, ZIEL_NAME[r.ziel] || r.ziel, r.status, App.istEigen(r) ? "ja" : "",
         p.anzahl, p.name, p.menge || "", Number(p.preis) || 0, eur(p.anzahl * cent(p.preis)), p.notiz || "", r.kommentar || "", zeit(r.geaendert_am),
       ])));
       blaetter.push({
         name: "Bestellpositionen",
         spalten: [{ titel: "Nr", typ: "zahl", breite: 6 }, { titel: "Zeit", breite: 20 }, { titel: "Tisch", typ: "zahl", breite: 7 },
           { titel: "Team", breite: 26 }, { titel: "Kellner", breite: 12 }, { titel: "Ziel", breite: 15 }, { titel: "Status", breite: 11 },
+          { titel: "Eigenverzehr", breite: 13 },
           { titel: "Anzahl", typ: "zahl", breite: 8 }, { titel: "Artikel", breite: 26 }, { titel: "Menge", breite: 8 },
           { titel: "Einzelpreis", typ: "euro", breite: 12 }, { titel: "Summe", typ: "euro", breite: 11 },
           { titel: "Notiz (Artikel)", breite: 24 }, { titel: "Kommentar", breite: 30 }, { titel: "Geändert", breite: 20 }],

@@ -21,7 +21,8 @@
     const neu = (neuBis.get(r.id) || 0) > Date.now() ? " neu" : "";
     return (
       '<article class="karte ' + alt + neu + '" data-id="' + r.id + '">' +
-        '<header><div class="tisch">Tisch ' + esc(r.tisch) + '</div>' +
+        (App.istEigen(r) ? '<div class="eigen-band">👤 EIGENVERZEHR</div>' : "") +
+        '<header><div class="tisch">' + (App.istEigen(r) ? "👤" : "Tisch " + esc(r.tisch)) + '</div>' +
         '<div class="team">' + esc(r.team) + "</div></header>" +
         '<div class="meta">#' + r.id + " · " + esc(r.kellner) + " · " + uhrzeit(r.erstellt_am) +
         ' · <span class="alter">' + (min < 1 ? "gerade eben" : "vor " + min + " Min") + "</span></div>" +

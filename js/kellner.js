@@ -44,7 +44,7 @@
   // ------------------------------------------------------------------
   function tischText(nr) {
     const t = CFG.TISCHE.find((x) => x.nr === nr);
-    return t ? "Tisch " + t.nr + " – " + t.team : "";
+    return !t ? "" : t.eigen ? "👤 Eigenverzehr – " + t.team : "Tisch " + t.nr + " – " + t.team;
   }
 
   let andereZeigen = false;
@@ -52,14 +52,21 @@
     const revier = ((CFG.REVIERE || {})[kellner] || []).map(Number);
     const knopf = (t) => '<button class="tisch-knopf' + (entwurf.tisch === t.nr ? " aktiv" : "") + '" data-nr="' + t.nr + '">' +
       "<b>" + t.nr + "</b><span>" + esc(t.team) + "</span></button>";
-    const eigene = CFG.TISCHE.filter((t) => revier.includes(t.nr));
-    const andere = CFG.TISCHE.filter((t) => !revier.includes(t.nr));
-    $("#tisch-raster").innerHTML = eigene.length
+    const gaeste = CFG.TISCHE.filter((t) => !t.eigen);
+    const personal = CFG.TISCHE.filter((t) => t.eigen);
+    const eigene = gaeste.filter((t) => revier.includes(t.nr));
+    const andere = gaeste.filter((t) => !revier.includes(t.nr));
+    $("#tisch-raster").innerHTML = (eigene.length
       ? '<div class="revier-titel">Mein Revier</div><div class="tisch-raster">' + eigene.map(knopf).join("") + "</div>" +
         (andere.length ? '<button class="revier-umschalter" data-andere>' +
           (andereZeigen ? "▲ Andere Tische ausblenden" : "▼ Andere Tische (" + andere.length + ")") + "</button>" +
           (andereZeigen ? '<div class="tisch-raster andere-tische">' + andere.map(knopf).join("") + "</div>" : "") : "")
-      : '<div class="tisch-raster">' + CFG.TISCHE.map(knopf).join("") + "</div>";
+      : '<div class="tisch-raster">' + gaeste.map(knopf).join("") + "</div>") +
+      (personal.length ? '<div class="revier-titel eigen-titel">👤 Eigenverzehr (zählt nicht zum Umsatz)</div>' +
+        '<div class="tisch-raster eigen-raster">' + personal.map((t) =>
+          '<button class="tisch-knopf eigen' + (entwurf.tisch === t.nr ? " aktiv" : "") + '" data-nr="' + t.nr + '">' +
+          "<b>👤</b><span>" + esc(t.team) + "</span></button>").join("") + "</div>" : "");
+    $("#tisch-gewaehlt").classList.toggle("eigen", !!(CFG.TISCHE.find((x) => x.nr === entwurf.tisch) || {}).eigen);
     const gewaehlt = entwurf.tisch != null;
     $("#tisch-gewaehlt").hidden = !gewaehlt;
     $("#tisch-raster").hidden = gewaehlt;
@@ -289,7 +296,9 @@
 
     const ov = document.createElement("div");
     ov.className = "overlay";
+    const istEigenTisch = !!(CFG.TISCHE.find((x) => x.nr === entwurf.tisch) || {}).eigen;
     ov.innerHTML = '<div class="dialog"><h2>' + esc(tischText(entwurf.tisch)) + "</h2>" +
+      (istEigenTisch ? '<p class="eigen-hinweis">👤 EIGENVERZEHR – wird gezählt, aber nicht kassiert</p>' : "") +
       teile.map((t) => '<h4 class="ziel-' + t.ziel + '">→ ' + ZIEL_NAME[t.ziel] + "</h4><ul>" +
         t.pos.map((p) => "<li>" + esc(positionText(p)) + "</li>").join("") + "</ul>").join("") +
       (kommentar ? '<div class="kommentar">' + esc(kommentar) + "</div>" : "") +
@@ -306,11 +315,11 @@
       sendet = true; a.disabled = true; a.textContent = "Sende…";
       const t = CFG.TISCHE.find((x) => x.nr === entwurf.tisch);
       if (!gesendet.gruppe) gesendet.gruppe = App.uuid();
-      const zeile = (teil) => ({
+      const zeile = (teil) => Object.assign({
         gruppe: gesendet.gruppe, ziel: teil.ziel, tisch: t.nr, team: t.team, kellner,
         positionen: teil.pos.map(({ ziel, ...rest }) => rest),
         kommentar: teil.ziel === "kasse" ? null : (kommentar || null),
-      });
+      }, t.eigen ? { eigenverzehr: true } : {});
       // Küche + Theke gemeinsam senden; Snacks ("kasse") getrennt, direkt als erledigt.
       // So kommen Getränke/Speisen auch dann an, wenn die Snack-Erweiterung in Supabase fehlt.
       const haupt = teile.filter((x) => x.ziel !== "kasse");
@@ -324,7 +333,10 @@
       } catch (err) {
         verbindung.fehler();
         a.disabled = false; a.textContent = "Nochmal senden";
-        toast("NICHT gesendet – keine Verbindung. Bestellung bleibt erhalten, bitte nochmal senden.", { art: "fehler", dauer: 7000 });
+        const m = (err && err.message) || "";
+        toast(/eigenverzehr/i.test(m)
+          ? "Eigenverzehr NICHT gesendet: Datenbank noch nicht aktualisiert (supabase/update-v5.sql ausführen)."
+          : "NICHT gesendet – keine Verbindung. Bestellung bleibt erhalten, bitte nochmal senden.", { art: "fehler", dauer: 8000 });
         sendet = false;
         return;
       }

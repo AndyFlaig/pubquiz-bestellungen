@@ -432,7 +432,11 @@
     }
   }
 
+  // Eigenverzehr: zählt für die Inventur (Stückzahl), aber nicht zum Umsatz
+  const istEigen = (r) => r && r.eigenverzehr === true;
+
   window.App = {
+    istEigen,
     starte, stammdatenLaden, stammdatenGueltig, STANDARD,
     get stammQuelle() { return stammQuelle; }, get stammVersion() { return stammVersion; },
     zusammenfassen, cent,

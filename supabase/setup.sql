@@ -104,6 +104,9 @@ create policy "einstellungen aendern" on public.einstellungen for update to anon
 
 grant select, insert, update on public.einstellungen to anon, authenticated;
 
+-- Eigenverzehr: Bestellungen für Personal/Helfer – zählen in der Inventur, nicht im Umsatz
+alter table public.bestellungen add column if not exists eigenverzehr boolean not null default false;
+
 -- Live-Updates (Realtime) für die Tabelle einschalten
 do $$
 begin
