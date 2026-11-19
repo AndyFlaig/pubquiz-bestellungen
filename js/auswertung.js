@@ -157,7 +157,7 @@
   const mmss = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
   function pauseKnopfZeigen() {
     const k = $("#pause-knopf"), r = restSek();
-    k.textContent = pause && r > 0 ? "⏸ " + mmss(r) : "⏸";
+    k.textContent = pause && r > 0 ? "⏸ Pause " + mmss(r) : "⏸ Pause";
     k.classList.toggle("pause-aktiv", !!(pause && r > 0));
   }
   async function pauseLaden() {
