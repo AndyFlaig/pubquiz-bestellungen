@@ -1,6 +1,7 @@
-/* Beamer: Pausen-Show mit Zwischenständen – Folien wechseln alle 15 Sekunden in Dauerschleife.
+/* Beamer: Pausen-Show mit Zwischenständen – Folien wechseln alle 10 Sekunden in Dauerschleife.
+   Startet die Orga in der Auswertung eine Pause (⏸), erscheint im Wechsel ein großer Countdown.
    Nur Anzeige, ändert nichts. Optionen in der Adresse:
-     beamer.html?sekunden=20   andere Anzeigedauer
+     beamer.html?sekunden=15   andere Anzeigedauer
      beamer.html?folie=spritz  nur diese eine Folie zeigen
      beamer.html#feiern        Konfetti testen
    Tastatur: → / Leertaste = weiter, ← = zurück, P = Pause */
@@ -9,7 +10,7 @@
   const { CFG, DB, $, esc } = App;
 
   const PARAM = new URLSearchParams(location.search);
-  const SEKUNDEN = Math.max(5, Number(PARAM.get("sekunden")) || 15);
+  const SEKUNDEN = Math.max(5, Number(PARAM.get("sekunden")) || 10);
   const NUR_FOLIE = PARAM.get("folie");
 
   // ---------- Was zählt wozu (über den Artikelnamen) ----------
@@ -177,21 +178,78 @@
 
   // ---------- Diashow ----------
   let index = -1, timer = null, pause = false, sichtbar = [];
+  let letzteWarCountdown = false;
+
+  // ---------- Pausen-Countdown ----------
+  let quizPause = null; // { ende: ISO, minuten } aus der Datenbank
+  const NACHLAUF = 90; // Sekunden "Weiter geht's!" nach Ablauf
+  const restSek = () => quizPause ? Math.ceil((new Date(quizPause.ende) - Date.now()) / 1000) : null;
+  const pauseAktiv = () => { const r = restSek(); return r !== null && r > -NACHLAUF; };
+  const mmss = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+
+  function countdownFolie() {
+    return '<section class="b-folie b-countdown"><div class="b-ring-box"><svg viewBox="0 0 100 100" class="b-ring">' +
+      '<circle cx="50" cy="50" r="45" class="b-ring-hinten"></circle><circle cx="50" cy="50" r="45" class="b-ring-vorne" id="cd-ring"></circle></svg>' +
+      '<div class="b-ring-innen"><div class="b-cd-titel" id="cd-titel">⏸ Pause</div><div class="b-cd-zeit" id="cd-zeit">–</div>' +
+      '<div class="b-cd-text" id="cd-text">Zeit für ein Getränk 🍻</div></div></div></section>';
+  }
+  function countdownAktualisieren() {
+    const badge = $("#pause-badge");
+    const r = restSek();
+    const aktiv = pauseAktiv();
+    badge.hidden = !aktiv;
+    if (aktiv) badge.textContent = r > 0 ? "⏸ " + mmss(r) : "▶ Weiter!";
+    const zeit = $("#cd-zeit");
+    if (!zeit) return;
+    const ring = $("#cd-ring"), gesamt = (quizPause && quizPause.minuten ? quizPause.minuten * 60 : 600);
+    if (r !== null && r > 0) {
+      zeit.textContent = mmss(r);
+      $("#cd-titel").textContent = "⏸ Pause";
+      $("#cd-text").textContent = r <= 60 ? "Gleich geht's weiter – letzte Bestellungen! 🏃" : "Zeit für ein Getränk 🍻";
+      ring.style.strokeDashoffset = String(283 * (1 - Math.min(1, r / gesamt)));
+      document.querySelector(".b-countdown").classList.toggle("knapp", r <= 60);
+    } else {
+      zeit.textContent = "▶";
+      $("#cd-titel").textContent = "Weiter geht's!";
+      $("#cd-text").textContent = "Bitte Plätze einnehmen – das Quiz geht weiter 🎤";
+      ring.style.strokeDashoffset = "283";
+      document.querySelector(".b-countdown").classList.add("vorbei");
+    }
+  }
+  setInterval(countdownAktualisieren, 1000);
+
+  async function pauseLaden() {
+    let neu = null;
+    try { neu = await DB.ladeEinstellung("pause"); } catch (e) { return; }
+    if (neu && !neu.ende) neu = null;
+    const neueStartet = neu && (!quizPause || quizPause.ende !== neu.ende);
+    quizPause = neu;
+    countdownAktualisieren();
+    if (neueStartet && pauseAktiv() && D) { letzteWarCountdown = false; zeige(0); } // sofort zum Countdown springen
+  }
 
   function zeige(richtung) {
     if (!D) return;
     sichtbar = FOLIEN.filter((f) => (!NUR_FOLIE || f.id === NUR_FOLIE) && f.html(D) !== null);
-    if (!sichtbar.length) return;
-    index = (index + (richtung || 1) + sichtbar.length) % sichtbar.length;
-    const f = sichtbar[index];
     const box = $("#folien");
-    box.innerHTML = f.html(D);
+    if (!NUR_FOLIE && pauseAktiv() && (!letzteWarCountdown || !sichtbar.length) && richtung !== -1) {
+      // Während der Pause: Countdown im Wechsel mit den Statistiken
+      box.innerHTML = countdownFolie();
+      letzteWarCountdown = true;
+      countdownAktualisieren();
+    } else {
+      if (!sichtbar.length) return;
+      index = (index + (richtung === 0 ? 0 : richtung || 1) + sichtbar.length) % sichtbar.length;
+      if (index < 0) index = 0;
+      box.innerHTML = sichtbar[index].html(D);
+      letzteWarCountdown = false;
+    }
     // Animationen starten (Glas füllen, Balken wachsen)
     requestAnimationFrame(() => requestAnimationFrame(() => {
       box.querySelectorAll("[data-hoehe]").forEach((el) => { el.style.height = el.dataset.hoehe + "%"; });
       box.querySelectorAll("[data-breite]").forEach((el) => { el.style.width = Math.max(8, el.dataset.breite) + "%"; });
     }));
-    $("#punkte").innerHTML = sichtbar.map((x, i) => '<i class="' + (i === index ? "an" : "") + '"></i>').join("");
+    $("#punkte").innerHTML = sichtbar.map((x, i) => '<i class="' + (i === index && !letzteWarCountdown ? "an" : "") + '"></i>').join("");
     const balken = $("#balken");
     balken.style.animation = "none"; void balken.offsetWidth;
     balken.style.animation = pause ? "none" : "b-laufen " + SEKUNDEN + "s linear forwards";
@@ -253,5 +311,7 @@
   let t = null;
   DB.onChange(() => { clearTimeout(t); t = setTimeout(laden, 800); });
   setInterval(laden, 15000);
+  pauseLaden();
+  setInterval(pauseLaden, 5000);
   if (location.hash === "#feiern") setTimeout(() => feiern("Test: 50 Liter Bier! 🍻"), 800);
 })();

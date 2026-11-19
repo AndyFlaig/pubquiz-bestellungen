@@ -138,3 +138,22 @@ body.beamer {
   .b-zwei { grid-template-columns: 1fr; }
   .b-kacheln { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ---------- Pausen-Countdown ---------- */
+.b-pause-badge { margin-left: auto; padding: .3em .8em; border-radius: .6em; background: var(--gold); color: #111; font-size: 1.6em;
+  font-weight: 900; font-variant-numeric: tabular-nums; }
+.b-pause-badge:not([hidden]) + .b-uhr { margin-left: .6em; }
+.b-countdown { align-items: center; justify-content: center; }
+.b-ring-box { position: relative; width: min(36em, 70vh); aspect-ratio: 1; }
+.b-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.b-ring circle { fill: none; stroke-width: 6; }
+.b-ring-hinten { stroke: rgba(255,255,255,.1); }
+.b-ring-vorne { stroke: var(--gold); stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
+.b-ring-innen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.b-cd-titel { font-size: 2.6em; font-weight: 800; color: #e9d29b; }
+.b-cd-zeit { font-size: 8em; font-weight: 900; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; }
+.b-cd-text { font-size: 1.4em; color: #ccc; margin-top: .4em; max-width: 14em; }
+.b-countdown.knapp .b-ring-vorne { stroke: #ff7a1a; }
+.b-countdown.knapp .b-cd-zeit { color: #ffb36b; animation: b-puls 1s ease-in-out infinite; }
+.b-countdown.vorbei .b-cd-zeit { color: #1fa35c; animation: b-puls 1s ease-in-out infinite; }
+.b-countdown.vorbei .b-cd-titel { color: #1fa35c; font-size: 3.4em; }

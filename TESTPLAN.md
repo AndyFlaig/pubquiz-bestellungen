@@ -44,11 +44,13 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 38 | Admin: „101 – Theke“ mit Häkchen Eigenverzehr anlegen | Kellner sieht „👤 Eigenverzehr – Theke“ unter den Tischen | |
 | 39 | 2 Pils auf „Theke“ (Eigenverzehr) bestellen | Theke zeigt lila „EIGENVERZEHR“; Kasse zeigt den Eintrag nicht | |
 | 40 | Auswertung → Artikel | Pils: Verkauft unverändert, Eigenverzehr 2, Gesamt +2; Umsatz unverändert | |
-| 41 | `beamer.html` am Laptop | Folien wechseln alle 15 s; Liter Bier/Spritz und Top 3 stimmen mit den Testbestellungen; `#feiern` zeigt Konfetti | |
+| 41 | `beamer.html` am Laptop | Folien wechseln alle 10 s; Liter Bier/Spritz und Top 3 stimmen mit den Testbestellungen; `#feiern` zeigt Konfetti | |
 | 42 | Theke: 📢 → „Letzte Runde!“ senden | Nach ≤ 10 s auf allen Kellner-Handys, Küche, Auswertung groß mit Ton; nicht beim Absender | |
 | 43 | Kellner: 🌓 antippen bis 🌙 | App wird dunkel, bleibt nach Neuladen dunkel | |
 | 44 | Kasse: Tisch 12 €, Gegeben 20, „Stimmt so“, Alles bezahlt | Trinkgeld 8,00; Rückgeld 0,00; Kassenstand +20 €; Tisch „✓ bezahlt“ | |
 | 45 | Auswertung | Kachel „Trinkgeld“ 8 €, Umsatz gesamt = Waren + Trinkgeld; Kellner-Tabelle mit Spalte Trinkgeld | |
+| 46 | Auswertung: ⏸ → 10 Min | Beamer springt sofort auf den Countdown, danach im Wechsel mit Statistiken; Restzeit oben neben der Uhr | |
+| 47 | ⏸ → „Pause jetzt beenden“ | Beamer zeigt „Weiter geht's!“ bzw. wieder nur Statistiken | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.
