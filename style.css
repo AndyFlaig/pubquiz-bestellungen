@@ -41,8 +41,15 @@ h2 small { font-weight: normal; color: var(--leise); }
 .kopf-titel { font-size: 1.05rem; }
 .gross-titel { font-size: 1.6rem; font-weight: 700; }
 .kopf .link { color: #b9c6ff; padding: 0; }
+.home-knopf {
+  flex: none; display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,255,255,.15); color: #fff; text-decoration: none; font-size: 1.6rem; line-height: 1;
+}
+.home-knopf:active { background: rgba(255,255,255,.3); }
+.kellner .kopf > div, .station .kopf-titel, .auswertung .kopf-titel { margin-right: auto; }
 .kellner .kopf > div { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
-.zaehler { font-size: 1.4rem; font-weight: 700; margin-left: auto; }
+.zaehler { font-size: 1.4rem; font-weight: 700; }
 .verbindung { font-size: .8rem; padding: 4px 10px; border-radius: 99px; white-space: nowrap; font-weight: 600; }
 .verbindung.gruen { background: #1a7f37; }
 .verbindung.gelb { background: #8a6d00; }
@@ -241,7 +248,7 @@ body.offline .kopf { background: var(--rot); }
 
 /* ---------- Auswertung ---------- */
 .auswertung-inhalt { max-width: 1200px; margin: 0 auto; padding: 12px; }
-.kopf-knopf { background: rgba(255,255,255,.15); border: 0; color: #fff; border-radius: 10px; font-size: 1.4rem; padding: 6px 14px; margin-left: auto; }
+.kopf-knopf { background: rgba(255,255,255,.15); border: 0; color: #fff; border-radius: 10px; font-size: 1.4rem; padding: 6px 14px; }
 .kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
 .kachel { background: var(--karte); border-radius: var(--radius); padding: 12px 14px; }
 .kachel-titel { color: var(--leise); font-size: .85rem; }
