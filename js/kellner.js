@@ -36,6 +36,41 @@
       ov.remove();
       $("#kellner-name").textContent = kellner;
       offeneLaden();
+      tourZeigen();
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Kurz-Tour beim ersten Start (einmal pro Gerät)
+  // ------------------------------------------------------------------
+  const TOUR = [
+    ["🪑", "1. Tisch wählen", "Deine Tische stehen oben. Hat der Tisch schon bestellt, holt „↻ Wie zuletzt“ die letzte Runde."],
+    ["➕", "2. Artikel antippen", "Mit + und − die Menge. Suchfeld und ⭐ Favoriten sparen Zeit. „✎ Notiz“ für Sonderwünsche."],
+    ["📤", "3. Absenden & prüfen", "Kontrollansicht prüfen, dann Senden. Speisen gehen an die Küche, Getränke an die Theke. Ist es fertig, bekommst du einen grünen Hinweis."],
+    ["💶", "4. Kasse", "Im Reiter „Kasse“ rechnest du ab – alles auf einmal oder pro Gast, mit Startgeld-Anteil und Trinkgeld."],
+  ];
+  function tourZeigen(zwingend) {
+    if (!zwingend && store.get("tour_kellner_gesehen", false)) return;
+    let i = 0;
+    const ov = document.createElement("div");
+    ov.className = "overlay";
+    const zeichnen = () => {
+      const [sym, titel, text] = TOUR[i];
+      ov.innerHTML = '<div class="dialog tour"><div class="tour-symbol">' + sym + "</div><h2>" + esc(titel) + "</h2><p>" + esc(text) + "</p>" +
+        '<div class="tour-punkte">' + TOUR.map((_, j) => '<i class="' + (j === i ? "an" : "") + '"></i>').join("") + "</div>" +
+        '<div class="knopf-reihe"><button class="gross" data-t="skip">' + (i ? "Zurück" : "Überspringen") + "</button>" +
+        '<button class="gross primaer" data-t="weiter">' + (i < TOUR.length - 1 ? "Weiter" : "Los geht's!") + "</button></div>" +
+        '<a href="hilfe.html#kellner" class="hilfe-link">❓ Ausführliche Anleitung</a></div>';
+    };
+    zeichnen();
+    document.body.appendChild(ov);
+    ov.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-t]");
+      if (!b) return;
+      if (b.dataset.t === "weiter") { if (i < TOUR.length - 1) { i++; zeichnen(); return; } }
+      else if (i > 0) { i--; zeichnen(); return; }
+      store.set("tour_kellner_gesehen", true);
+      ov.remove();
     });
   }
 
@@ -482,7 +517,7 @@
     renderTische(); renderArtikel();
     const setzeReiter = () => { $(".reiter").style.top = $(".kopf").offsetHeight + "px"; };
     setzeReiter(); window.addEventListener("resize", setzeReiter);
-    if (kellner) $("#kellner-name").textContent = kellner; else kellnerWaehlen();
+    if (kellner) { $("#kellner-name").textContent = kellner; tourZeigen(); } else kellnerWaehlen();
     offeneLaden();
     DB.onChange(() => offeneLaden(), (live) => verbindung.live(live));
     setInterval(offeneLaden, 15000);

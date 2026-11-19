@@ -16,6 +16,7 @@ Kassiert wird nicht über die App (Strichliste auf Papier).
 - **Eigenverzehr:** im Admin Tische als „Eigenverzehr“ markieren – zählt in der Inventur, nicht im Umsatz, nicht in der Kasse
 - **Ausverkauft-Schalter** in Küche/Theke, **Excel-Export** in der Auswertung (eigener .xlsx-Schreiber, `js/xlsx.js`)
 
+👉 **Anleitung in der App:** `hilfe.html` (❓ in jeder Ansicht, Kurz-Tour beim ersten Start der Kellner-Ansicht)
 👉 **Einrichtung Schritt für Schritt:** [ANLEITUNG.md](ANLEITUNG.md)
 👉 **Test vor Freitag:** [TESTPLAN.md](TESTPLAN.md)
 👉 **Idee für später:** [STRICHLISTE.md](STRICHLISTE.md) – Konzept digitale Strichliste
