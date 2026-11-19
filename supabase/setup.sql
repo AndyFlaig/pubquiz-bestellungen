@@ -125,6 +125,9 @@ create policy "durchsagen anlegen" on public.durchsagen for insert to anon, auth
 
 grant select, insert on public.durchsagen to anon, authenticated;
 
+-- Trinkgeld bei der Zahlung (zählt zum Gesamtumsatz und zum Kassenstand, nicht zum Warenbetrag)
+alter table public.zahlungen add column if not exists trinkgeld numeric(8,2) not null default 0 check (trinkgeld >= 0);
+
 -- Live-Updates (Realtime) für die Tabelle einschalten
 do $$
 begin

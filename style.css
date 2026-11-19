@@ -497,3 +497,12 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .dialog textarea { font-size: 1.1rem; }
 #design-platz { margin-top: 4px; }
 .station #design-platz { margin: 4px 0; }
+
+/* ---------- Trinkgeld ---------- */
+.trinkgeld-box { background: var(--gold-hell); border-radius: 12px; padding: 10px 12px; }
+.trinkgeld-knoepfe { display: flex; flex-wrap: wrap; gap: 6px; }
+.trinkgeld-knoepfe button { flex: 1 1 auto; padding: 10px 8px; border: 2px solid var(--gold); border-radius: 10px; background: var(--karte); color: var(--gold-text); font-weight: 700; font-size: .9rem; }
+.tg-klein { color: var(--gold-text); font-weight: 600; }
+.rueckgeld:empty { display: none; }
+.teilbetrag input { width: 100%; min-width: 0; }
+.kasse-karte, .kasse-karte > * { min-width: 0; }

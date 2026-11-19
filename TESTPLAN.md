@@ -47,6 +47,8 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 41 | `beamer.html` am Laptop | Liter Bier und Top 3 stimmen mit den Testbestellungen; `#feiern` zeigt Konfetti | |
 | 42 | Theke: 📢 → „Letzte Runde!“ senden | Nach ≤ 10 s auf allen Kellner-Handys, Küche, Auswertung groß mit Ton; nicht beim Absender | |
 | 43 | Kellner: 🌓 antippen bis 🌙 | App wird dunkel, bleibt nach Neuladen dunkel | |
+| 44 | Kasse: Tisch 12 €, Gegeben 20, „Stimmt so“, Alles bezahlt | Trinkgeld 8,00; Rückgeld 0,00; Kassenstand +20 €; Tisch „✓ bezahlt“ | |
+| 45 | Auswertung | Kachel „Trinkgeld“ 8 €, Umsatz gesamt = Waren + Trinkgeld; Kellner-Tabelle mit Spalte Trinkgeld | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

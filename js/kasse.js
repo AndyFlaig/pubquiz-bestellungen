@@ -13,6 +13,7 @@
   let aktiv = false;           // Reiter sichtbar?
   let laedt = false, sperre = false;
   let auswahl = new Map();     // key -> Anzahl, die jetzt bezahlt wird
+  let gezeichneterTisch = null;
   let snackWahl = new Map();   // Artikel-id -> Anzahl, die jetzt auf die Rechnung kommt
   // Artikel, die nur erfasst werden (z. B. Snacks auf dem Tisch) – können direkt in der Kasse dazukommen
   const kassenArtikel = () => CFG.ARTIKEL.filter((a) => a.ziel === "kasse");
@@ -52,7 +53,8 @@
   }
 
   function render() {
-    const meins = zahlungen.filter((z) => z.kellner === kellner()).reduce((s, z) => s + cent(z.betrag), 0);
+    // Kassenstand = Waren + Trinkgeld (beides liegt im Portemonnaie)
+    const meins = zahlungen.filter((z) => z.kellner === kellner()).reduce((s, z) => s + cent(z.betrag) + cent(z.trinkgeld || 0), 0);
     $("#kassenstand").innerHTML = "Dein Kassenstand (" + esc(kellner()) + "): <b>" + euro(meins / 100) + "</b>";
 
     if (fehlerKasse) {
@@ -81,6 +83,11 @@
     stand.forEach((x) => { const a = auswahl.get(x.key) || 0; if (a > Math.max(0, x.offen)) auswahl.set(x.key, Math.max(0, x.offen)); });
     const ausw = auswahlCent(stand);
 
+    // Eingetippte Werte (Gegeben/Trinkgeld) beim Neuzeichnen behalten, solange derselbe Tisch offen ist
+    const behalten = gezeichneterTisch === tisch
+      ? { gegeben: $("#gegeben") ? $("#gegeben").value : "", trinkgeld: $("#trinkgeld") ? $("#trinkgeld").value : "" }
+      : { gegeben: "", trinkgeld: "" };
+    gezeichneterTisch = tisch;
     $("#kasse-inhalt").innerHTML =
       '<article class="karte kasse-karte">' +
         '<header><div class="tisch">Tisch ' + t.nr + '</div><div class="team">' + esc(t.team) + "</div></header>" +
@@ -108,23 +115,29 @@
           "<tr class='summe-zeile'><td>" + (rest >= 0 ? "Offen" : "Zu viel bezahlt") + "</td><td class='zahl gross-zahl'>" + euro(Math.abs(rest) / 100) + "</td></tr>" +
         "</table>" +
         (rest > 0
-          ? (ausw ? '<div class="auswahl-box"><div class="auswahl-summe">Auswahl: <b>' + euro(ausw / 100) + "</b></div>" +
+          ? '<div class="teilbetrag"><label>Gegeben (für Rückgeld)<input id="gegeben" type="text" inputmode="decimal" placeholder="z. B. 50"></label></div>' +
+            '<div class="teilbetrag trinkgeld-box"><label>💶 Trinkgeld (optional)<input id="trinkgeld" type="text" inputmode="decimal" placeholder="0,00"></label>' +
+              '<div class="trinkgeld-knoepfe"><button type="button" data-tg="stimmt">„Stimmt so“</button>' +
+              '<button type="button" data-tg="runden">Aufrunden auf 5 €</button>' +
+              '<button type="button" data-tg="null">Kein Trinkgeld</button></div></div>' +
+            '<p id="rueckgeld" class="rueckgeld"></p>' +
+            (ausw ? '<div class="auswahl-box"><div class="auswahl-summe">Auswahl: <b>' + euro(ausw / 100) + "</b></div>" +
                 '<button class="gross primaer" id="auswahl-bezahlt">Auswahl kassieren – ' + euro(ausw / 100) + "</button>" +
                 '<button class="link" id="auswahl-leeren">Auswahl leeren</button></div>'
               : "") +
-            '<button class="gross' + (ausw ? "" : " primaer") + '" id="alles-bezahlt">✓ Alles bezahlt – ' + euro(rest / 100) + "</button>" +
-            '<div class="teilbetrag"><label>Gegeben (für Rückgeld)<input id="gegeben" type="text" inputmode="decimal" placeholder="z. B. 50"></label>' +
-              '<p id="rueckgeld" class="rueckgeld"></p></div>'
+            '<button class="gross' + (ausw ? "" : " primaer") + '" id="alles-bezahlt">✓ Alles bezahlt – ' + euro(rest / 100) + "</button>"
           : best > 0 && rest === 0 ? '<p class="zahl-status ok gross-status">✓ Tisch ist komplett bezahlt</p>'
           : rest < 0 ? '<p class="zahl-status zuviel">Zu viel kassiert (z. B. nach Storno) – Zahlung unten stornieren und neu kassieren.</p>' : "") +
         (zl.length ? "<h4>Zahlungen</h4><ul class='zahlungen'>" + zl.map((z) =>
           "<li><div><span>" + uhrzeit(z.erstellt_am) + " · " + esc(z.kellner) + "</span>" +
           (Array.isArray(z.positionen) && z.positionen.length
             ? "<small>" + esc(z.positionen.map((p) => p.anzahl + "× " + posText(p)).join(", ")) + "</small>" : "") + "</div>" +
-          "<b>" + euro(Number(z.betrag)) + "</b>" +
+          "<b>" + euro(Number(z.betrag)) + (Number(z.trinkgeld) ? '<small class="tg-klein"> + ' + euro(Number(z.trinkgeld)) + " TG</small>" : "") + "</b>" +
           (z.kellner === kellner() ? '<button class="link warnung" data-storno-zahlung="' + z.id + '">stornieren</button>' : "") +
           "</li>").join("") + "</ul>" : "") +
       "</article>";
+    if ($("#gegeben")) $("#gegeben").value = behalten.gegeben;
+    if ($("#trinkgeld")) $("#trinkgeld").value = behalten.trinkgeld;
     rueckgeldRechnen();
   }
 
@@ -151,6 +164,8 @@
     const m = (e && e.message) || "";
     if (/row-level security|violates check constraint|ziel_check/i.test(m))
       return "Datenbank lässt es nicht zu – bitte supabase/update-snacks.sql in Supabase ausführen. (" + m + ")";
+    if (/trinkgeld/i.test(m))
+      return "Datenbank kennt noch kein Trinkgeld – bitte supabase/update-v7.sql ausführen (oder ohne Trinkgeld kassieren). (" + m + ")";
     if (/column .*positionen|schema cache/i.test(m))
       return "Datenbank veraltet – bitte supabase/update-v3.sql ausführen. (" + m + ")";
     if (/fetch|network|Failed/i.test(m) || !m) return "keine Verbindung – bitte nochmal.";
@@ -194,22 +209,48 @@
     const ausw = auswahlCent(artikelStand(tisch));
     const zuZahlen = ausw || (bestelltCent(tisch) - bezahltCent(tisch));
     const gegeben = betragLesen($("#gegeben").value);
-    el.textContent = gegeben
-      ? (gegeben >= zuZahlen ? "Rückgeld: " + euro((gegeben - zuZahlen) / 100) : "Fehlen noch: " + euro((zuZahlen - gegeben) / 100)) +
-        (ausw ? " (für die Auswahl)" : "")
-      : "";
+    const tg = betragLesen($("#trinkgeld") ? $("#trinkgeld").value : "");
+    const gesamt = zuZahlen + tg;
+    el.textContent = (tg ? "Zu zahlen: " + euro(zuZahlen / 100) + " + " + euro(tg / 100) + " Trinkgeld = " + euro(gesamt / 100) + ". " : "") +
+      (gegeben
+        ? (gegeben >= gesamt ? "Rückgeld: " + euro((gegeben - gesamt) / 100) : "Fehlen noch: " + euro((gesamt - gegeben) / 100)) +
+          (ausw ? " (für die Auswahl)" : "")
+        : "");
+  }
+
+  // Trinkgeld-Schnellknöpfe
+  function trinkgeldSetzen(art) {
+    const ausw = auswahlCent(artikelStand(tisch));
+    const zuZahlen = ausw || (bestelltCent(tisch) - bezahltCent(tisch));
+    const gegeben = betragLesen($("#gegeben").value);
+    let tg = 0;
+    if (art === "stimmt") {
+      if (!gegeben) { toast("Erst „Gegeben“ eintragen", { art: "fehler" }); $("#gegeben").focus(); return; }
+      tg = Math.max(0, gegeben - zuZahlen);
+    } else if (art === "runden") {
+      tg = Math.ceil(zuZahlen / 500) * 500 - zuZahlen;
+      if (!tg) tg = 0;
+    }
+    $("#trinkgeld").value = tg ? (tg / 100).toFixed(2).replace(".", ",") : "";
+    rueckgeldRechnen();
   }
 
   async function kassieren(positionen, betragCent) {
     if (sperre || betragCent <= 0) return;
     if (!kellner()) { toast("Bitte zuerst Kellnernamen wählen", { art: "fehler" }); return; }
+    const tg = betragLesen($("#trinkgeld") ? $("#trinkgeld").value : "");
+    if (tg > 10000 && !confirm("Trinkgeld " + euro(tg / 100) + " – wirklich so viel?")) return;
     const text = positionen.map((p) => p.anzahl + "× " + posText(p)).join("\n");
-    if (!confirm("Tisch " + tisch + ": " + euro(betragCent / 100) + " bar kassiert?\n\n" + text)) return;
+    if (!confirm("Tisch " + tisch + ": " + euro((betragCent + tg) / 100) + " bar kassiert?" +
+      (tg ? "\n(" + euro(betragCent / 100) + " + " + euro(tg / 100) + " Trinkgeld)" : "") + "\n\n" + text)) return;
     sperre = true;
     try {
-      await DB.insertZahlung({ tisch, kellner: kellner(), betrag: betragCent / 100, positionen });
-      toast("✓ " + euro(betragCent / 100) + " für Tisch " + tisch + " verbucht", { art: "ok" });
+      const zahlung = { tisch, kellner: kellner(), betrag: betragCent / 100, positionen };
+      if (tg) zahlung.trinkgeld = tg / 100; // nur mitschicken, wenn vorhanden
+      await DB.insertZahlung(zahlung);
+      toast("✓ " + euro(betragCent / 100) + (tg ? " + " + euro(tg / 100) + " Trinkgeld" : "") + " für Tisch " + tisch + " verbucht", { art: "ok" });
       auswahl = new Map();
+      gezeichneterTisch = null; // Gegeben/Trinkgeld leeren
     } catch (e) {
       toast("NICHT verbucht: " + grund(e), { art: "fehler", bleibt: true });
     } finally { sperre = false; }
@@ -245,6 +286,8 @@
       return;
     }
     if (e.target.closest("#snacks-erfassen")) return snacksErfassen();
+    const tgk = e.target.closest("[data-tg]");
+    if (tgk) { trinkgeldSetzen(tgk.dataset.tg); return; }
     if (e.target.closest("#auswahl-leeren")) { auswahl = new Map(); render(); return; }
     if (e.target.closest("#auswahl-bezahlt")) {
       const stand = artikelStand(tisch);
@@ -267,13 +310,13 @@
       laden();
     }
   });
-  $("#seite-kasse").addEventListener("input", (e) => { if (e.target.id === "gegeben") rueckgeldRechnen(); });
+  $("#seite-kasse").addEventListener("input", (e) => { if (e.target.id === "gegeben" || e.target.id === "trinkgeld") rueckgeldRechnen(); });
 
   // Reiter-Wechsel aus kellner.js
   window.addEventListener("reiter", (e) => { aktiv = e.detail === "kasse"; if (aktiv) laden(); });
   // Aktualisieren, solange die Kasse offen ist – aber nicht, während jemand auswählt oder tippt
   const darfNeuLaden = () => aktiv && ![...auswahl.values()].some((n) => n > 0) && ![...snackWahl.values()].some((n) => n > 0)
-    && !($("#gegeben") && $("#gegeben").value);
+    && !($("#gegeben") && $("#gegeben").value) && !($("#trinkgeld") && $("#trinkgeld").value);
   setInterval(() => { if (darfNeuLaden()) laden(); }, 15000);
   DB.onChange(() => { if (darfNeuLaden()) laden(); });
 })();
