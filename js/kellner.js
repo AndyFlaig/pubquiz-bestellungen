@@ -28,6 +28,7 @@
       const b = e.target.closest("[data-name]");
       if (!b) return;
       kellner = b.dataset.name;
+      bekannteOffene = null;
       store.set("kellner_name", kellner);
       ov.remove();
       $("#kellner-name").textContent = kellner;
@@ -52,7 +53,35 @@
     $("#tisch-raster").hidden = gewaehlt;
     $("#tisch-titel").hidden = gewaehlt;
     $("#tisch-gewaehlt-text").textContent = tischText(entwurf.tisch);
+    letzteAnzeigen();
   }
+
+  // "Wie zuletzt": letzte Bestellung dieses Tisches (egal von welchem Kellner) in den Warenkorb holen
+  let letzteVorschlag = null;
+  async function letzteAnzeigen() {
+    const knopf = $("#wiederholen");
+    knopf.hidden = true; letzteVorschlag = null;
+    const tisch = entwurf.tisch;
+    if (tisch == null) return;
+    try {
+      const rows = await DB.lastForTable(tisch);
+      if (entwurf.tisch !== tisch) return; // inzwischen anderer Tisch gewählt
+      const pos = [];
+      rows.forEach((r) => r.positionen.forEach((p) => { if (ARTIKEL.has(p.id)) pos.push(p); }));
+      if (!pos.length) return;
+      pos.sort((x, y) => CFG.ARTIKEL.indexOf(ARTIKEL.get(x.id)) - CFG.ARTIKEL.indexOf(ARTIKEL.get(y.id)));
+      letzteVorschlag = pos;
+      knopf.innerHTML = "↻ <b>Wie zuletzt</b><span>" + esc(pos.map(positionText).join(", ")) + "</span>";
+      knopf.hidden = false;
+    } catch (e) { /* ohne Verbindung einfach kein Vorschlag */ }
+  }
+  $("#wiederholen").onclick = () => {
+    if (!letzteVorschlag) return;
+    letzteVorschlag.forEach((p) => { entwurf.menge[p.id] = (entwurf.menge[p.id] || 0) + p.anzahl; });
+    speichern(); renderMengen();
+    $("#wiederholen").hidden = true;
+    toast("Übernommen – bei Bedarf mit + / − anpassen", { art: "ok" });
+  };
 
   $("#tisch-raster").addEventListener("click", (e) => {
     const b = e.target.closest("[data-nr]");
@@ -187,13 +216,46 @@
   // Eigene offene Bestellungen
   // ------------------------------------------------------------------
   let offene = [];
+  let bekannteOffene = null; // Map id -> Zeile; null = noch nichts geladen
+  const selbstStorniert = new Set();
+  let laedtOffene = false, nochmalOffene = false;
+
   async function offeneLaden() {
     if (!kellner) return;
+    if (laedtOffene) { nochmalOffene = true; return; }
+    laedtOffene = true;
+    const fuer = kellner;
     try {
       offene = await DB.listOpen({ kellner });
       verbindung.erfolg();
+      if (fuer !== kellner) return;
+      const neu = new Map(offene.map((r) => [r.id, r]));
+      if (bekannteOffene) {
+        const weg = [...bekannteOffene.keys()].filter((id) => !neu.has(id) && !selbstStorniert.has(id));
+        if (weg.length) {
+          try {
+            const st = await DB.getByIds(weg);
+            st.filter((x) => x.status === "erledigt").forEach((x) => fertigMelden(bekannteOffene.get(x.id)));
+          } catch (e) { /* nicht schlimm */ }
+        }
+      }
+      bekannteOffene = neu;
       renderOffene();
     } catch (e) { verbindung.fehler(); }
+    finally {
+      laedtOffene = false;
+      if (nochmalOffene) { nochmalOffene = false; offeneLaden(); }
+    }
+  }
+
+  function fertigMelden(r) {
+    if (!r) return;
+    const text = r.ziel === "kueche"
+      ? "🍽 Tisch " + r.tisch + ": Essen ist fertig! (" + r.positionen.map(positionText).join(", ") + ")"
+      : "🍺 Tisch " + r.tisch + ": Getränke stehen bereit (" + r.positionen.map(positionText).join(", ") + ")";
+    toast(text, { art: "fertig", bleibt: true });
+    App.tonNeu();
+    if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 300]);
   }
 
   function renderOffene() {
@@ -218,6 +280,7 @@
     const r = offene.find((x) => x.id === Number(b.dataset.id));
     if (!r || !confirm("Bestellung #" + r.id + " (Tisch " + r.tisch + ", " + ZIEL_NAME[r.ziel] + ") wirklich stornieren?")) return;
     b.disabled = true;
+    selbstStorniert.add(r.id);
     try {
       const ok = await DB.setStatus(r.id, "offen", "storniert");
       toast(ok ? "Storniert." : "Geht nicht mehr – schon erledigt.", { art: ok ? "ok" : "fehler" });
@@ -247,6 +310,8 @@
   // ------------------------------------------------------------------
   (async function start() {
     await App.pinPruefen("kellner");
+    // Ton für "Abholbereit" freischalten – Browser erlauben Ton erst nach einem Tipp
+    ["pointerdown", "touchend", "click"].forEach((ev) => document.addEventListener(ev, App.audioFreischalten, { passive: true }));
     if (DEMO) $("#demo-hinweis").hidden = false;
     renderTische(); renderArtikel();
     const setzeReiter = () => { $(".reiter").style.top = $(".kopf").offsetHeight + "px"; };

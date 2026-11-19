@@ -21,5 +21,10 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 14 | Lasttest: alle Kellner senden je 5 Bestellungen schnell hintereinander | Alles kommt vollständig an, keine doppelt | |
 | 15 | Am echten Ort (Sportheim) prüfen: WLAN/Mobilfunk an Theke und in der Küche | „Live“ grün | |
 | 16 | Kommentar mit langem Text | Gut lesbar, bricht sauber um | |
+| 17 | Küche tippt **Erledigt** bei einer Bestellung von Kellner 1 | Kellner-1-Handy: grüner Hinweis „Tisch …: Essen ist fertig!“ mit Ton (Android: Vibration) | |
+| 18 | Theke tippt **Erledigt** | Kellner: Hinweis „Getränke stehen bereit“ | |
+| 19 | Kellner storniert selbst | **Kein** „fertig“-Hinweis | |
+| 20 | Kellner 2 wählt einen Tisch, an dem Kellner 1 schon bestellt hat | Knopf „↻ Wie zuletzt“ mit der letzten Bestellung; Tipp übernimmt die Artikel (noch nicht gesendet) | |
+| 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (siehe Anleitung) und Kellnernamen/PINs final prüfen.

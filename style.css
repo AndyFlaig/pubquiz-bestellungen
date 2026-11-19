@@ -92,6 +92,13 @@ h2 small { font-weight: normal; color: var(--leise); }
 }
 .tisch-gewaehlt button { border: 0; background: #fff; border-radius: 10px; padding: 10px 14px; font-size: .95rem; font-weight: 600; }
 
+.wiederholen {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
+  margin-top: 10px; padding: 12px 14px; text-align: left;
+  border: 2px dashed var(--blau); border-radius: 12px; background: #f5f8ff; color: var(--blau); font-size: 1.05rem;
+}
+.wiederholen span { color: var(--text); font-size: .9rem; }
+
 .kategorie h3 { margin: 14px 0 6px; font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; color: var(--leise); }
 .kategorie:first-child h3 { margin-top: 0; }
 .artikel { display: flex; align-items: stretch; gap: 8px; border-top: 1px solid #eceef2; padding: 6px 0; }
@@ -212,6 +219,8 @@ textarea {
 .toast.neu { background: var(--blau); font-size: 1.3rem; }
 .toast.fehler { background: var(--rot); }
 .toast.storno { background: var(--rot); font-size: 1.4rem; padding: 18px; border: 4px solid #fff; }
+.toast.fertig { background: #0f766e; font-size: 1.2rem; padding: 18px; border: 4px solid #fff; }
+.toast.fertig::after,
 .toast.storno::after { content: "✕"; margin-left: 8px; }
 
 /* ---------- Aufblinken ---------- */
@@ -228,3 +237,23 @@ body.offline .kopf { background: var(--rot); }
 @media (min-width: 900px) {
   body.station { font-size: 20px; }
 }
+
+/* ---------- Auswertung ---------- */
+.auswertung-inhalt { max-width: 1200px; margin: 0 auto; padding: 12px; }
+.kopf-knopf { background: rgba(255,255,255,.15); border: 0; color: #fff; border-radius: 10px; font-size: 1.4rem; padding: 6px 14px; margin-left: auto; }
+.kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.kachel { background: var(--karte); border-radius: var(--radius); padding: 12px 14px; }
+.kachel-titel { color: var(--leise); font-size: .85rem; }
+.kachel-wert { font-size: 1.5rem; font-weight: 800; }
+.kachel-wert small { font-size: .8rem; font-weight: 600; color: var(--orange); }
+.auswertung-reiter { position: static; margin-bottom: 4px; }
+.auswertung .liste { padding: 12px 0; }
+.tabelle { width: 100%; border-collapse: collapse; font-size: 1rem; }
+.tabelle th { text-align: left; color: var(--leise); font-size: .85rem; font-weight: 600; padding: 6px 4px; border-bottom: 2px solid var(--rand); }
+.tabelle td { padding: 6px 4px; border-bottom: 1px solid #eceef2; }
+.tabelle .zahl { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tabelle td.zahl:first-child { width: 3.5em; }
+.summe-zeile td { font-weight: 800; border-bottom: 0; border-top: 2px solid var(--rand); }
+.tisch-summe { margin-left: auto; font-size: 1.3rem; font-weight: 800; }
+.karte.leer-karte { opacity: .55; }
+.fuss-hinweis { text-align: center; margin: 16px 0 32px; }
