@@ -197,7 +197,8 @@ Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden 
 
 **⏸ Pausen-Countdown:** Auf **„⏸ Pause“** tippen – entweder **direkt auf der Beamer-Seite** (unten links, neben
 „Vollbild“; im Vollbild erscheinen die Knöpfe, sobald man die Maus bewegt) oder in der **Auswertung** (Leiste unter der Kopfzeile) → 5 / 10 / 15 / 20 Minuten oder eigene Dauer.
-Der Beamer springt sofort auf einen großen Countdown mit Ring und zeigt ihn dann **im Wechsel mit den Statistiken**;
+Der Beamer springt sofort auf einen großen Countdown mit Ring und blendet ihn danach **alle 2 Minuten für 10 Sekunden**
+zwischen den Statistiken ein;
 oben neben der Uhr läuft die Restzeit mit. In der letzten Minute wird er orange („letzte Bestellungen!“),
 danach erscheint 90 Sekunden lang **„Weiter geht's!“**. Im selben Fenster: „+ 5 Minuten verlängern“ und
 „Pause jetzt beenden“. Der Knopf in der Auswertung zeigt die Restzeit an.

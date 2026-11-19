@@ -49,7 +49,7 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 43 | Kellner: 🌓 antippen bis 🌙 | App wird dunkel, bleibt nach Neuladen dunkel | |
 | 44 | Kasse: Tisch 12 €, Gegeben 20, „Stimmt so“, Alles bezahlt | Trinkgeld 8,00; Rückgeld 0,00; Kassenstand +20 €; Tisch „✓ bezahlt“ | |
 | 45 | Auswertung | Kachel „Trinkgeld“ 8 €, Umsatz gesamt = Waren + Trinkgeld; Kellner-Tabelle mit Spalte Trinkgeld | |
-| 46 | Auswertung: ⏸ → 10 Min | Beamer springt sofort auf den Countdown, danach im Wechsel mit Statistiken; Restzeit oben neben der Uhr | |
+| 46 | Auswertung: ⏸ → 10 Min | Beamer springt sofort auf den Countdown, danach alle 2 Min für 10 s zwischen den Statistiken; Restzeit oben neben der Uhr | |
 | 47 | ⏸ → „Pause jetzt beenden“ | Beamer zeigt „Weiter geht's!“ bzw. wieder nur Statistiken | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
