@@ -116,7 +116,7 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------
---  Kontrolle: zeigt unten eine Tabelle. Erwartet werden 14 Zeilen, darunter
+--  Kontrolle: zeigt unten eine Tabelle. Erwartet werden 13 Zeilen, darunter
 --  "bestellungen anlegen" mit ... ziel = 'kasse' ... und
 --  "bestellungen_ziel_check" mit ... 'kueche', 'theke', 'kasse' ...
 -- ---------------------------------------------------------------------
