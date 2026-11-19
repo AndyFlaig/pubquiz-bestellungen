@@ -52,6 +52,8 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 46 | Auswertung: ⏸ → 10 Min | Beamer springt sofort auf den Countdown, danach alle 2 Min für 10 s zwischen den Statistiken; Restzeit oben neben der Uhr | |
 | 47 | ⏸ → „Pause jetzt beenden“ | Beamer zeigt „Weiter geht's!“ bzw. wieder nur Statistiken | |
 | 48 | Admin → Zitate: 2 Zitate mit Namen anlegen, speichern | Beamer zeigt nach ≤ 30 s nach je 2 Folien ein Zitat: 5 s Zitat, dann Name, insgesamt 8 s | |
+| 49 | Kasse: Tisch mit 3 Pils, Personen = 6; Gast zahlt 1 Pils + 1 Anteil | Auswahl 7,33 €; Startgeld zeigt danach 16,67 € offen / 5 Anteile | |
+| 50 | Rest per „Alles bezahlt“ | Tisch ✓ bezahlt; Startgeld-Anteile summieren sich genau auf 20,00 €; Auswertung: Kachel Startgeld | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

@@ -8,6 +8,13 @@
   const summeCent = (pos) => pos.reduce((s, p) => s + p.cent, 0);
   const summe = (pos) => summeCent(pos) / 100;
 
+  // Startgeld: Soll = Betrag × Gästetische; kassiert = Startgeld-Positionen in den Zahlungen
+  const START_ID = "startgeld";
+  const startSollTisch = () => cent(CFG.STARTGELD || 0);
+  const gaesteTische = () => CFG.TISCHE.filter((t) => !t.eigen);
+  const startKassiert = (zs, nr) => (zs || []).filter((z) => nr === undefined || z.tisch === nr)
+    .reduce((s, z) => s + (z.positionen || []).filter((p) => p.id === START_ID).reduce((t, p) => t + cent(p.preis) * (p.anzahl || 1), 0), 0);
+
   // zahlungen = null, wenn die Kasse in Supabase noch nicht eingerichtet ist
   function render(alleRows, zahlungen) {
     const eigenRows = alleRows.filter(App.istEigen);
@@ -21,16 +28,19 @@
     const snacks = summe(zusammenfassen(rows.filter((r) => r.ziel === "kasse")));
     const bezahltCent = zahlungen ? zahlungen.reduce((s, z) => s + cent(z.betrag), 0) : 0;
     const trinkgeldCent = zahlungen ? zahlungen.reduce((s, z) => s + cent(z.trinkgeld || 0), 0) : 0;
+    const startSoll = startSollTisch() * gaesteTische().length;
+    const startBez = startKassiert(zahlungen);
 
     $("#kacheln").innerHTML =
-      kachel("Umsatz gesamt", euro((summeCent(alle) + trinkgeldCent) / 100) +
-        (trinkgeldCent ? " <small class='tg-klein'>inkl. Trinkgeld</small>" : "")) +
+      kachel("Umsatz gesamt", euro((summeCent(alle) + startSoll + trinkgeldCent) / 100) +
+        (startSoll || trinkgeldCent ? " <small class='tg-klein'>inkl. " + [startSoll ? "Startgeld" : "", trinkgeldCent ? "Trinkgeld" : ""].filter(Boolean).join(" + ") + "</small>" : "")) +
       kachel("Getränke", euro(getraenke)) +
       kachel("Speisen", euro(speisen)) +
       kachel("Snacks", euro(snacks)) +
+      (startSoll ? kachel("🎟 Startgeld", euro(startSoll / 100) + " <small>(kassiert " + euro(startBez / 100) + ")</small>") : "") +
       (zahlungen ? kachel("Trinkgeld", euro(trinkgeldCent / 100)) +
         kachel("Kassiert (bar)", euro((bezahltCent + trinkgeldCent) / 100)) +
-        kachel("Noch offen", euro((summeCent(alle) - bezahltCent) / 100)) : "") +
+        kachel("Noch offen", euro((summeCent(alle) + startSoll - bezahltCent) / 100)) : "") +
       kachel("Bestellungen", gruppen + (offen ? " <small>(noch offen: " + offen + ")</small>" : "")) +
       (eigenRows.length ? kachel("Eigenverzehr (Warenwert)", euro(summe(eigenPos)) + " <small class='eigen-klein'>nicht im Umsatz</small>") : "");
 
@@ -39,19 +49,22 @@
       const tr = rows.filter((r) => r.tisch === t.nr);
       const pos = zusammenfassen(tr);
       const off = tr.filter((r) => r.status === "offen").length;
+      const start = startSollTisch();
       let zahlZeile = "";
-      if (zahlungen && pos.length) {
+      if (zahlungen && (pos.length || start)) {
         const bez = zahlungen.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.betrag), 0);
-        const rest = summeCent(pos) - bez;
+        const rest = summeCent(pos) + start - bez;
         zahlZeile = '<p class="zahl-status ' + (rest === 0 ? "ok" : rest > 0 ? "offen" : "zuviel") + '">' +
           (rest === 0 ? "✓ bezahlt" : rest > 0 ? "offen: " + euro(rest / 100) + (bez ? " (bezahlt " + euro(bez / 100) + ")" : "")
             : "zu viel bezahlt: " + euro(-rest / 100)) + "</p>";
       }
       return '<article class="karte klein' + (pos.length ? "" : " leer-karte") + '">' +
         '<header><div class="tisch">Tisch ' + t.nr + '</div><div class="team">' + esc(t.team) + "</div>" +
-        '<span class="tisch-summe">' + euro(summe(pos)) + "</span></header>" +
-        (pos.length
-          ? '<table class="tabelle">' + pos.map((p) =>
+        '<span class="tisch-summe">' + euro((summeCent(pos) + start) / 100) + "</span></header>" +
+        (pos.length || start
+          ? '<table class="tabelle">' +
+              (start ? "<tr><td class='zahl'>🎟</td><td>Startgeld</td><td class='zahl'>" + euro(start / 100) + "</td></tr>" : "") +
+              pos.map((p) =>
               "<tr><td class='zahl'>" + p.anzahl + "×</td><td>" + esc(posText(p)) + "</td><td class='zahl'>" + euro(p.summe) + "</td></tr>").join("") + "</table>"
           : '<p class="klein-hinweis">Noch nichts bestellt</p>') +
         zahlZeile +
@@ -180,15 +193,18 @@
       const warenCent = summeCent(zusammenfassen(rows));
       const tgCent = zahl.reduce((s, z) => s + cent(z.trinkgeld || 0), 0);
       const bezCent = zahl.reduce((s, z) => s + cent(z.betrag), 0);
+      const stSoll = startSollTisch() * gaesteTische().length, stBez = startKassiert(zahl);
       blaetter.push({
         name: "Übersicht",
-        spalten: [{ titel: "Kennzahl", breite: 34 }, { titel: "Betrag", typ: "euro", breite: 14 }],
+        spalten: [{ titel: "Kennzahl", breite: 40 }, { titel: "Betrag", typ: "euro", breite: 14 }],
         zeilen: [
           ["Warenumsatz (Gäste)", eur(warenCent)],
+          ["Startgeld (" + gaesteTische().length + " Tische × " + (CFG.STARTGELD || 0) + " €)", eur(stSoll)],
+          ["  davon kassiert", eur(stBez)],
           ["Trinkgeld", eur(tgCent)],
-          ["Umsatz gesamt (Waren + Trinkgeld)", eur(warenCent + tgCent)],
-          ["Kassiert bar (Waren + Trinkgeld)", eur(bezCent + tgCent)],
-          ["Noch offen (Waren)", eur(warenCent - bezCent)],
+          ["Umsatz gesamt (Waren + Startgeld + Trinkgeld)", eur(warenCent + stSoll + tgCent)],
+          ["Kassiert bar (inkl. Startgeld + Trinkgeld)", eur(bezCent + tgCent)],
+          ["Noch offen (Waren + Startgeld)", eur(warenCent + stSoll - bezCent)],
           ["Eigenverzehr – Warenwert (nicht im Umsatz)", eur(summeCent(zusammenfassen(eigenRows)))],
         ],
       });
@@ -196,14 +212,15 @@
       blaetter.push({
         name: "Pro Tisch",
         spalten: [{ titel: "Tisch", typ: "zahl", breite: 7 }, { titel: "Team", breite: 32 }, { titel: "Bestellt", typ: "euro", breite: 12 },
-          { titel: "Bezahlt", typ: "euro", breite: 12 }, { titel: "Offen", typ: "euro", breite: 12 },
+          { titel: "Startgeld", typ: "euro", breite: 11 }, { titel: "Bezahlt", typ: "euro", breite: 12 }, { titel: "Offen", typ: "euro", breite: 12 },
           { titel: "Trinkgeld", typ: "euro", breite: 11 }, { titel: "Artikel", breite: 80 }],
         zeilen: CFG.TISCHE.filter((t) => !t.eigen).map((t) => {
           const pos = zusammenfassen(rows.filter((r) => r.tisch === t.nr));
           const best = summeCent(pos);
           const bez = zahl.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.betrag), 0);
           const tgT = zahl.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.trinkgeld || 0), 0);
-          return [t.nr, t.team, eur(best), eur(bez), eur(best - bez), eur(tgT), pos.map((p) => p.anzahl + "× " + posText(p)).join(", ")];
+          const st = startSollTisch();
+          return [t.nr, t.team, eur(best), eur(st), eur(bez), eur(best + st - bez), eur(tgT), pos.map((p) => p.anzahl + "× " + posText(p)).join(", ")];
         }),
       });
 

@@ -423,6 +423,7 @@
   const STAMM_CACHE = "stammdaten_cache";
   const STANDARD = JSON.parse(JSON.stringify({
     VERANSTALTUNG: CFG.VERANSTALTUNG, KELLNER: CFG.KELLNER, TISCHE: CFG.TISCHE, ARTIKEL: CFG.ARTIKEL, REVIERE: CFG.REVIERE || {},
+    STARTGELD: Number(CFG.STARTGELD) || 0,
   }));
   let stammVersion = null, stammQuelle = "config.js";
 
@@ -433,6 +434,7 @@
   function stammdatenAnwenden(w) {
     const neu = stammdatenGueltig(w) ? w : STANDARD;
     CFG.VERANSTALTUNG = neu.VERANSTALTUNG || STANDARD.VERANSTALTUNG;
+    CFG.STARTGELD = neu.STARTGELD !== undefined ? Number(neu.STARTGELD) || 0 : STANDARD.STARTGELD;
     CFG.KELLNER = neu.KELLNER; CFG.TISCHE = neu.TISCHE; CFG.ARTIKEL = neu.ARTIKEL; CFG.REVIERE = neu.REVIERE || {};
     reihenfolge = new Map(CFG.ARTIKEL.map((a, i) => [a.id, i]));
   }

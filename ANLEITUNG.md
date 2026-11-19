@@ -122,7 +122,11 @@ alle Artikel mit „x offen / y bezahlt“, darunter Bestellt / Bezahlt / **Offe
 - **Snacks vom Tisch:** Oben im Tisch gibt es die Box „🥨 Vom Tisch genommen?“. Anzahl mit **+** wählen →
   „+ 3,00 € auf die Rechnung“. Die Snacks stehen dann als offene Artikel in der Abrechnung
   (10 Sekunden lang „Rückgängig“ möglich). Snacks, die schon über „Bestellen“ erfasst wurden, stehen ebenfalls dort.
-- **„✓ Alles bezahlt“** verbucht alle noch offenen Artikel.
+- **🎟 Startgeld:** steht automatisch als erste Zeile auf jeder Tischrechnung (Betrag in Admin → Allgemein, Standard 20 €;
+  Eigenverzehr-Tische zahlen keins). Bei **„👥 Personen am Tisch“** die Anzahl einstellen – das Startgeld wird in so viele
+  **Anteile** geteilt. Wer einzeln zahlt, wählt bei „Anteile zahlen“ **1** (oder mehr) zusammen mit seinen Getränken.
+  Cent-Rundung geht immer genau auf den Gesamtbetrag auf. Die Personenzahl ist für alle Kellner gleich (gespeichert).
+- **„✓ Alles bezahlt“** verbucht alle noch offenen Artikel inklusive des restlichen Startgelds.
 - **Gegeben:** zeigt das Rückgeld (für die Auswahl, sonst für den ganzen offenen Betrag).
 - **Trinkgeld:** Betrag eintippen oder **„Stimmt so“** (Rest vom gegebenen Geld wird Trinkgeld) bzw.
   **„Aufrunden auf 5 €“**. Das Rückgeld wird mit Trinkgeld berechnet. Trinkgeld zählt zum **Kassenstand** des Kellners
@@ -153,7 +157,7 @@ und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit ei
 - **Zitate:** je ein Feld für das Zitat und den Namen; Reihenfolge mit ↑ ↓. Auf dem Beamer kommt nach je 2 Statistik-Folien
   ein Zitat: erst das Zitat allein (5 Sekunden), dann blendet der Name ein (3 Sekunden). Nach dem Speichern sind neue
   Zitate innerhalb von 30 Sekunden auf dem Beamer – ohne Neuladen.
-- **Allgemein:** Veranstaltungsname, Sicherung als JSON herunterladen/einspielen, „Auf Standard aus config.js zurücksetzen“.
+- **Allgemein:** Startgeld pro Tisch (0 = aus), Veranstaltungsname, Sicherung als JSON herunterladen/einspielen, „Auf Standard aus config.js zurücksetzen“.
 - **Speichern** prüft alles (Preise, doppelte Tischnummern, Reviere …) und zeigt Fehler rot an.
 - Gespeicherte Änderungen gelten auf allen Geräten nach dem **Neuladen**. Offene Seiten zeigen innerhalb einer Minute
   den Hinweis „Preisliste/Tische wurden geändert – Neu laden“.
