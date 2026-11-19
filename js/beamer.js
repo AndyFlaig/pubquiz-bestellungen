@@ -1,84 +1,220 @@
-/* Beamer: Bier-Barometer und "Durstigstes Team" – nur Anzeige, ändert nichts */
+/* Beamer: Pausen-Show mit Zwischenständen – Folien wechseln alle 15 Sekunden in Dauerschleife.
+   Nur Anzeige, ändert nichts. Optionen in der Adresse:
+     beamer.html?sekunden=20   andere Anzeigedauer
+     beamer.html?folie=spritz  nur diese eine Folie zeigen
+     beamer.html#feiern        Konfetti testen
+   Tastatur: → / Leertaste = weiter, ← = zurück, P = Pause */
 (function () {
   "use strict";
   const { CFG, DB, $, esc } = App;
 
+  const PARAM = new URLSearchParams(location.search);
+  const SEKUNDEN = Math.max(5, Number(PARAM.get("sekunden")) || 15);
+  const NUR_FOLIE = PARAM.get("folie");
+
+  // ---------- Was zählt wozu (über den Artikelnamen) ----------
   const IST_BIER = /pils|weizen|weiß?bier|bier|radler|helles|export|lager/i;
-  // "0,5 l" -> 0.5 ; "0,33 l" -> 0.33 ; "300 ml" -> 0.3
+  const IST_SPRITZ = /aperol|spritz|wein|prosecco|sekt|hugo|lillet/i;   // Aperol + alle Weine/Schorlen
+  const IST_WASSER = /sprudel|wasser|mineral/i;
+  const IST_KOFFEIN = /cola|spezi|mezzo|energy/i;
+
   function liter(menge) {
     const m = String(menge || "").replace(",", ".").match(/([\d.]+)\s*(ml|cl|l)\b/i);
     if (!m) return 0;
-    const v = Number(m[1]);
-    return m[2].toLowerCase() === "ml" ? v / 1000 : m[2].toLowerCase() === "cl" ? v / 100 : v;
+    const v = Number(m[1]), e = m[2].toLowerCase();
+    return e === "ml" ? v / 1000 : e === "cl" ? v / 100 : v;
   }
   const fmt1 = (x) => x.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const team = (nr) => { const t = CFG.TISCHE.find((x) => x.nr === nr); return t ? t.team : "Tisch " + nr; };
+  const istEigenTisch = (nr) => !!(CFG.TISCHE.find((x) => x.nr === nr) || {}).eigen;
+  const kategorieVon = (id) => (CFG.ARTIKEL.find((a) => a.id === id) || {}).kategorie || "";
 
-  let letzteLiter = null;
-
-  // Nächstes Ziel: unter 20 l in 10er-, bis 100 l in 25er-, darüber in 50er-Schritten
-  function schrittFuer(l) { return l < 20 ? 10 : l < 100 ? 25 : 50; }
-  function zielFuer(l) {
-    const schritt = schrittFuer(l);
-    return Math.max(schritt, Math.ceil((l + 0.0001) / schritt) * schritt);
-  }
-
-  function render(rows) {
+  // ---------- Daten aufbereiten ----------
+  let D = null;
+  function auswerten(rows) {
     const ok = rows.filter((r) => r.status !== "storniert");
-    // Bier: alles, was gezapft wurde (auch Eigenverzehr)
-    let bierLiter = 0, getraenke = 0, speisen = 0;
-    ok.forEach((r) => r.positionen.forEach((p) => {
-      if (r.ziel === "theke") {
-        getraenke += p.anzahl;
-        if (IST_BIER.test(p.name)) bierLiter += p.anzahl * liter(p.menge);
-      } else if (r.ziel === "kueche") speisen += p.anzahl;
-    }));
-    bierLiter = Math.round(bierLiter * 100) / 100;
+    const gast = ok.filter((r) => !App.istEigen(r) && !istEigenTisch(r.tisch));
 
-    const ziel = zielFuer(bierLiter);
-    const schritt = schrittFuer(bierLiter);
-    const basis = ziel - schritt;
-    const anteil = Math.max(0.03, Math.min(1, (bierLiter - basis) / schritt));
-    $("#fuellung").style.height = (anteil * 100) + "%";
-    $("#liter").textContent = fmt1(bierLiter);
-    $("#ziel").innerHTML = "Nächstes Ziel: <b>" + ziel + " Liter</b> – noch " + fmt1(Math.max(0, ziel - bierLiter)) + " l";
-    $("#nebenzahlen").textContent = getraenke + " Getränke · " + speisen + " Speisen";
-
-    // Meilenstein überschritten -> Konfetti
-    if (letzteLiter !== null) {
-      const alt = zielFuer(letzteLiter);
-      if (bierLiter >= alt && letzteLiter < alt) feiern(alt + " Liter Bier! 🍻");
+    // Summe pro Tisch (nur Gäste): bedingung(r, p) -> Wert
+    function proTisch(wert) {
+      const m = new Map();
+      gast.forEach((r) => r.positionen.forEach((p) => {
+        const w = wert(r, p);
+        if (w) m.set(r.tisch, (m.get(r.tisch) || 0) + w);
+      }));
+      return [...m.entries()].sort((a, b) => b[1] - a[1]);
     }
-    letzteLiter = bierLiter;
+    const summeAlle = (wert) => ok.reduce((s, r) => s + r.positionen.reduce((t, p) => t + (wert(r, p) || 0), 0), 0);
 
-    // Durstigstes Team: Getränke pro Tisch (ohne Eigenverzehr)
-    const proTisch = new Map();
-    ok.filter((r) => r.ziel === "theke" && !App.istEigen(r)).forEach((r) => {
-      const n = r.positionen.reduce((s, p) => s + p.anzahl, 0);
-      proTisch.set(r.tisch, (proTisch.get(r.tisch) || 0) + n);
+    const bierL = (r, p) => r.ziel === "theke" && IST_BIER.test(p.name) ? p.anzahl * liter(p.menge) : 0;
+    const spritzL = (r, p) => r.ziel === "theke" && IST_SPRITZ.test(p.name) ? p.anzahl * liter(p.menge) : 0;
+    const getraenk = (r, p) => r.ziel === "theke" ? p.anzahl : 0;
+    const speise = (r, p) => r.ziel === "kueche" ? p.anzahl : 0;
+
+    const zeit = (r) => r.geaendert_am && r.status === "erledigt"
+      ? (new Date(r.geaendert_am) - new Date(r.erstellt_am)) / 60000 : null;
+    const schnitt = (ziel) => {
+      const z = ok.filter((r) => r.ziel === ziel).map(zeit).filter((x) => x !== null && x >= 0 && x < 120);
+      return z.length ? z.reduce((s, x) => s + x, 0) / z.length : null;
+    };
+    const ersteBestellung = gast.filter((r) => r.ziel !== "kasse").sort((a, b) => a.id - b.id)[0] || null;
+
+    const alleGetraenke = summeAlle(getraenk);
+    const alkfrei = summeAlle((r, p) => r.ziel === "theke" && /alkoholfrei/i.test(kategorieVon(p.id)) ? p.anzahl : 0);
+
+    const kellner = new Map();
+    ok.filter((r) => r.ziel !== "kasse").forEach((r) => {
+      const k = kellner.get(r.kellner) || new Set(); k.add(r.gruppe); kellner.set(r.kellner, k);
     });
-    const name = (nr) => { const t = CFG.TISCHE.find((x) => x.nr === nr); return t ? t.team : "Tisch " + nr; };
-    const liste = [...proTisch.entries()].filter(([nr]) => !(CFG.TISCHE.find((x) => x.nr === nr) || {}).eigen)
-      .sort((a, b) => b[1] - a[1]).slice(0, 8);
-    const platz = (i) => liste[i] ? '<div class="b-team">' + esc(name(liste[i][0])) + '</div><div class="b-anzahl">' + liste[i][1] +
-      ' <small>Getränke</small></div><div class="b-tischnr">Tisch ' + liste[i][0] + "</div>" : '<div class="b-team leer">–</div>';
-    $("#podest").innerHTML = liste.length
-      ? '<div class="b-platz p2"><div class="b-medaille">🥈</div>' + platz(1) + '<div class="b-sockel">2</div></div>' +
-        '<div class="b-platz p1"><div class="b-medaille">🥇</div>' + platz(0) + '<div class="b-sockel">1</div></div>' +
-        '<div class="b-platz p3"><div class="b-medaille">🥉</div>' + platz(2) + '<div class="b-sockel">3</div></div>'
-      : '<p class="b-leer">Noch keine Getränke bestellt – Prost!</p>';
-    $("#weitere").innerHTML = liste.slice(3).map(([nr, n]) =>
-      "<li><span>" + esc(name(nr)) + "</span><b>" + n + "</b></li>").join("");
-    $("#stand").textContent = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+
+    return {
+      bierLiter: Math.round(summeAlle(bierL) * 100) / 100,
+      spritzLiter: Math.round(summeAlle(spritzL) * 100) / 100,
+      bierTische: proTisch(bierL),
+      spritzTische: proTisch(spritzL),
+      durst: proTisch(getraenk),
+      hunger: proTisch(speise),
+      wasser: proTisch((r, p) => r.ziel === "theke" && IST_WASSER.test(p.name) ? p.anzahl : 0),
+      koffein: proTisch((r, p) => r.ziel === "theke" && IST_KOFFEIN.test(p.name) ? p.anzahl : 0),
+      snacks: proTisch((r, p) => r.ziel === "kasse" ? p.anzahl : 0),
+      strassburger: summeAlle((r, p) => /straßburger|strassburger/i.test(p.name) ? p.anzahl : 0),
+      schwaebisch: summeAlle((r, p) => /schwäbisch|schwaebisch/i.test(p.name) ? p.anzahl : 0),
+      pils: summeAlle((r, p) => r.ziel === "theke" && /pils/i.test(p.name) ? p.anzahl * liter(p.menge) : 0),
+      weizen: summeAlle((r, p) => r.ziel === "theke" && /weizen/i.test(p.name) ? p.anzahl * liter(p.menge) : 0),
+      kellner: [...kellner.entries()].map(([k, s]) => [k, s.size]).sort((a, b) => b[1] - a[1]),
+      getraenke: alleGetraenke,
+      speisen: summeAlle(speise),
+      bestellungen: new Set(ok.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size,
+      alkfreiQuote: alleGetraenke ? Math.round(alkfrei / alleGetraenke * 100) : 0,
+      erste: ersteBestellung,
+      schnittTheke: schnitt("theke"),
+      schnittKueche: schnitt("kueche"),
+    };
   }
 
+  // ---------- Bausteine ----------
+  function podest(liste, einheit, format) {
+    format = format || ((x) => String(x));
+    if (!liste.length) return '<p class="b-leer">Noch keine Daten – das kann sich schnell ändern!</p>';
+    const platz = (i, medaille) => {
+      const e = liste[i];
+      return '<div class="b-platz p' + (i + 1) + '"><div class="b-medaille">' + medaille + "</div>" +
+        (e ? '<div class="b-team">' + esc(team(e[0])) + '</div><div class="b-anzahl">' + format(e[1]) + " <small>" + einheit +
+          '</small></div><div class="b-tischnr">Tisch ' + e[0] + "</div>" : '<div class="b-team leer">–</div>') +
+        '<div class="b-sockel">' + (i + 1) + "</div></div>";
+    };
+    return '<div class="b-podest">' + platz(1, "🥈") + platz(0, "🥇") + platz(2, "🥉") + "</div>" +
+      (liste.length > 3 ? '<ol class="b-weitere" start="4">' + liste.slice(3, 5).map((e) =>
+        "<li><span>" + esc(team(e[0])) + "</span><b>" + format(e[1]) + " " + einheit + "</b></li>").join("") + "</ol>" : "");
+  }
+
+  function schrittFuer(l) { return l < 20 ? 10 : l < 100 ? 25 : 50; }
+  function zielFuer(l) { const s = schrittFuer(l); return Math.max(s, Math.ceil((l + 0.0001) / s) * s); }
+
+  function messglas(art, l) {
+    const ziel = zielFuer(l), schritt = schrittFuer(l);
+    const anteil = Math.max(0.03, Math.min(1, (l - (ziel - schritt)) / schritt));
+    const glas = art === "bier"
+      ? '<div class="b-glas"><div class="b-fuellung" data-hoehe="' + (anteil * 100) + '"><div class="b-schaum"></div>' + blasen() + '</div><div class="b-henkel"></div></div>'
+      : '<div class="b-weinglas"><div class="b-kelch"><div class="b-fuellung spritz" data-hoehe="' + (anteil * 100) + '">' + blasen() +
+        '</div><div class="b-orange"></div></div><div class="b-stiel"></div><div class="b-fuss"></div></div>';
+    return '<div class="b-glas-zeile">' + glas + '<div class="b-zahlen"><div class="b-liter ' + art + '"><span>' + fmt1(l) +
+      "</span><small> Liter</small></div>" +
+      '<div class="b-ziel">Nächstes Ziel: <b>' + ziel + " Liter</b> – noch " + fmt1(Math.max(0, ziel - l)) + " l</div></div></div>";
+  }
+  const blasen = () => '<div class="b-blasen">' + "<i></i>".repeat(6) + "</div>";
+
+  function duell(links, rechts) {
+    const summe = links.wert + rechts.wert || 1;
+    const seite = (s, rechtsSeite) => {
+      const sieger = s.wert > (rechtsSeite ? links : rechts).wert;
+      return '<div class="b-duell-seite' + (sieger ? " sieger" : "") + '"><div class="b-duell-emoji">' + s.emoji + (sieger ? "👑" : "") + "</div>" +
+        '<div class="b-duell-name">' + esc(s.name) + '</div><div class="b-duell-wert">' + s.text + "</div></div>";
+    };
+    return '<div class="b-duell">' + seite(links, false) + '<div class="b-vs">VS</div>' + seite(rechts, true) + "</div>" +
+      '<div class="b-duell-balken"><div style="width:' + (links.wert / summe * 100) + '%"></div></div>';
+  }
+
+  function folie(emoji, titel, untertitel, inhalt, klasse) {
+    return '<section class="b-folie ' + (klasse || "") + '"><h1 class="b-folien-titel"><span>' + emoji + "</span> " + esc(titel) + "</h1>" +
+      (untertitel ? '<p class="b-folien-unter">' + untertitel + "</p>" : "") + '<div class="b-folien-inhalt">' + inhalt + "</div></section>";
+  }
+
+  // ---------- Die Folien (null = wird übersprungen) ----------
+  const fmtL = (x) => fmt1(x);
+  const FOLIEN = [
+    { id: "bier", html: (d) => folie("🍺", "Bier-Barometer", "So viel Bier ist heute schon geflossen",
+      '<div class="b-zwei">' + messglas("bier", d.bierLiter) + '<div><h2 class="b-mini">🏅 Die Top-Zapfer</h2>' + podest(d.bierTische, "l", fmtL) + "</div></div>") },
+    { id: "spritz", html: (d) => folie("🍹", "Spritz-O-Meter", "Aperol & Wein – die feine Gesellschaft",
+      '<div class="b-zwei">' + messglas("spritz", d.spritzLiter) + '<div><h2 class="b-mini">🥂 Die Spritz-Society</h2>' + podest(d.spritzTische, "l", fmtL) + "</div></div>", "spritz-folie") },
+    { id: "durst", html: (d) => d.durst.length ? folie("🏆", "Durstigstes Team", "Die meisten Getränke des Abends", podest(d.durst, "Getränke")) : null },
+    { id: "hunger", html: (d) => d.hunger.length ? folie("🍽", "Hungrigster Tisch", "Hier wird nicht nur Wissen verschlungen", podest(d.hunger, "Portionen")) : null },
+    { id: "wasser", html: (d) => d.wasser.length ? folie("💧", "Die Wassertrinker des Abends", "Hydriert zum Quizsieg – Sprudel sauer & süß", podest(d.wasser, "Sprudel"), "wasser-folie") : null },
+    { id: "koffein", html: (d) => d.koffein.length ? folie("⚡", "Koffein-Kommando", "Hellwach bis zur letzten Frage – Cola & Spezi", podest(d.koffein, "Getränke")) : null },
+    { id: "snacks", html: (d) => d.snacks.length ? folie("🥨", "Snack-Monster", "Knabbern fürs Gehirn", podest(d.snacks, "Snacks")) : null },
+    { id: "wurstsalat", html: (d) => d.strassburger + d.schwaebisch > 0 ? folie("🥊", "Das Wurstsalat-Duell", "Die ewige Frage im Schwarzwald",
+      duell({ emoji: "🇫🇷", name: "Straßburger", wert: d.strassburger, text: d.strassburger + " Portionen" },
+            { emoji: "🦁", name: "Schwäbischer", wert: d.schwaebisch, text: d.schwaebisch + " Portionen" })) : null },
+    { id: "pilsweizen", html: (d) => d.pils + d.weizen > 0 ? folie("⚔️", "Bier-Duell", "Pils oder Weizen – wer hat die Nase vorn?",
+      duell({ emoji: "🍺", name: "Pils", wert: d.pils, text: fmt1(d.pils) + " Liter" },
+            { emoji: "🌾", name: "Weizen", wert: d.weizen, text: fmt1(d.weizen) + " Liter" })) : null },
+    { id: "kellner", html: (d) => d.kellner.length ? folie("🏃", "Kellner-Rennen", "Wer flitzt am meisten? Bestellungen pro Kellner",
+      '<div class="b-rennen">' + d.kellner.map(([k, n], i) => '<div class="b-bahn"><div class="b-bahn-name">' + (i === 0 ? "🥇 " : "") + esc(k) +
+        '</div><div class="b-bahn-spur"><div class="b-bahn-balken" data-breite="' + (n / d.kellner[0][1] * 100) + '"><span>' + n + "</span></div></div></div>").join("") + "</div>") : null },
+    { id: "zahlen", html: (d) => folie("📊", "Der Abend in Zahlen", "",
+      '<div class="b-kacheln">' +
+        kachel("🥤", d.getraenke, "Getränke") + kachel("🍽", d.speisen, "Portionen Essen") + kachel("🧾", d.bestellungen, "Bestellungen") +
+        kachel("🍺", fmt1(d.bierLiter) + " l", "Bier") + kachel("🍹", fmt1(d.spritzLiter) + " l", "Spritz & Wein") +
+        kachel("🌱", d.alkfreiQuote + " %", "alkoholfrei") +
+        (d.erste ? kachel("🐦", esc(team(d.erste.tisch)), "Early Bird – erste Bestellung um " + App.uhrzeit(d.erste.erstellt_am)) : "") +
+        (d.schnittTheke !== null ? kachel("⏱", fmt1(d.schnittTheke) + " Min", "Ø bis das Getränk fertig ist") : "") +
+        (d.schnittKueche !== null ? kachel("👨‍🍳", fmt1(d.schnittKueche) + " Min", "Ø bis das Essen fertig ist") : "") +
+      "</div>") },
+  ];
+  function kachel(emoji, wert, text) {
+    return '<div class="b-kachel"><div class="b-kachel-emoji">' + emoji + '</div><div class="b-kachel-wert">' + wert + '</div><div class="b-kachel-text">' + text + "</div></div>";
+  }
+
+  // ---------- Diashow ----------
+  let index = -1, timer = null, pause = false, sichtbar = [];
+
+  function zeige(richtung) {
+    if (!D) return;
+    sichtbar = FOLIEN.filter((f) => (!NUR_FOLIE || f.id === NUR_FOLIE) && f.html(D) !== null);
+    if (!sichtbar.length) return;
+    index = (index + (richtung || 1) + sichtbar.length) % sichtbar.length;
+    const f = sichtbar[index];
+    const box = $("#folien");
+    box.innerHTML = f.html(D);
+    // Animationen starten (Glas füllen, Balken wachsen)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      box.querySelectorAll("[data-hoehe]").forEach((el) => { el.style.height = el.dataset.hoehe + "%"; });
+      box.querySelectorAll("[data-breite]").forEach((el) => { el.style.width = Math.max(8, el.dataset.breite) + "%"; });
+    }));
+    $("#punkte").innerHTML = sichtbar.map((x, i) => '<i class="' + (i === index ? "an" : "") + '"></i>').join("");
+    const balken = $("#balken");
+    balken.style.animation = "none"; void balken.offsetWidth;
+    balken.style.animation = pause ? "none" : "b-laufen " + SEKUNDEN + "s linear forwards";
+    clearTimeout(timer);
+    if (!pause && !NUR_FOLIE) timer = setTimeout(() => zeige(1), SEKUNDEN * 1000);
+  }
+
+  // Meilensteine -> Konfetti
+  let alt = null;
+  function meilensteine(d) {
+    if (alt) {
+      const zb = zielFuer(alt.bierLiter), zs = zielFuer(alt.spritzLiter);
+      if (d.bierLiter >= zb && alt.bierLiter < zb) feiern(zb + " Liter Bier! 🍻");
+      else if (d.spritzLiter >= zs && alt.spritzLiter < zs) feiern(zs + " Liter Spritz! 🍹");
+    }
+    alt = d;
+  }
   function feiern(text) {
     const k = $("#konfetti");
-    k.innerHTML = '<div class="b-feier">' + esc(text) + "</div>" +
-      Array.from({ length: 80 }, () => {
-        const farben = ["#b7821a", "#e9d29b", "#006837", "#ffffff", "#ffd400"];
-        return '<i style="left:' + Math.random() * 100 + "%;background:" + farben[Math.floor(Math.random() * farben.length)] +
-          ";animation-delay:" + (Math.random() * 1.5).toFixed(2) + "s;animation-duration:" + (2.5 + Math.random() * 2).toFixed(2) + 's"></i>';
-      }).join("");
+    const farben = ["#b7821a", "#e9d29b", "#006837", "#ffffff", "#ff7a1a", "#ffd400"];
+    k.innerHTML = '<div class="b-feier">' + esc(text) + "</div>" + Array.from({ length: 90 }, () =>
+      '<i style="left:' + Math.random() * 100 + "%;background:" + farben[Math.floor(Math.random() * farben.length)] +
+      ";animation-delay:" + (Math.random() * 1.5).toFixed(2) + "s;animation-duration:" + (2.5 + Math.random() * 2).toFixed(2) + 's"></i>').join("");
     k.classList.add("an");
     setTimeout(() => { k.classList.remove("an"); k.innerHTML = ""; }, 7000);
   }
@@ -87,24 +223,35 @@
   async function laden() {
     if (laedt) return;
     laedt = true;
-    try { render(await DB.listAll()); } catch (e) { /* nächster Versuch */ }
+    try {
+      const d = auswerten(await DB.listAll());
+      meilensteine(d);
+      const erstes = !D;
+      D = d;
+      if (erstes) zeige(1);
+    } catch (e) { /* nächster Versuch */ }
     finally { laedt = false; }
   }
 
-  function uhr() { $("#uhr").textContent = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }); }
-
+  // Bedienung
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); zeige(1); }
+    else if (e.key === "ArrowLeft") zeige(-1);
+    else if (e.key === "p" || e.key === "P") { pause = !pause; zeige(0); }
+  });
+  $("#folien").addEventListener("click", () => zeige(1));
   $("#vollbild").onclick = async () => {
     try { await (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement); } catch (e) { /* egal */ }
     App.wachHalten();
   };
   document.addEventListener("fullscreenchange", () => { $("#vollbild").hidden = !!document.fullscreenElement; });
 
+  function uhr() { $("#uhr").textContent = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }); }
   $("#veranstaltung").textContent = CFG.VERANSTALTUNG;
   uhr(); setInterval(uhr, 10000);
   laden();
-  let timer = null;
-  DB.onChange(() => { clearTimeout(timer); timer = setTimeout(laden, 800); });
+  let t = null;
+  DB.onChange(() => { clearTimeout(t); t = setTimeout(laden, 800); });
   setInterval(laden, 15000);
-  // Testen: beamer.html#feiern zeigt das Konfetti
   if (location.hash === "#feiern") setTimeout(() => feiern("Test: 50 Liter Bier! 🍻"), 800);
 })();
