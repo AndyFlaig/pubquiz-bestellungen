@@ -20,8 +20,9 @@
   <p id="demo-hinweis" class="demo" hidden>DEMO-MODUS – Supabase noch nicht eingetragen. Daten nur auf diesem Gerät.</p>
 
   <nav class="reiter">
-    <button class="aktiv" data-seite="neu">Neue Bestellung</button>
-    <button data-seite="offen">Meine offenen <span id="offen-zahl"></span></button>
+    <button class="aktiv" data-seite="neu">Bestellen</button>
+    <button data-seite="offen">Offen <span id="offen-zahl"></span></button>
+    <button data-seite="kasse">💶 Kasse</button>
   </nav>
 
   <main id="seite-neu">
@@ -51,6 +52,15 @@
     <div id="offen-liste" class="liste einspaltig"></div>
   </main>
 
+  <main id="seite-kasse" hidden>
+    <p id="kassenstand" class="kassenstand"></p>
+    <section class="block">
+      <h2>Tisch abrechnen</h2>
+      <div id="kasse-raster" class="tisch-raster"></div>
+    </section>
+    <div id="kasse-inhalt"></div>
+  </main>
+
   <footer class="fusszeile">
     <span id="summe"></span>
     <button id="absenden" class="gross primaer" disabled>Absenden</button>
@@ -60,5 +70,6 @@
   <script src="vendor/supabase-js-2.117.3.js"></script>
   <script src="js/common.js"></script>
   <script src="js/kellner.js"></script>
+  <script src="js/kasse.js"></script>
 </body>
 </html>

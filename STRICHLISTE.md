@@ -1,6 +1,8 @@
 # Konzept: Digitale Strichliste (für ein nächstes Mal)
 
-Stand: Vorbereitung, **noch nicht umgesetzt**. Für den 20.11.2026 bleibt es bei der Strichliste auf Papier.
+Stand 19.11.2026: **Grundversion umgesetzt** (Reiter „Kasse“: Tisch ganz oder mit Teilbetrag abrechnen, Kassenstand pro Kellner).
+Abgerechnet wird nach **Betrag**, nicht pro Artikel – wer welchen Artikel bezahlt hat, wird nicht gespeichert.
+Für den 20.11.2026 läuft die Papier-Strichliste zur Sicherheit parallel.
 Die Auswertungsseite (`auswertung.html` → „Pro Tisch“) zeigt aber schon jetzt alles, was pro Tisch bestellt wurde,
 mit Summe – damit lässt sich die Papierliste am Ende abgleichen.
 
