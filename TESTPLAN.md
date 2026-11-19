@@ -34,6 +34,12 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 28 | Küche: 🚫 Ausverkauft → Käsesalat antippen | Bei den Kellnern (max. 10 s) Käsesalat durchgestrichen, + gesperrt, Hinweis „Ausverkauft“ | |
 | 29 | Käsesalat wieder auf „verfügbar“ | Kellner kann wieder bestellen | |
 | 30 | Auswertung → ⬇ Excel (am PC und am iPhone) | Datei lässt sich in Excel/Numbers öffnen, 5 Blätter, Summen stimmen | |
+| 31 | Admin: Preis ändern, speichern; Kellner-Seite neu laden | Neuer Preis wird angezeigt; offene Kellner-Seite zeigt nach ≤ 1 Min „Neu laden“ | |
+| 32 | Admin: Revier „1-5“ für einen Kellner | Dieser Kellner sieht Tische 1–5 oben, Rest unter „Andere Tische“ | |
+| 33 | Admin: ungültigen Preis („abc“) speichern | Rote Fehlermeldung, nichts gespeichert | |
+| 34 | Kellner: Suche „wurst“ | Nur die Wurstsalate sichtbar | |
+| 35 | Kellner: 2× Wurstsalat, Notiz „1× ohne Zwiebeln“, senden | Küche zeigt die Notiz gelb unter dem Wurstsalat | |
+| 36 | Kellner: nach einigen Bestellungen | „⭐ Häufig bestellt“ zeigt die meistbestellten Artikel | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

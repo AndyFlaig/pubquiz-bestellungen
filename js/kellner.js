@@ -11,7 +11,8 @@
   if (kellner && !CFG.KELLNER.includes(kellner)) kellner = null;
 
   // Entwurf (überlebt ein Neuladen der Seite)
-  let entwurf = store.get("kellner_entwurf", { tisch: null, menge: {}, kommentar: "" });
+  let entwurf = store.get("kellner_entwurf", { tisch: null, menge: {}, kommentar: "", notiz: {} });
+  if (!entwurf.notiz) entwurf.notiz = {};
   const speichern = () => store.set("kellner_entwurf", entwurf);
 
   // ------------------------------------------------------------------
@@ -29,6 +30,8 @@
       if (!b) return;
       kellner = b.dataset.name;
       bekannteOffene = null;
+      andereZeigen = false;
+      renderTische(); renderArtikel();
       store.set("kellner_name", kellner);
       ov.remove();
       $("#kellner-name").textContent = kellner;
@@ -44,10 +47,19 @@
     return t ? "Tisch " + t.nr + " – " + t.team : "";
   }
 
+  let andereZeigen = false;
   function renderTische() {
-    $("#tisch-raster").innerHTML = CFG.TISCHE.map((t) =>
-      '<button class="tisch-knopf' + (entwurf.tisch === t.nr ? " aktiv" : "") + '" data-nr="' + t.nr + '">' +
-      "<b>" + t.nr + "</b><span>" + esc(t.team) + "</span></button>").join("");
+    const revier = ((CFG.REVIERE || {})[kellner] || []).map(Number);
+    const knopf = (t) => '<button class="tisch-knopf' + (entwurf.tisch === t.nr ? " aktiv" : "") + '" data-nr="' + t.nr + '">' +
+      "<b>" + t.nr + "</b><span>" + esc(t.team) + "</span></button>";
+    const eigene = CFG.TISCHE.filter((t) => revier.includes(t.nr));
+    const andere = CFG.TISCHE.filter((t) => !revier.includes(t.nr));
+    $("#tisch-raster").innerHTML = eigene.length
+      ? '<div class="revier-titel">Mein Revier</div><div class="tisch-raster">' + eigene.map(knopf).join("") + "</div>" +
+        (andere.length ? '<button class="revier-umschalter" data-andere>' +
+          (andereZeigen ? "▲ Andere Tische ausblenden" : "▼ Andere Tische (" + andere.length + ")") + "</button>" +
+          (andereZeigen ? '<div class="tisch-raster andere-tische">' + andere.map(knopf).join("") + "</div>" : "") : "")
+      : '<div class="tisch-raster">' + CFG.TISCHE.map(knopf).join("") + "</div>";
     const gewaehlt = entwurf.tisch != null;
     $("#tisch-gewaehlt").hidden = !gewaehlt;
     $("#tisch-raster").hidden = gewaehlt;
@@ -78,13 +90,17 @@
   }
   $("#wiederholen").onclick = () => {
     if (!letzteVorschlag) return;
-    letzteVorschlag.forEach((p) => { entwurf.menge[p.id] = (entwurf.menge[p.id] || 0) + p.anzahl; });
+    letzteVorschlag.forEach((p) => {
+      entwurf.menge[p.id] = (entwurf.menge[p.id] || 0) + p.anzahl;
+      if (p.notiz) { entwurf.notiz = entwurf.notiz || {}; entwurf.notiz[p.id] = p.notiz; }
+    });
     speichern(); renderMengen();
     $("#wiederholen").hidden = true;
     toast("Übernommen – bei Bedarf mit + / − anpassen", { art: "ok" });
   };
 
   $("#tisch-raster").addEventListener("click", (e) => {
+    if (e.target.closest("[data-andere]")) { andereZeigen = !andereZeigen; renderTische(); return; }
     const b = e.target.closest("[data-nr]");
     if (!b) return;
     entwurf.tisch = Number(b.dataset.nr);
@@ -97,24 +113,69 @@
   // ------------------------------------------------------------------
   // Artikel
   // ------------------------------------------------------------------
+  // Häufig bestellt: zählt pro Kellner auf diesem Gerät mit
+  const haeufigKey = () => "haeufig_" + (kellner || "");
+  function haeufigMerken(pos) {
+    const h = store.get(haeufigKey(), {});
+    pos.forEach((p) => { h[p.id] = (h[p.id] || 0) + p.anzahl; });
+    store.set(haeufigKey(), h);
+  }
+  function haeufigste() {
+    const h = store.get(haeufigKey(), {});
+    return Object.entries(h).filter(([id]) => ARTIKEL.has(id) && ARTIKEL.get(id).ziel !== "kasse")
+      .sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id]) => ARTIKEL.get(id));
+  }
+
+  function artikelZeile(a) {
+    return '<div class="artikel" data-id="' + esc(a.id) + '" data-suche="' +
+        esc((a.name + " " + (a.menge || "") + " " + a.kategorie).toLowerCase()) + '">' +
+      '<button class="artikel-name" data-plus="' + esc(a.id) + '">' +
+        "<span>" + esc(a.name) + (a.menge ? " <small>" + esc(a.menge) + "</small>" : "") + "</span>" +
+        '<small class="preis">' + euro(a.preis) + "</small></button>" +
+      '<div class="stepper">' +
+        '<button class="minus" data-minus="' + esc(a.id) + '" aria-label="weniger">−</button>' +
+        '<span class="anzahl"></span>' +
+        '<button class="plus" data-plus="' + esc(a.id) + '" aria-label="mehr">+</button>' +
+      "</div>" +
+      '<div class="notiz-zeile"><button class="notiz-knopf" data-notiz="' + esc(a.id) + '">✎ Notiz</button>' +
+        '<span class="notiz-text"></span></div>' +
+    "</div>";
+  }
+
   function renderArtikel() {
     const kategorien = [];
     CFG.ARTIKEL.forEach((a) => { if (!kategorien.includes(a.kategorie)) kategorien.push(a.kategorie); });
-    $("#artikel").innerHTML = kategorien.map((k) =>
-      '<section class="kategorie"><h3>' + esc(k) + "</h3>" +
-      CFG.ARTIKEL.filter((a) => a.kategorie === k).map((a) =>
-        '<div class="artikel" data-id="' + esc(a.id) + '">' +
-          '<button class="artikel-name" data-plus="' + esc(a.id) + '">' +
-            "<span>" + esc(a.name) + (a.menge ? " <small>" + esc(a.menge) + "</small>" : "") + "</span>" +
-            '<small class="preis">' + euro(a.preis) + "</small></button>" +
-          '<div class="stepper">' +
-            '<button class="minus" data-minus="' + esc(a.id) + '" aria-label="weniger">−</button>' +
-            '<span class="anzahl"></span>' +
-            '<button class="plus" data-plus="' + esc(a.id) + '" aria-label="mehr">+</button>' +
-          "</div></div>").join("") +
-      "</section>").join("");
+    const fav = haeufigste();
+    $("#artikel").innerHTML =
+      (fav.length ? '<section class="kategorie favoriten"><h3>⭐ Häufig bestellt</h3>' + fav.map(artikelZeile).join("") + "</section>" : "") +
+      kategorien.map((k) =>
+        '<section class="kategorie"><h3>' + esc(k) + "</h3>" +
+        CFG.ARTIKEL.filter((a) => a.kategorie === k).map(artikelZeile).join("") +
+        "</section>").join("") +
+      '<p class="leer keine-treffer" hidden>Kein Artikel gefunden.</p>';
     renderMengen();
+    sucheAnwenden();
   }
+
+  // Suche
+  const suchFeld = $("#suche");
+  function sucheAnwenden() {
+    const q = suchFeld.value.trim().toLowerCase();
+    $("#suche-leeren").hidden = !q;
+    let treffer = 0;
+    document.querySelectorAll("#artikel .kategorie").forEach((sec) => {
+      if (sec.classList.contains("favoriten")) { sec.hidden = !!q; return; }
+      let sichtbar = 0;
+      sec.querySelectorAll(".artikel").forEach((el) => {
+        const ok = !q || q.split(/\s+/).every((w) => el.dataset.suche.includes(w));
+        el.hidden = !ok; if (ok) sichtbar++;
+      });
+      sec.hidden = !sichtbar; treffer += sichtbar;
+    });
+    const kt = $("#artikel .keine-treffer"); if (kt) kt.hidden = treffer > 0;
+  }
+  suchFeld.addEventListener("input", sucheAnwenden);
+  $("#suche-leeren").onclick = () => { suchFeld.value = ""; sucheAnwenden(); };
 
   // Ausverkauft (wird von Küche/Theke geschaltet)
   let ausverkauft = new Set();
@@ -140,6 +201,10 @@
       el.querySelector(".anzahl").textContent = n || "";
       el.classList.toggle("gewaehlt", n > 0);
       el.classList.toggle("ausverkauft", aus);
+      const notiz = (entwurf.notiz || {})[el.dataset.id] || "";
+      el.classList.toggle("hat-notiz", !!notiz);
+      el.querySelector(".notiz-text").textContent = notiz;
+      el.querySelector(".notiz-knopf").textContent = notiz ? "✎" : "✎ Notiz";
       el.querySelectorAll("[data-plus]").forEach((b) => { b.disabled = aus; });
     });
     renderSumme();
@@ -148,7 +213,13 @@
   function positionen() {
     return Object.entries(entwurf.menge)
       .filter(([id, n]) => n > 0 && ARTIKEL.has(id))
-      .map(([id, n]) => { const a = ARTIKEL.get(id); return { id, name: a.name, menge: a.menge, preis: a.preis, anzahl: n, ziel: a.ziel }; })
+      .map(([id, n]) => {
+        const a = ARTIKEL.get(id);
+        const p = { id, name: a.name, menge: a.menge, preis: a.preis, anzahl: n, ziel: a.ziel };
+        const notiz = ((entwurf.notiz || {})[id] || "").trim();
+        if (notiz) p.notiz = notiz;
+        return p;
+      })
       .sort((x, y) => CFG.ARTIKEL.indexOf(ARTIKEL.get(x.id)) - CFG.ARTIKEL.indexOf(ARTIKEL.get(y.id)));
   }
 
@@ -166,8 +237,23 @@
   $("#artikel").addEventListener("click", (e) => {
     const plus = e.target.closest("[data-plus]");
     const minus = e.target.closest("[data-minus]");
+    const notizKnopf = e.target.closest("[data-notiz]");
+    if (notizKnopf) {
+      const id = notizKnopf.dataset.notiz, a = ARTIKEL.get(id);
+      const n = entwurf.menge[id] || 0;
+      const txt = prompt("Notiz für " + n + "× " + a.name + (a.menge ? " " + a.menge : "") +
+        "\n(z. B. „1× ohne Zwiebeln“) – leer lassen zum Löschen:", (entwurf.notiz || {})[id] || "");
+      if (txt === null) return;
+      entwurf.notiz = entwurf.notiz || {};
+      if (txt.trim()) entwurf.notiz[id] = txt.trim().slice(0, 120); else delete entwurf.notiz[id];
+      speichern(); renderMengen();
+      return;
+    }
     if (plus) { const id = plus.dataset.plus; entwurf.menge[id] = (entwurf.menge[id] || 0) + 1; }
-    else if (minus) { const id = minus.dataset.minus; entwurf.menge[id] = Math.max(0, (entwurf.menge[id] || 0) - 1); }
+    else if (minus) {
+      const id = minus.dataset.minus; entwurf.menge[id] = Math.max(0, (entwurf.menge[id] || 0) - 1);
+      if (!entwurf.menge[id] && entwurf.notiz) delete entwurf.notiz[id];
+    }
     else return;
     speichern(); renderMengen();
   });
@@ -177,7 +263,7 @@
   kommentarFeld.addEventListener("input", () => { entwurf.kommentar = kommentarFeld.value; speichern(); renderSumme(); });
 
   function zuruecksetzen() {
-    entwurf = { tisch: null, menge: {}, kommentar: "" };
+    entwurf = { tisch: null, menge: {}, kommentar: "", notiz: {} };
     kommentarFeld.value = "";
     speichern(); renderTische(); renderMengen();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -257,7 +343,9 @@
       }
       ov.remove();
       gesendet = {};
+      haeufigMerken(pos);
       zuruecksetzen();
+      renderArtikel();
       if (snackFehler) {
         toast("✓ Tisch " + t.nr + " gesendet – aber Snacks NICHT erfasst! Bitte auf Papier notieren.", { art: "fehler", bleibt: true });
       } else {

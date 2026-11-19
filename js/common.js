@@ -46,7 +46,7 @@
   };
 
   function positionText(p) {
-    return p.anzahl + "× " + p.name + (p.menge ? " " + p.menge : "");
+    return p.anzahl + "× " + p.name + (p.menge ? " " + p.menge : "") + (p.notiz ? " (" + p.notiz + ")" : "");
   }
 
   // ------------------------------------------------------------------
@@ -81,6 +81,16 @@
           .order("id", { ascending: true }).limit(5000));
       },
       // ---- Zahlungen (Kasse) ----
+      // ---- Stammdaten (Admin-Seite) ----
+      async ladeStammdaten() {
+        const data = check(await client.from("einstellungen").select("wert,geaendert_am").eq("schluessel", "stammdaten"));
+        return data.length ? data[0] : null;
+      },
+      async speichereStammdaten(wert) {
+        const jetzt = new Date().toISOString();
+        check(await client.from("einstellungen").upsert({ schluessel: "stammdaten", wert, geaendert_am: jetzt }, { onConflict: "schluessel" }));
+        return jetzt;
+      },
       // ---- Ausverkauft-Schalter ----
       async listAusverkauft() {
         return check(await client.from("ausverkauft").select("artikel_id").eq("ausverkauft", true)).map((r) => r.artikel_id);
@@ -160,6 +170,12 @@
       },
       async listAusverkauft() {
         return Object.keys(load().ausverkauft || {}).filter((k) => load().ausverkauft[k]);
+      },
+      async ladeStammdaten() { return load().stammdaten || null; },
+      async speichereStammdaten(wert) {
+        const db = load(); const jetzt = new Date().toISOString();
+        db.stammdaten = { wert, geaendert_am: jetzt }; save(db); notify();
+        return jetzt;
       },
       async setAusverkauft(artikelId, wert) {
         const db = load(); db.ausverkauft = db.ausverkauft || {}; db.ausverkauft[artikelId] = wert; save(db); notify();
@@ -333,7 +349,7 @@
   });
 
   // Positionen mehrerer Bestellungen zusammenzählen (für Auswertung und Kasse)
-  const reihenfolge = new Map(CFG.ARTIKEL.map((a, i) => [a.id, i]));
+  let reihenfolge = new Map(CFG.ARTIKEL.map((a, i) => [a.id, i]));
   function zusammenfassen(rows) {
     const m = new Map();
     rows.forEach((r) => r.positionen.forEach((p) => {
@@ -348,7 +364,77 @@
   }
   const cent = (euroBetrag) => Math.round((Number(euroBetrag) || 0) * 100);
 
+  // ------------------------------------------------------------------
+  // Stammdaten (Artikel, Tische, Kellner, Reviere) aus Supabase laden.
+  // Reihenfolge: Datenbank → zuletzt geladene Kopie auf dem Gerät → config.js
+  // ------------------------------------------------------------------
+  const STAMM_CACHE = "stammdaten_cache";
+  const STANDARD = JSON.parse(JSON.stringify({
+    VERANSTALTUNG: CFG.VERANSTALTUNG, KELLNER: CFG.KELLNER, TISCHE: CFG.TISCHE, ARTIKEL: CFG.ARTIKEL, REVIERE: CFG.REVIERE || {},
+  }));
+  let stammVersion = null, stammQuelle = "config.js";
+
+  function stammdatenGueltig(w) {
+    return w && Array.isArray(w.ARTIKEL) && w.ARTIKEL.length && Array.isArray(w.TISCHE) && w.TISCHE.length &&
+      Array.isArray(w.KELLNER) && w.KELLNER.length;
+  }
+  function stammdatenAnwenden(w) {
+    const neu = stammdatenGueltig(w) ? w : STANDARD;
+    CFG.VERANSTALTUNG = neu.VERANSTALTUNG || STANDARD.VERANSTALTUNG;
+    CFG.KELLNER = neu.KELLNER; CFG.TISCHE = neu.TISCHE; CFG.ARTIKEL = neu.ARTIKEL; CFG.REVIERE = neu.REVIERE || {};
+    reihenfolge = new Map(CFG.ARTIKEL.map((a, i) => [a.id, i]));
+  }
+  function mitZeitlimit(promise, ms) {
+    return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error("Zeitüberschreitung")), ms))]);
+  }
+  async function stammdatenLaden() {
+    try {
+      const r = await mitZeitlimit(DB.ladeStammdaten(), 5000);
+      if (r && stammdatenGueltig(r.wert)) {
+        stammdatenAnwenden(r.wert); stammVersion = r.geaendert_am; stammQuelle = "Datenbank";
+        store.set(STAMM_CACHE, r);
+      } else {
+        stammdatenAnwenden(null); stammVersion = r ? r.geaendert_am : null; stammQuelle = "config.js";
+        store.del(STAMM_CACHE);
+      }
+    } catch (e) {
+      // Tabelle fehlt oder kein Netz: letzte Kopie vom Gerät, sonst config.js
+      const c = store.get(STAMM_CACHE, null);
+      if (c && stammdatenGueltig(c.wert)) { stammdatenAnwenden(c.wert); stammVersion = c.geaendert_am; stammQuelle = "Kopie auf dem Gerät"; }
+      else { stammdatenAnwenden(null); stammQuelle = "config.js"; }
+    }
+  }
+  // Prüft regelmäßig, ob im Admin etwas geändert wurde, und bietet Neuladen an
+  function aufAenderungenAchten() {
+    let gemeldet = false;
+    setInterval(async () => {
+      if (gemeldet) return;
+      try {
+        const r = await DB.ladeStammdaten();
+        const v = r ? r.geaendert_am : null;
+        if (v !== stammVersion && (v || stammQuelle === "Datenbank")) {
+          gemeldet = true;
+          toast("Preisliste/Tische wurden geändert.", { knopf: "Neu laden", bleibt: true, aktion: () => location.reload() });
+        }
+      } catch (e) { /* egal */ }
+    }, 60000);
+  }
+  // Lädt die Stammdaten und danach die Skripte der Seite (der Reihe nach)
+  async function starte(skripte, opts) {
+    await stammdatenLaden();
+    if (!(opts && opts.ohneBeobachter)) aufAenderungenAchten();
+    for (const src of skripte) {
+      await new Promise((ok, fehler) => {
+        const el = document.createElement("script");
+        el.src = src; el.onload = ok; el.onerror = () => fehler(new Error(src));
+        document.body.appendChild(el);
+      });
+    }
+  }
+
   window.App = {
+    starte, stammdatenLaden, stammdatenGueltig, STANDARD,
+    get stammQuelle() { return stammQuelle; }, get stammVersion() { return stammVersion; },
     zusammenfassen, cent,
     CFG, DEMO, DB, $, esc, euro, uhrzeit, minutenSeit, uuid, store, positionText,
     verbindungsAnzeige, toast, pinPruefen, audioFreischalten, tonNeu, tonStorno, blinken, wachHalten,

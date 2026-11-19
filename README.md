@@ -10,6 +10,7 @@ Kassiert wird nicht über die App (Strichliste auf Papier).
 - **Theke:** `theke.html`
 - **Auswertung:** `auswertung.html` – Umsatz pro Tisch, verkaufte Artikel, Bestellungen und Kassenstand pro Kellner
 - **Kasse:** Reiter in der Kellner-Ansicht – Tisch ganz oder pro Artikel abrechnen (nur bar)
+- **Admin:** `admin.html` – Artikel, Preise, Tische, Kellner und Reviere im Browser pflegen (in Supabase gespeichert)
 - **Ausverkauft-Schalter** in Küche/Theke, **Excel-Export** in der Auswertung (eigener .xlsx-Schreiber, `js/xlsx.js`)
 
 👉 **Einrichtung Schritt für Schritt:** [ANLEITUNG.md](ANLEITUNG.md)
@@ -20,7 +21,8 @@ Kassiert wird nicht über die App (Strichliste auf Papier).
 
 | Was | Datei |
 |---|---|
-| Supabase-Zugang, Kellnernamen, PINs, Tische, Preisliste | `config.js` |
+| Supabase-Zugang, PINs | `config.js` |
+| Kellnernamen, Reviere, Tische, Preisliste | **Admin-Seite** (`admin.html`); `config.js` nur als Rückfallebene |
 | Datenbank-Tabelle anlegen | `supabase/setup.sql` |
 | Aussehen (Farben aus dem Vereinslogo) | `style.css` |
 | Logo und App-Symbole | `img/` |

@@ -36,11 +36,15 @@
         <button id="tisch-aendern">ändern</button>
       </div>
       <button id="wiederholen" class="wiederholen" hidden></button>
-      <div id="tisch-raster" class="tisch-raster"></div>
+      <div id="tisch-raster"></div>
     </section>
 
     <section class="block">
       <h2>2. Artikel</h2>
+      <div class="suche-box">
+        <input id="suche" type="search" placeholder="🔍 Artikel suchen …" autocomplete="off" enterkeyhint="search">
+        <button id="suche-leeren" class="suche-leeren" aria-label="Suche leeren" hidden>✕</button>
+      </div>
       <div id="artikel"></div>
     </section>
 
@@ -72,7 +76,6 @@
   <script src="config.js"></script>
   <script src="vendor/supabase-js-2.117.3.js"></script>
   <script src="js/common.js"></script>
-  <script src="js/kellner.js"></script>
-  <script src="js/kasse.js"></script>
+  <script>App.starte(["js/kellner.js", "js/kasse.js"]);</script>
 </body>
 </html>

@@ -1,5 +1,8 @@
 // =====================================================================
-//  KONFIGURATION – nur diese Datei muss angepasst werden.
+//  KONFIGURATION
+//  Artikel, Preise, Tische, Kellner und Reviere lassen sich bequemer auf der
+//  Admin-Seite (admin.html) pflegen. Was dort gespeichert ist, hat Vorrang.
+//  Diese Datei ist dann nur noch Rückfallebene (und für Supabase-Zugang + PINs).
 //  Texte immer in "Anführungszeichen", Zeilen mit Komma trennen.
 // =====================================================================
 
@@ -28,12 +31,20 @@ window.APP_CONFIG = {
     kueche: "",
     theke: "",
     auswertung: "",
+    admin: "",       // Admin-Seite – unbedingt setzen!
   },
 
   // ---------------------------------------------------------------
   // 4) Die vier Kellner (Namen einfach ändern)
   // ---------------------------------------------------------------
   KELLNER: ["Maurice", "Marvin", "Axel", "Patrick"],
+
+  // ---------------------------------------------------------------
+  // 4b) Reviere: welche Tische gehören zu welchem Kellner (optional)
+  //     z. B. { "Maurice": [1, 2, 3, 4, 5], "Marvin": [6, 7, 8, 9, 10] }
+  //     Leer = alle Kellner sehen alle Tische gleich.
+  // ---------------------------------------------------------------
+  REVIERE: {},
 
   // ---------------------------------------------------------------
   // 5) Tische: Nummer und Teamname

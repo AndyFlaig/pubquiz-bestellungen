@@ -24,7 +24,8 @@ Repository `pubquiz-bestellungen` liegt. Alles ist kostenlos.
 
 > **Bestehende Datenbank (vor dem 19.11. eingerichtet)?** Zusätzlich einmal im SQL Editor ausführen:
 > [`supabase/update-snacks.sql`](supabase/update-snacks.sql) (Snacks), [`supabase/update-kasse.sql`](supabase/update-kasse.sql) (Kasse)
-> und danach [`supabase/update-v3.sql`](supabase/update-v3.sql) (Ausverkauft, Abrechnung pro Artikel).
+> und danach [`supabase/update-v3.sql`](supabase/update-v3.sql) (Ausverkauft, Abrechnung pro Artikel)
+> sowie [`supabase/update-v4.sql`](supabase/update-v4.sql) (Admin-Seite).
 
 ## Schritt 2: Zugangsdaten und Namen in `config.js` eintragen
 
@@ -71,6 +72,7 @@ Mit deiner Adresse (Beispiel):
 | Küche (iPad/Handy) | `https://pubquiz-bestellungen.vercel.app/kueche.html` |
 | Theke (iPad/Handy) | `https://pubquiz-bestellungen.vercel.app/theke.html` |
 | Auswertung (Orga) | `https://pubquiz-bestellungen.vercel.app/auswertung.html` |
+| Admin (Orga) | `https://pubquiz-bestellungen.vercel.app/admin.html` |
 
 Tipp: Link per WhatsApp verschicken oder als QR-Code ausdrucken. Auf dem iPhone in Safari: Teilen → **Zum Home-Bildschirm**.
 
@@ -99,6 +101,15 @@ Meldet Küche oder Theke „Erledigt“, bekommt der Kellner einen grünen Hinwe
 **✓ Erledigt** blendet die Bestellung aus (10 Sekunden lang „Rückgängig“ möglich).
 Storniert ein Kellner, erscheint ein großer roter Hinweis (antippen zum Schließen).
 
+**Suche und Favoriten:** Über der Artikelliste gibt es ein Suchfeld (z. B. „wurst“, „0,33“). Ganz oben stehen unter
+„⭐ Häufig bestellt“ die fünf Artikel, die dieser Kellner auf diesem Handy am häufigsten bestellt hat.
+
+**Notiz pro Artikel:** Sobald ein Artikel ausgewählt ist, erscheint darunter „✎ Notiz“, z. B. „1× ohne Zwiebeln“.
+Die Notiz steht bei Küche/Theke gelb direkt unter dem Artikel. Der Kommentar unten gilt weiter für die ganze Bestellung.
+
+**Revier:** Ist für den Kellner im Admin ein Revier eingetragen, stehen „seine“ Tische oben; die übrigen unter
+„▼ Andere Tische“.
+
 **Snacks:** stehen in der Kellner-Ansicht ganz unten („Snacks – stehen auf dem Tisch“, 1,00 €). Sie werden **nicht** an Küche
 oder Theke geschickt, sondern nur erfasst und in der Auswertung pro Tisch mitgezählt. Einzeln oder zusammen mit einer
 Bestellung absenden. Ein falsch erfasster Snack kann nicht storniert werden – einfach auf der Papierliste korrigieren.
@@ -122,6 +133,21 @@ Pro Tisch, Artikel, Kellner, Bestellpositionen (inkl. stornierter) und Zahlungen
 
 **Auswertung:** zeigt pro Tisch alles Bestellte mit Summe (Abgleich mit der Strichliste), die verkauften Artikel
 und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit eigenem PIN (`PIN.auswertung` in `config.js`).
+
+## Admin-Seite: Artikel, Preise, Tische und Kellner pflegen
+
+`admin.html` (auch über die Startseite unten „⚙️ Admin“). **Vorher einen Admin-PIN in `config.js` setzen** (`PIN.admin`).
+
+- **Artikel:** Name, Menge, Preis, Kategorie und Ziel (Theke / Küche / Nur Strichliste) ändern, Reihenfolge mit ↑ ↓,
+  neue Artikel anlegen, Artikel löschen.
+- **Tische:** Nummer und Teamname.
+- **Kellner:** Namen und Revier (z. B. `1-5, 9`).
+- **Allgemein:** Veranstaltungsname, Sicherung als JSON herunterladen/einspielen, „Auf Standard aus config.js zurücksetzen“.
+- **Speichern** prüft alles (Preise, doppelte Tischnummern, Reviere …) und zeigt Fehler rot an.
+- Gespeicherte Änderungen gelten auf allen Geräten nach dem **Neuladen**. Offene Seiten zeigen innerhalb einer Minute
+  den Hinweis „Preisliste/Tische wurden geändert – Neu laden“.
+- Bereits abgeschickte Bestellungen behalten ihren alten Preis.
+- Ist die Datenbank nicht erreichbar, nutzt jedes Gerät die zuletzt geladene Liste, sonst `config.js`.
 
 ## Nach dem Test: Testdaten löschen
 
