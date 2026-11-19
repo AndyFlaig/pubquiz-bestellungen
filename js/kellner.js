@@ -123,7 +123,7 @@
   function haeufigste() {
     const h = store.get(haeufigKey(), {});
     return Object.entries(h).filter(([id]) => ARTIKEL.has(id) && ARTIKEL.get(id).ziel !== "kasse")
-      .sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id]) => ARTIKEL.get(id));
+      .sort((a, b) => b[1] - a[1]).slice(0, 8).map(([id]) => ARTIKEL.get(id));
   }
 
   function artikelZeile(a) {

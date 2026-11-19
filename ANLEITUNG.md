@@ -102,7 +102,7 @@ Meldet Küche oder Theke „Erledigt“, bekommt der Kellner einen grünen Hinwe
 Storniert ein Kellner, erscheint ein großer roter Hinweis (antippen zum Schließen).
 
 **Suche und Favoriten:** Über der Artikelliste gibt es ein Suchfeld (z. B. „wurst“, „0,33“). Ganz oben stehen unter
-„⭐ Häufig bestellt“ die fünf Artikel, die dieser Kellner auf diesem Handy am häufigsten bestellt hat.
+„⭐ Häufig bestellt“ die acht Artikel, die dieser Kellner auf diesem Handy am häufigsten bestellt hat.
 
 **Notiz pro Artikel:** Sobald ein Artikel ausgewählt ist, erscheint darunter „✎ Notiz“, z. B. „1× ohne Zwiebeln“.
 Die Notiz steht bei Küche/Theke gelb direkt unter dem Artikel. Der Kommentar unten gilt weiter für die ganze Bestellung.
