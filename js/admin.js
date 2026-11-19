@@ -16,7 +16,7 @@
     return {
       VERANSTALTUNG: w.VERANSTALTUNG || "",
       ARTIKEL: w.ARTIKEL.map((a) => Object.assign({}, a, { preisText: String(a.preis).replace(".", ",") })),
-      TISCHE: w.TISCHE.map((t) => ({ nr: t.nr, team: t.team })),
+      TISCHE: w.TISCHE.map((t) => ({ nr: t.nr, team: t.team, eigen: !!t.eigen })),
       KELLNER: w.KELLNER.map((k) => ({ name: k, revier: revierText((w.REVIERE || {})[k] || []) })),
     };
   }
@@ -75,7 +75,8 @@
     $("#tische-liste").innerHTML = d.TISCHE.map((t, i) =>
       '<div class="admin-zeile tisch-zeile" data-i="' + i + '">' +
         '<label class="schmal">Nr.<input data-feld="nr" value="' + esc(t.nr) + '" inputmode="numeric" maxlength="3"></label>' +
-        '<label class="breit">Teamname<input data-feld="team" value="' + esc(t.team) + '" maxlength="60"></label>' +
+        '<label class="breit">' + (t.eigen ? "Bereich / Person" : "Teamname") + '<input data-feld="team" value="' + esc(t.team) + '" maxlength="60"></label>' +
+        '<label class="haken"><input type="checkbox" data-feld="eigen"' + (t.eigen ? " checked" : "") + "> 👤 Eigenverzehr</label>" +
         '<div class="zeilen-knoepfe"><button data-aktion="loeschen" class="loeschen" aria-label="löschen">🗑</button></div>' +
       "</div>").join("");
   }
@@ -114,7 +115,8 @@
     const zeile = el.closest("[data-i]"), liste = el.closest(".admin-liste");
     if (!zeile || !liste || !el.dataset.feld) return;
     const obj = d[LISTEN[liste.id]][Number(zeile.dataset.i)];
-    obj[el.dataset.feld] = el.dataset.feld === "nr" ? el.value.trim() : el.value;
+    obj[el.dataset.feld] = el.type === "checkbox" ? el.checked : el.dataset.feld === "nr" ? el.value.trim() : el.value;
+    if (el.dataset.feld === "eigen") { renderTische(); }
     el.classList.remove("ungueltig");
     geaendert();
   });
@@ -194,7 +196,7 @@
       else if (nrs.has(nr)) { fehler.push("Tischnummer " + nr + " gibt es doppelt."); markiere("tische-liste", i, "nr"); }
       if (!t.team.trim()) { fehler.push("Tisch " + t.nr + ": Teamname fehlt."); markiere("tische-liste", i, "team"); }
       nrs.add(nr);
-      return { nr, team: t.team.trim() };
+      return t.eigen ? { nr, team: t.team.trim(), eigen: true } : { nr, team: t.team.trim() };
     }).sort((a, b) => a.nr - b.nr);
 
     if (!d.KELLNER.length) fehler.push("Mindestens ein Kellner ist nötig.");

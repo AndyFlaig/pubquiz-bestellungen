@@ -41,6 +41,9 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 35 | Kellner: 2× Wurstsalat, Notiz „1× ohne Zwiebeln“, senden | Küche zeigt die Notiz gelb unter dem Wurstsalat | |
 | 36 | Kellner: nach einigen Bestellungen | „⭐ Häufig bestellt“ zeigt die meistbestellten Artikel | |
 | 37 | Kasse: Tisch ohne Bestellung → 3 Snacks „auf die Rechnung“ | Offen 3,00 €, Tisch in der Übersicht orange; „Rückgängig“ entfernt sie wieder | |
+| 38 | Admin: „101 – Theke“ mit Häkchen Eigenverzehr anlegen | Kellner sieht „👤 Eigenverzehr – Theke“ unter den Tischen | |
+| 39 | 2 Pils auf „Theke“ (Eigenverzehr) bestellen | Theke zeigt lila „EIGENVERZEHR“; Kasse zeigt den Eintrag nicht | |
+| 40 | Auswertung → Artikel | Pils: Verkauft unverändert, Eigenverzehr 2, Gesamt +2; Umsatz unverändert | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

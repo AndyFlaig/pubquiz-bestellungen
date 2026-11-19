@@ -152,6 +152,20 @@ und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit ei
 - Bereits abgeschickte Bestellungen behalten ihren alten Preis.
 - Ist die Datenbank nicht erreichbar, nutzt jedes Gerät die zuletzt geladene Liste, sonst `config.js`.
 
+## Eigenverzehr (Personal/Helfer)
+
+Im **Admin → Tische** Einträge anlegen und **„👤 Eigenverzehr“** ankreuzen, z. B. `101 – Theke`, `102 – Küche`,
+`103 – Kellner` oder pro Person (`110 – Maurice` …). Die Nummer ist frei wählbar, muss aber eindeutig sein.
+
+- Kellner sehen diese Einträge in einem eigenen Bereich „👤 Eigenverzehr“ unter den Tischen und bestellen ganz normal.
+- Küche/Theke sehen die Bestellung mit lila Band **„EIGENVERZEHR“**.
+- In der **Kasse** tauchen sie nicht auf – es wird nichts kassiert, der Kassenstand bleibt unberührt.
+- In der **Auswertung** zählt Eigenverzehr **nicht zum Umsatz**. Unter „Artikel“ stehen die Spalten
+  Verkauft / Eigenverzehr / **Gesamt (Inventur)**, dazu die Kachel „Eigenverzehr (Warenwert)“.
+- Im **Excel-Export**: Blatt „Artikel (Inventur)“ mit denselben Spalten und ein eigenes Blatt „Eigenverzehr“.
+
+Voraussetzung: einmal [`supabase/update-v5.sql`](supabase/update-v5.sql) ausführen.
+
 ## Nach dem Test: Testdaten löschen
 
 Supabase → **SQL Editor** → `truncate table public.bestellungen, public.zahlungen restart identity;` → **Run**.
