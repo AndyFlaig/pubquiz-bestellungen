@@ -107,6 +107,24 @@ grant select, insert, update on public.einstellungen to anon, authenticated;
 -- Eigenverzehr: Bestellungen für Personal/Helfer – zählen in der Inventur, nicht im Umsatz
 alter table public.bestellungen add column if not exists eigenverzehr boolean not null default false;
 
+-- Durchsagen an alle Geräte
+create table if not exists public.durchsagen (
+  id           bigint generated always as identity primary key,
+  text         text        not null check (char_length(text) between 1 and 200),
+  von          text,
+  erstellt_am  timestamptz not null default now()
+);
+
+alter table public.durchsagen enable row level security;
+
+drop policy if exists "durchsagen lesen"   on public.durchsagen;
+drop policy if exists "durchsagen anlegen" on public.durchsagen;
+
+create policy "durchsagen lesen"   on public.durchsagen for select to anon, authenticated using (true);
+create policy "durchsagen anlegen" on public.durchsagen for insert to anon, authenticated with check (true);
+
+grant select, insert on public.durchsagen to anon, authenticated;
+
 -- Live-Updates (Realtime) für die Tabelle einschalten
 do $$
 begin
@@ -119,14 +137,14 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------
---  Kontrolle: zeigt unten eine Tabelle. Erwartet werden 13 Zeilen, darunter
+--  Kontrolle: zeigt unten eine Tabelle. Erwartet werden 15 Zeilen, darunter
 --  "bestellungen anlegen" mit ... ziel = 'kasse' ... und
 --  "bestellungen_ziel_check" mit ... 'kueche', 'theke', 'kasse' ...
 -- ---------------------------------------------------------------------
 select c.relname as tabelle, p.polname as regel_oder_pruefung,
        coalesce(pg_get_expr(p.polwithcheck, p.polrelid), pg_get_expr(p.polqual, p.polrelid), '') as bedingung
 from pg_policy p join pg_class c on c.oid = p.polrelid
-where c.relname in ('bestellungen', 'zahlungen', 'ausverkauft', 'einstellungen')
+where c.relname in ('bestellungen', 'zahlungen', 'ausverkauft', 'einstellungen', 'durchsagen')
 union all
 select 'bestellungen', conname, pg_get_constraintdef(oid)
 from pg_constraint where conrelid = 'public.bestellungen'::regclass and conname = 'bestellungen_ziel_check'

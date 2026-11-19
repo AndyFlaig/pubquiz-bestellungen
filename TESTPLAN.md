@@ -44,6 +44,9 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 38 | Admin: „101 – Theke“ mit Häkchen Eigenverzehr anlegen | Kellner sieht „👤 Eigenverzehr – Theke“ unter den Tischen | |
 | 39 | 2 Pils auf „Theke“ (Eigenverzehr) bestellen | Theke zeigt lila „EIGENVERZEHR“; Kasse zeigt den Eintrag nicht | |
 | 40 | Auswertung → Artikel | Pils: Verkauft unverändert, Eigenverzehr 2, Gesamt +2; Umsatz unverändert | |
+| 41 | `beamer.html` am Laptop | Liter Bier und Top 3 stimmen mit den Testbestellungen; `#feiern` zeigt Konfetti | |
+| 42 | Theke: 📢 → „Letzte Runde!“ senden | Nach ≤ 10 s auf allen Kellner-Handys, Küche, Auswertung groß mit Ton; nicht beim Absender | |
+| 43 | Kellner: 🌓 antippen bis 🌙 | App wird dunkel, bleibt nach Neuladen dunkel | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

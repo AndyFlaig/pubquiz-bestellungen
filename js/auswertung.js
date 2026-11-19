@@ -143,6 +143,7 @@
     };
   });
   $("#aktualisieren").onclick = laden;
+  $("#durchsage").onclick = () => App.durchsageDialog("Orga");
 
   // ------------------------------------------------------------------
   // Excel-Export

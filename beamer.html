@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <title>Beamer – Pub-Quiz</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="beamer.css">
+</head>
+<body class="beamer">
+  <header class="b-kopf">
+    <img src="img/logo.jpg" alt="Gutholz Schiltach" class="b-logo">
+    <div>
+      <div class="b-titel">Pub-Quiz</div>
+      <div id="veranstaltung" class="b-untertitel"></div>
+    </div>
+    <div class="b-uhr" id="uhr"></div>
+  </header>
+
+  <main class="b-inhalt">
+    <section class="b-karte b-barometer">
+      <h2>🍺 Bier-Barometer</h2>
+      <div class="b-glas-zeile">
+        <div class="b-glas" aria-hidden="true">
+          <div class="b-fuellung" id="fuellung"><div class="b-schaum"></div><div class="b-blasen"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="b-henkel"></div>
+        </div>
+        <div class="b-zahlen">
+          <div class="b-liter"><span id="liter">0</span><small> Liter</small></div>
+          <div class="b-unter">Bier gezapft</div>
+          <div class="b-ziel" id="ziel"></div>
+          <div class="b-klein" id="nebenzahlen"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="b-karte b-rangliste">
+      <h2>🏆 Durstigstes Team</h2>
+      <div class="b-podest" id="podest"></div>
+      <ol class="b-weitere" id="weitere" start="4"></ol>
+      <p class="b-fuss">gezählt: alle Getränke · Stand <span id="stand">–</span></p>
+    </section>
+  </main>
+
+  <button id="vollbild" class="b-vollbild" title="Vollbild">⛶ Vollbild</button>
+  <div id="konfetti" class="b-konfetti" aria-hidden="true"></div>
+
+  <script src="config.js"></script>
+  <script src="vendor/supabase-js-2.117.3.js"></script>
+  <script src="js/common.js"></script>
+  <script>App.starte(["js/beamer.js"], { ohneDurchsagen: true });</script>
+</body>
+</html>

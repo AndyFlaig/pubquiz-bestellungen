@@ -161,6 +161,8 @@
     });
   }
   $("#ausverkauft-knopf").addEventListener("click", ausverkauftDialog);
+  $("#durchsage-knopf").addEventListener("click", () => App.durchsageDialog(ZIEL === "kueche" ? "Küche" : "Theke"));
+  $("#design-platz").innerHTML = App.designWahlHtml();
 
   // Home-Knopf: in Küche/Theke nur nach Rückfrage verlassen
   $(".home-knopf").addEventListener("click", (e) => {

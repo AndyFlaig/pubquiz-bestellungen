@@ -1,0 +1,74 @@
+/* Beamer-Ansicht (immer dunkel, für Leinwand/Fernseher) */
+body.beamer {
+  margin: 0; min-height: 100vh; overflow-x: hidden;
+  background: radial-gradient(ellipse at top, #2c2c2c 0%, #111 70%); color: #fff;
+  font-size: clamp(14px, 1.6vw, 26px);
+}
+.b-kopf { display: flex; align-items: center; gap: 1.2em; padding: 1em 2em; border-bottom: 4px solid var(--gold); }
+.b-logo { height: 4.2em; width: auto; border-radius: .6em; border: 3px solid var(--gold); background: #fff; }
+.b-titel { font-size: 2.2em; font-weight: 800; line-height: 1; }
+.b-untertitel { color: #e9d29b; font-size: 1.05em; margin-top: .2em; }
+.b-uhr { margin-left: auto; font-size: 2.4em; font-weight: 800; color: #e9d29b; font-variant-numeric: tabular-nums; }
+
+.b-inhalt { display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.5em; padding: 1.5em 2em; align-items: stretch; }
+@media (max-aspect-ratio: 1/1) { .b-inhalt { grid-template-columns: 1fr; } }
+.b-karte { background: rgba(255,255,255,.05); border: 2px solid rgba(255,255,255,.1); border-radius: 1.2em; padding: 1.2em 1.5em; }
+.b-karte h2 { margin: 0 0 .6em; font-size: 1.8em; color: var(--gold); }
+
+/* Bierglas */
+.b-glas-zeile { display: flex; align-items: center; gap: 2em; }
+.b-glas { margin-right: 3.6em; }
+.b-glas { position: relative; width: 9em; height: 15em; flex: none; border: .35em solid rgba(255,255,255,.85); border-top: 0;
+  border-radius: 0 0 1.4em 1.4em; overflow: visible; background: rgba(255,255,255,.04); }
+.b-fuellung { position: absolute; left: 0; right: 0; bottom: 0; height: 3%; border-radius: 0 0 1em 1em; overflow: hidden;
+  background: linear-gradient(180deg, #f6c445 0%, #e19a1c 100%); transition: height 1.6s cubic-bezier(.2,.8,.2,1); }
+.b-schaum { position: absolute; top: -.2em; left: -.3em; right: -.3em; height: 1.6em; background: #fffdf5;
+  border-radius: 1em 1em .4em .4em; box-shadow: 0 .2em .4em rgba(0,0,0,.15); }
+.b-henkel { position: absolute; right: -3.2em; top: 3em; width: 2.8em; height: 7em; border: .35em solid rgba(255,255,255,.85);
+  border-left: 0; border-radius: 0 2em 2em 0; }
+.b-blasen i { position: absolute; bottom: 0; width: .45em; height: .45em; border-radius: 50%; background: rgba(255,255,255,.7);
+  animation: blase 3.5s linear infinite; }
+.b-blasen i:nth-child(1) { left: 15%; animation-delay: 0s; } .b-blasen i:nth-child(2) { left: 35%; animation-delay: .8s; }
+.b-blasen i:nth-child(3) { left: 55%; animation-delay: 1.6s; } .b-blasen i:nth-child(4) { left: 75%; animation-delay: .4s; }
+.b-blasen i:nth-child(5) { left: 25%; animation-delay: 2.2s; } .b-blasen i:nth-child(6) { left: 65%; animation-delay: 2.8s; }
+@keyframes blase { from { transform: translateY(0); opacity: .9; } to { transform: translateY(-14em); opacity: 0; } }
+
+.b-zahlen { min-width: 0; }
+.b-liter { font-size: 5em; font-weight: 900; line-height: 1; color: #f6c445; font-variant-numeric: tabular-nums; }
+.b-liter small { font-size: .35em; color: #fff; font-weight: 700; }
+.b-unter { font-size: 1.3em; color: #ddd; margin-top: .2em; }
+.b-ziel { margin-top: 1em; font-size: 1.15em; color: #e9d29b; }
+.b-klein { margin-top: .6em; color: #aaa; }
+
+/* Siegertreppchen */
+.b-podest { display: grid; grid-template-columns: 1fr 1.15fr 1fr; align-items: end; gap: .8em; min-height: 14em; }
+.b-platz { display: grid; text-align: center; gap: .2em; }
+.b-medaille { font-size: 2.6em; line-height: 1; }
+.b-team { font-size: 1.3em; font-weight: 800; overflow-wrap: anywhere; }
+.b-team.leer { color: #666; }
+.b-anzahl { font-size: 2em; font-weight: 900; color: #f6c445; line-height: 1.1; }
+.b-anzahl small { font-size: .45em; color: #ccc; font-weight: 600; }
+.b-tischnr { color: #aaa; font-size: .9em; }
+.b-sockel { margin-top: .4em; border-radius: .5em .5em 0 0; font-size: 2.2em; font-weight: 900; color: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center; }
+.p1 .b-sockel { height: 3.2em; background: linear-gradient(#f1d27a, #b7821a); }
+.p2 .b-sockel { height: 2.3em; background: linear-gradient(#e4e4e4, #9a9a9a); }
+.p3 .b-sockel { height: 1.6em; background: linear-gradient(#e2a46f, #9c5a24); }
+.p1 .b-team { font-size: 1.5em; }
+.b-weitere { margin: 1em 0 0; padding-left: 1.6em; display: grid; gap: .3em; font-size: 1.1em; }
+.b-weitere li span { display: inline-block; min-width: 70%; }
+.b-weitere li b { color: #f6c445; }
+.b-leer { text-align: center; color: #aaa; grid-column: 1 / -1; font-size: 1.3em; }
+.b-fuss { margin: 1em 0 0; color: #888; font-size: .85em; }
+
+.b-vollbild { position: fixed; right: 1em; bottom: 1em; padding: .5em .9em; border-radius: .6em; border: 0;
+  background: rgba(255,255,255,.12); color: #fff; font-size: .9em; }
+
+/* Konfetti bei Meilensteinen */
+.b-konfetti { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 50; overflow: hidden; }
+.b-konfetti.an { display: block; }
+.b-konfetti i { position: absolute; top: -2em; width: .7em; height: 1.1em; border-radius: .15em; animation: faellt linear forwards; }
+@keyframes faellt { to { transform: translateY(110vh) rotate(720deg); } }
+.b-feier { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 4.5em; font-weight: 900;
+  color: #fff; text-shadow: 0 .1em .4em rgba(0,0,0,.6); white-space: nowrap; animation: feier 1s ease-out; }
+@keyframes feier { from { transform: translate(-50%, -50%) scale(.3); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }

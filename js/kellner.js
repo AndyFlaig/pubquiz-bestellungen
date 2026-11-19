@@ -459,6 +459,17 @@
     };
   });
   $("#kellner-wechseln").onclick = kellnerWaehlen;
+  // Hell/Dunkel umschalten: Auto -> Dunkel -> Hell -> Auto
+  const DESIGN_SYMBOL = { auto: "🌓", dunkel: "🌙", hell: "☀️" };
+  const designKnopf = $("#design-knopf");
+  designKnopf.textContent = DESIGN_SYMBOL[store.get("design", "auto")] || "🌓";
+  designKnopf.onclick = () => {
+    const folge = { auto: "dunkel", dunkel: "hell", hell: "auto" };
+    const neu = folge[store.get("design", "auto")] || "auto";
+    App.designSetzen(neu);
+    designKnopf.textContent = DESIGN_SYMBOL[neu];
+    toast({ auto: "🌓 Design: automatisch (wie am Handy)", dunkel: "🌙 Dunkelmodus an", hell: "☀️ Heller Modus" }[neu], { dauer: 2000 });
+  };
 
   // ------------------------------------------------------------------
   // Start

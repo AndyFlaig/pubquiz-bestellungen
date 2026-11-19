@@ -45,6 +45,30 @@
     del(k) { try { localStorage.removeItem(k); } catch (e) { /* egal */ } },
   };
 
+  // ------------------------------------------------------------------
+  // Dunkelmodus (pro Gerät): "auto" folgt der Einstellung des Handys
+  // ------------------------------------------------------------------
+  const dunkelAbfrage = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  function design() { return store.get("design", "auto"); }
+  function designAnwenden() {
+    const w = design();
+    const dunkel = w === "dunkel" || (w === "auto" && dunkelAbfrage && dunkelAbfrage.matches);
+    document.documentElement.dataset.theme = dunkel ? "dunkel" : "hell";
+    document.querySelectorAll("[data-design]").forEach((b) => b.classList.toggle("aktiv", b.dataset.design === w));
+  }
+  function designSetzen(w) { store.set("design", w); designAnwenden(); }
+  if (dunkelAbfrage && dunkelAbfrage.addEventListener) dunkelAbfrage.addEventListener("change", designAnwenden);
+  designAnwenden();
+  // HTML für einen Umschalter Auto/Hell/Dunkel (Klicks werden global behandelt)
+  function designWahlHtml() {
+    return '<div class="design-wahl">' + [["auto", "🌓 Auto"], ["hell", "☀️ Hell"], ["dunkel", "🌙 Dunkel"]].map(([w, t]) =>
+      '<button type="button" data-design="' + w + '"' + (design() === w ? ' class="aktiv"' : "") + ">" + t + "</button>").join("") + "</div>";
+  }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest && e.target.closest("[data-design]");
+    if (b) designSetzen(b.dataset.design);
+  });
+
   function positionText(p) {
     return p.anzahl + "× " + p.name + (p.menge ? " " + p.menge : "") + (p.notiz ? " (" + p.notiz + ")" : "");
   }
@@ -81,6 +105,17 @@
           .order("id", { ascending: true }).limit(5000));
       },
       // ---- Zahlungen (Kasse) ----
+      // ---- Durchsagen ----
+      async neueDurchsagen(abId) {
+        return check(await client.from("durchsagen").select("*").gt("id", abId || 0).order("id", { ascending: true }).limit(10));
+      },
+      async letzteDurchsageId() {
+        const d = check(await client.from("durchsagen").select("id").order("id", { ascending: false }).limit(1));
+        return d.length ? d[0].id : 0;
+      },
+      async sendeDurchsage(text, von) {
+        return check(await client.from("durchsagen").insert([{ text, von }]).select())[0];
+      },
       // ---- Stammdaten (Admin-Seite) ----
       async ladeStammdaten() {
         const data = check(await client.from("einstellungen").select("wert,geaendert_am").eq("schluessel", "stammdaten"));
@@ -172,6 +207,13 @@
         return Object.keys(load().ausverkauft || {}).filter((k) => load().ausverkauft[k]);
       },
       async ladeStammdaten() { return load().stammdaten || null; },
+      async neueDurchsagen(abId) { return (load().durchsagen || []).filter((d) => d.id > (abId || 0)); },
+      async letzteDurchsageId() { const l = load().durchsagen || []; return l.length ? l[l.length - 1].id : 0; },
+      async sendeDurchsage(text, von) {
+        const db = load(); db.durchsagen = db.durchsagen || [];
+        const d = { id: db.durchsagen.length + 1, text, von, erstellt_am: new Date().toISOString() };
+        db.durchsagen.push(d); save(db); notify(); return d;
+      },
       async speichereStammdaten(wert) {
         const db = load(); const jetzt = new Date().toISOString();
         db.stammdaten = { wert, geaendert_am: jetzt }; save(db); notify();
@@ -419,10 +461,90 @@
       } catch (e) { /* egal */ }
     }, 60000);
   }
+  // ------------------------------------------------------------------
+  // Durchsagen an alle Geräte
+  // ------------------------------------------------------------------
+  const DS_KEY = "durchsage_gesehen";
+  let dsWarteschlange = [], dsOffen = false;
+  function durchsageZeigen() {
+    if (dsOffen || !dsWarteschlange.length) return;
+    const d = dsWarteschlange.shift();
+    dsOffen = true;
+    const ov = document.createElement("div");
+    ov.className = "overlay durchsage-overlay";
+    ov.innerHTML = '<div class="durchsage"><div class="durchsage-kopf">📢 Durchsage</div>' +
+      '<div class="durchsage-text">' + esc(d.text) + "</div>" +
+      '<div class="durchsage-von">' + esc(d.von || "") + (d.erstellt_am ? " · " + uhrzeit(d.erstellt_am) : "") + "</div>" +
+      '<button class="gross primaer">OK</button></div>';
+    document.body.appendChild(ov);
+    toene([[660, 0.15], [880, 0.15], [660, 0.15], [880, 0.3]]);
+    if (navigator.vibrate) navigator.vibrate([400, 150, 400]);
+    ov.querySelector("button").onclick = () => { ov.remove(); dsOffen = false; durchsageZeigen(); };
+  }
+  function durchsagenEmpfangen() {
+    let gesehen = store.get(DS_KEY, null);
+    let fehler = 0;
+    async function pruefen() {
+      try {
+        if (gesehen === null) { // erstes Mal auf diesem Gerät: alte Durchsagen nicht zeigen
+          gesehen = await DB.letzteDurchsageId(); store.set(DS_KEY, gesehen); return;
+        }
+        const neu = await DB.neueDurchsagen(gesehen);
+        fehler = 0;
+        neu.forEach((d) => {
+          gesehen = Math.max(gesehen, d.id);
+          // nur aktuelle zeigen (z. B. nicht nach stundenlanger Pause)
+          if (!d.erstellt_am || Date.now() - new Date(d.erstellt_am).getTime() < 15 * 60000) dsWarteschlange.push(d);
+        });
+        store.set(DS_KEY, gesehen);
+        durchsageZeigen();
+      } catch (e) { fehler++; }
+    }
+    pruefen();
+    setInterval(() => { if (fehler < 20 || Math.random() < 0.1) pruefen(); }, 8000);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pruefen(); });
+  }
+  const VORLAGEN = ["🔔 Letzte Runde!", "🍽 Küche schließt in 10 Minuten", "🙋 Kellner bitte zur Theke",
+    "🍽 Kellner bitte zur Küche", "⏸ Pause – gleich geht's weiter", "🏁 Quiz ist vorbei – bitte abkassieren"];
+  function durchsageDialog(von) {
+    const ov = document.createElement("div");
+    ov.className = "overlay";
+    ov.innerHTML = '<form class="dialog"><h2>📢 Durchsage an alle</h2>' +
+      '<div class="vorlagen">' + VORLAGEN.map((v) => '<button type="button" data-vorlage="' + esc(v) + '">' + esc(v) + "</button>").join("") + "</div>" +
+      '<textarea rows="2" maxlength="200" placeholder="Eigener Text …"></textarea>' +
+      '<p class="klein-hinweis">Erscheint sofort groß auf allen Kellner-Handys, in Küche, Theke und Auswertung – mit Ton.</p>' +
+      '<div class="knopf-reihe"><button type="button" class="gross" data-ab>Abbrechen</button>' +
+      '<button type="submit" class="gross primaer">Senden</button></div></form>';
+    document.body.appendChild(ov);
+    const ta = ov.querySelector("textarea");
+    ov.addEventListener("click", (e) => {
+      const v = e.target.closest("[data-vorlage]");
+      if (v) { ta.value = v.dataset.vorlage; ta.focus(); }
+      if (e.target.closest("[data-ab]") || e.target === ov) ov.remove();
+    });
+    ov.querySelector("form").onsubmit = async (e) => {
+      e.preventDefault();
+      const text = ta.value.trim();
+      if (!text) { ta.focus(); return; }
+      const knopf = ov.querySelector('[type="submit"]');
+      knopf.disabled = true; knopf.textContent = "Sende…";
+      try {
+        const d = await DB.sendeDurchsage(text, von || "");
+        if (d && d.id) store.set(DS_KEY, Math.max(store.get(DS_KEY, 0) || 0, d.id)); // eigene nicht nochmal zeigen
+        ov.remove();
+        toast("📢 Durchsage gesendet", { art: "ok" });
+      } catch (err) {
+        knopf.disabled = false; knopf.textContent = "Senden";
+        toast("Nicht gesendet: " + (/durchsagen/.test(err.message || "") ? "Datenbank noch nicht aktualisiert (update-v6.sql)" : "keine Verbindung"), { art: "fehler", dauer: 7000 });
+      }
+    };
+  }
+
   // Lädt die Stammdaten und danach die Skripte der Seite (der Reihe nach)
   async function starte(skripte, opts) {
     await stammdatenLaden();
     if (!(opts && opts.ohneBeobachter)) aufAenderungenAchten();
+    if (!(opts && opts.ohneDurchsagen)) durchsagenEmpfangen();
     for (const src of skripte) {
       await new Promise((ok, fehler) => {
         const el = document.createElement("script");
@@ -436,7 +558,7 @@
   const istEigen = (r) => r && r.eigenverzehr === true;
 
   window.App = {
-    istEigen,
+    istEigen, durchsageDialog, designWahlHtml, designSetzen,
     starte, stammdatenLaden, stammdatenGueltig, STANDARD,
     get stammQuelle() { return stammQuelle; }, get stammVersion() { return stammVersion; },
     zusammenfassen, cent,
