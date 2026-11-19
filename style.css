@@ -15,7 +15,36 @@
   --orange: #ef8a00;
   --blau: #1d5fd1;
   --rand: #d6d9e0;
+  --linie: #eceef2;
+  --tint-gruen: #effaf1;
+  --tint-rot: #fdecec;
+  --tint-lila: #ede9fe;
+  --lila-text: #5b21b6;
+  --orange-text: #b45309;
+  --rot-text: #7f1d1d;
   --radius: 14px;
+}
+
+/* ---------- Dunkelmodus (pro Gerät: Auto / Hell / Dunkel) ---------- */
+:root[data-theme="dunkel"] {
+  color-scheme: dark;
+  --bg: #131313;
+  --karte: #1f1f1f;
+  --text: #ececec;
+  --leise: #a5a5a5;
+  --rand: #3b3b3b;
+  --linie: #2d2d2d;
+  --kopf: #0c0c0c;
+  --gold-hell: #2d2516;
+  --gold-text: #e3b75a;
+  --tint-gruen: #15301e;
+  --tint-rot: #3b1c1c;
+  --tint-lila: #2a2142;
+  --lila-text: #c9b8ff;
+  --orange-text: #f6a53b;
+  --rot-text: #fca5a5;
+  --primaer: #0b8247;
+  --primaer-dunkel: #066b39;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -66,7 +95,7 @@ h2 small { font-weight: normal; color: var(--leise); }
   display: block; width: 100%;
   min-height: 56px; padding: 12px 18px;
   border: 2px solid var(--rand); border-radius: var(--radius);
-  background: #fff; font-size: 1.15rem; font-weight: 700;
+  background: var(--karte); font-size: 1.15rem; font-weight: 700;
   text-align: center; text-decoration: none; color: var(--text);
 }
 .gross.primaer { background: var(--primaer); border-color: var(--primaer); color: #fff; }
@@ -90,7 +119,7 @@ h2 small { font-weight: normal; color: var(--leise); }
 .tisch-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
 .tisch-knopf {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 78px; padding: 6px; border: 2px solid var(--rand); border-radius: 12px; background: #fff;
+  min-height: 78px; padding: 6px; border: 2px solid var(--rand); border-radius: 12px; background: var(--karte);
 }
 .tisch-knopf b { font-size: 1.5rem; }
 .tisch-knopf span { font-size: .72rem; color: var(--leise); text-align: center; line-height: 1.15; overflow-wrap: anywhere; }
@@ -100,7 +129,7 @@ h2 small { font-weight: normal; color: var(--leise); }
   background: var(--gold-hell); border: 2px solid var(--gold); border-radius: 12px; padding: 12px 14px;
   font-size: 1.2rem; font-weight: 700;
 }
-.tisch-gewaehlt button { border: 0; background: #fff; border-radius: 10px; padding: 10px 14px; font-size: .95rem; font-weight: 600; }
+.tisch-gewaehlt button { border: 0; background: var(--karte); border-radius: 10px; padding: 10px 14px; font-size: .95rem; font-weight: 600; }
 
 .wiederholen {
   display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
@@ -111,9 +140,9 @@ h2 small { font-weight: normal; color: var(--leise); }
 
 .kategorie h3 { margin: 14px 0 6px; font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; color: var(--leise); }
 .kategorie:first-child h3 { margin-top: 0; }
-.artikel { display: flex; align-items: stretch; gap: 8px; border-top: 1px solid #eceef2; padding: 6px 0; }
+.artikel { display: flex; align-items: stretch; gap: 8px; border-top: 1px solid var(--linie); padding: 6px 0; }
 .artikel.gewaehlt .artikel-name { font-weight: 700; }
-.artikel.gewaehlt { background: #effaf1; margin: 0 -8px; padding: 6px 8px; border-radius: 10px; }
+.artikel.gewaehlt { background: var(--tint-gruen); margin: 0 -8px; padding: 6px 8px; border-radius: 10px; }
 .artikel-name {
   flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
   text-align: left; border: 0; background: none; padding: 4px 0; min-height: 52px;
@@ -122,7 +151,7 @@ h2 small { font-weight: normal; color: var(--leise); }
 .artikel-name .preis { font-size: .85rem; }
 .stepper { display: flex; align-items: center; gap: 4px; }
 .stepper button {
-  width: 52px; height: 52px; border-radius: 12px; border: 2px solid var(--rand); background: #fff;
+  width: 52px; height: 52px; border-radius: 12px; border: 2px solid var(--rand); background: var(--karte);
   font-size: 1.7rem; font-weight: 700; line-height: 1;
 }
 .stepper .plus { background: var(--primaer); border-color: var(--primaer); color: #fff; }
@@ -136,7 +165,7 @@ textarea {
 .fusszeile {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
   display: flex; align-items: center; gap: 12px;
-  background: #fff; border-top: 2px solid var(--rand);
+  background: var(--karte); border-top: 2px solid var(--rand);
   padding: 10px 16px; padding-bottom: max(10px, env(safe-area-inset-bottom));
   box-shadow: 0 -4px 16px rgba(0,0,0,.08);
 }
@@ -166,7 +195,7 @@ textarea {
 .karte .team { font-size: 1.15rem; font-weight: 600; color: var(--leise); }
 .karte .meta { color: var(--leise); font-size: .95rem; margin: 2px 0 8px; }
 .karte .positionen { list-style: none; padding: 0; margin: 0 0 10px; font-size: 1.4rem; }
-.karte .positionen li { padding: 4px 0; border-bottom: 1px dashed #e3e5ea; }
+.karte .positionen li { padding: 4px 0; border-bottom: 1px dashed var(--linie); }
 .karte .positionen li:last-child { border-bottom: 0; }
 .karte .positionen small { color: var(--leise); font-size: .8em; }
 .kommentar {
@@ -190,7 +219,7 @@ textarea {
 .karte.klein .kommentar { font-size: 1.05rem; }
 .storno-knopf {
   width: 100%; min-height: 48px; border: 2px solid var(--rot); border-radius: 12px;
-  background: #fff; color: var(--rot); font-weight: 700;
+  background: var(--karte); color: var(--rot); font-weight: 700;
 }
 .leer { grid-column: 1 / -1; text-align: center; color: var(--leise); font-size: 1.3rem; padding: 40px 0; }
 
@@ -200,7 +229,7 @@ textarea {
   display: flex; align-items: center; justify-content: center; padding: 16px;
 }
 .dialog {
-  background: #fff; border-radius: 18px; padding: 20px; width: 100%; max-width: 440px;
+  background: var(--karte); border-radius: 18px; padding: 20px; width: 100%; max-width: 440px;
   max-height: 90vh; overflow: auto; display: grid; gap: 10px;
 }
 .dialog h2 { margin: 0; font-size: 1.4rem; }
@@ -225,7 +254,7 @@ textarea {
   background: #222; color: #fff; padding: 14px 16px; border-radius: 12px;
   font-size: 1.05rem; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.25);
 }
-.toast button { background: #fff; color: #111; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; white-space: nowrap; }
+.toast button { background: var(--karte); color: #111; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; white-space: nowrap; }
 .toast.ok { background: var(--primaer); }
 .toast.neu { background: var(--kopf); border: 3px solid var(--gold); font-size: 1.3rem; }
 .toast.fehler { background: var(--rot); }
@@ -261,7 +290,7 @@ body.offline .kopf { background: var(--rot); }
 .auswertung .liste { padding: 12px 0; }
 .tabelle { width: 100%; border-collapse: collapse; font-size: 1rem; }
 .tabelle th { text-align: left; color: var(--leise); font-size: .85rem; font-weight: 600; padding: 6px 4px; border-bottom: 2px solid var(--rand); }
-.tabelle td { padding: 6px 4px; border-bottom: 1px solid #eceef2; }
+.tabelle td { padding: 6px 4px; border-bottom: 1px solid var(--linie); }
 .tabelle .zahl { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tabelle td.zahl:first-child { width: 3.5em; }
 .summe-zeile td { font-weight: 800; border-bottom: 0; border-top: 2px solid var(--rand); }
@@ -274,8 +303,8 @@ body.offline .kopf { background: var(--rot); }
 .kassenstand b { font-size: 1.3rem; }
 .tisch-knopf em { font-style: normal; font-size: .8rem; font-weight: 700; margin-top: 2px; color: var(--leise); }
 .tisch-knopf.schuldet { border-color: var(--orange); }
-.tisch-knopf.schuldet em { color: #b45309; }
-.tisch-knopf.bezahlt { background: #effaf1; border-color: #9fd8ae; }
+.tisch-knopf.schuldet em { color: var(--orange-text); }
+.tisch-knopf.bezahlt { background: var(--tint-gruen); border-color: #9fd8ae; }
 .tisch-knopf.bezahlt em { color: var(--primaer); }
 .tisch-knopf.zuviel em { color: var(--rot); }
 .kasse-karte { display: grid; gap: 10px; }
@@ -287,37 +316,37 @@ body.offline .kopf { background: var(--rot); }
 .teilbetrag input { font: inherit; font-size: 1.3rem; padding: 10px 12px; border: 2px solid var(--rand); border-radius: 12px; }
 .rueckgeld { margin: 0; font-size: 1.4rem; font-weight: 800; }
 .zahlungen { list-style: none; margin: 0; padding: 0; }
-.zahlungen li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eceef2; }
+.zahlungen li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--linie); }
 .zahlungen li span { flex: 1; color: var(--leise); }
 .zahl-status { margin: 6px 0 0; font-weight: 700; }
 .zahl-status.ok { color: var(--primaer); }
-.zahl-status.offen { color: #b45309; }
+.zahl-status.offen { color: var(--orange-text); }
 .zahl-status.zuviel { color: var(--rot); }
-.gross-status { font-size: 1.3rem; text-align: center; background: #effaf1; border-radius: 12px; padding: 12px; margin: 0; }
+.gross-status { font-size: 1.3rem; text-align: center; background: var(--tint-gruen); border-radius: 12px; padding: 12px; margin: 0; }
 
 /* ---------- Ausverkauft ---------- */
 .artikel.ausverkauft .artikel-name > span, .artikel.ausverkauft .artikel-name > .preis { opacity: .45; text-decoration: line-through; }
 .artikel.ausverkauft .artikel-name::after { content: "AUSVERKAUFT"; display: inline-block;
   font-size: .72rem; font-weight: 800; color: #fff; background: var(--rot); border-radius: 6px; padding: 1px 6px; margin-top: 2px; }
-.artikel.ausverkauft.gewaehlt { background: #fde8e8; }
+.artikel.ausverkauft.gewaehlt { background: var(--tint-rot); }
 .ausverkauft-knopf { background: rgba(255,255,255,.15); border: 0; color: #fff; border-radius: 10px; padding: 8px 12px; font-weight: 700; white-space: nowrap; }
 .ausverkauft-knopf.hat { background: var(--rot); }
 .aus-liste { display: grid; gap: 8px; }
 .aus-artikel { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 56px; padding: 10px 14px;
-  border: 2px solid var(--rand); border-radius: 12px; background: #fff; font-size: 1.1rem; text-align: left; }
-.aus-artikel em { font-style: normal; font-size: .85rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; background: #e8f5ec; color: var(--primaer); white-space: nowrap; }
-.aus-artikel.aus { border-color: var(--rot); background: #fdecec; }
+  border: 2px solid var(--rand); border-radius: 12px; background: var(--karte); font-size: 1.1rem; text-align: left; }
+.aus-artikel em { font-style: normal; font-size: .85rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; background: var(--tint-gruen); color: var(--primaer); white-space: nowrap; }
+.aus-artikel.aus { border-color: var(--rot); background: var(--tint-rot); }
 .aus-artikel.aus em { background: var(--rot); color: #fff; }
 
 /* ---------- Kasse pro Artikel ---------- */
 .kasse-artikel { display: grid; }
-.kasse-zeile { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid #eceef2; }
-.kasse-zeile.gewaehlt { background: #effaf1; margin: 0 -8px; padding: 8px; border-radius: 10px; }
+.kasse-zeile { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--linie); }
+.kasse-zeile.gewaehlt { background: var(--tint-gruen); margin: 0 -8px; padding: 8px; border-radius: 10px; }
 .kasse-zeile.fertig { opacity: .6; }
 .kasse-name { flex: 1; display: grid; }
 .kasse-name small { color: var(--leise); }
 .kasse-name .rot { color: var(--rot); }
-.auswahl-box { display: grid; gap: 8px; background: #effaf1; border: 2px solid #9fd8ae; border-radius: 12px; padding: 12px; }
+.auswahl-box { display: grid; gap: 8px; background: var(--tint-gruen); border: 2px solid #9fd8ae; border-radius: 12px; padding: 12px; }
 .auswahl-summe { font-size: 1.2rem; }
 .zahlungen li > div { flex: 1; display: grid; }
 .zahlungen li small { color: var(--leise); }
@@ -334,7 +363,7 @@ body.offline .kopf { background: var(--rot); }
 }
 
 /* ---------- Logo / Vereinsdesign ---------- */
-.logo-knopf { width: auto; height: 46px; padding: 3px 5px; background: #fff; border-radius: 10px; }
+.logo-knopf { width: auto; height: 46px; padding: 3px 5px; background: var(--karte); border-radius: 10px; }
 .logo-knopf img { display: block; height: 40px; width: auto; }
 .logo-knopf:active { background: var(--gold-hell); }
 @media (max-width: 420px) { .station .logo-knopf { height: 42px; } .station .logo-knopf img { height: 36px; } }
@@ -342,7 +371,7 @@ body.offline .kopf { background: var(--rot); }
 body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .startseite { padding-top: max(24px, env(safe-area-inset-top)); }
 .start-logo { display: block; width: min(260px, 70vw); height: auto; margin: 8px auto 4px; border-radius: 22px;
-  border: 3px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,.35); background: #fff; }
+  border: 3px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,.35); background: var(--karte); }
 .startseite h1 { text-align: center; font-size: 1.6rem; color: #fff; }
 .startseite .untertitel { text-align: center; color: #e9d29b; margin: 0 0 12px; }
 .startseite .gross { border-color: rgba(255,255,255,.15); background: #3a3a3a; color: #fff; justify-content: flex-start; gap: 14px; padding-left: 22px; }
@@ -354,27 +383,27 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 
 /* ---------- Kellner: Suche, Favoriten, Notiz, Revier ---------- */
 .suche-box { position: relative; margin-bottom: 8px; }
-#suche { width: 100%; font: inherit; font-size: 1.1rem; padding: 12px 44px 12px 14px; border: 2px solid var(--rand); border-radius: 12px; background: #fff; -webkit-appearance: none; }
+#suche { width: 100%; font: inherit; font-size: 1.1rem; padding: 12px 44px 12px 14px; border: 2px solid var(--rand); border-radius: 12px; background: var(--karte); -webkit-appearance: none; }
 #suche:focus { outline: none; border-color: var(--gold); }
-.suche-leeren { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 50%; background: #eceef2; font-size: 1rem; }
+.suche-leeren { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--linie); font-size: 1rem; }
 .favoriten { background: var(--gold-hell); margin: 0 -14px 6px; padding: 8px 14px 4px; border-radius: 12px; }
 .favoriten h3 { color: var(--gold-text) !important; }
 .artikel { flex-wrap: wrap; }
 .notiz-zeile { display: none; flex-basis: 100%; align-items: center; gap: 8px; padding: 2px 0 4px; }
 .artikel.gewaehlt .notiz-zeile { display: flex; }
-.notiz-knopf { border: 1px dashed var(--gold); background: #fff; color: var(--gold-text); border-radius: 8px; padding: 6px 10px; font-size: .9rem; font-weight: 600; }
-.notiz-text { font-weight: 700; color: #6b4b0c; overflow-wrap: anywhere; }
-.artikel.hat-notiz .notiz-zeile { background: #fff7d6; border-radius: 8px; padding: 4px 6px; }
+.notiz-knopf { border: 1px dashed var(--gold); background: var(--karte); color: var(--gold-text); border-radius: 8px; padding: 6px 10px; font-size: .9rem; font-weight: 600; }
+.notiz-text { font-weight: 700; color: var(--gold-text); overflow-wrap: anywhere; }
+.artikel.hat-notiz .notiz-zeile { background: var(--gold-hell); border-radius: 8px; padding: 4px 6px; }
 .pos-notiz { font-size: .85em; font-weight: 800; background: var(--gelb); border-left: 5px solid var(--gelb-rand); border-radius: 6px; padding: 2px 8px; margin: 4px 0 2px; }
 .revier-titel { font-size: .85rem; font-weight: 700; color: var(--gold-text); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-.revier-umschalter { width: 100%; margin-top: 10px; padding: 10px; border: 2px dashed var(--rand); border-radius: 12px; background: #fff; font-weight: 600; color: var(--leise); }
+.revier-umschalter { width: 100%; margin-top: 10px; padding: 10px; border: 2px dashed var(--rand); border-radius: 12px; background: var(--karte); font-weight: 600; color: var(--leise); }
 .andere-tische { margin-top: 10px; }
 
 /* ---------- Admin ---------- */
 .admin-inhalt { max-width: 900px; margin: 0 auto; padding: 12px 12px 120px; }
 .admin-reiter { position: static; }
 .quelle { margin: 4px 0 10px; }
-.admin-fehler { background: #fdecec; border: 2px solid var(--rot); color: #7f1d1d; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }
+.admin-fehler { background: var(--tint-rot); border: 2px solid var(--rot); color: var(--rot-text); border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }
 .admin-fehler ul { margin: 6px 0 0; padding-left: 20px; }
 .admin-liste { display: grid; gap: 8px; margin-bottom: 12px; }
 .admin-kat { margin: 14px 0 0; font-size: .9rem; text-transform: uppercase; letter-spacing: .05em; color: var(--gold-text); }
@@ -383,11 +412,11 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .admin-zeile label.breit { flex: 3 1 180px; }
 .admin-zeile label.schmal { flex: 0 0 70px; }
 .admin-zeile input, .admin-zeile select, .admin-feld input {
-  font: inherit; font-size: 1rem; color: var(--text); padding: 8px 10px; border: 2px solid var(--rand); border-radius: 10px; background: #fff; width: 100%; min-width: 0; }
+  font: inherit; font-size: 1rem; color: var(--text); padding: 8px 10px; border: 2px solid var(--rand); border-radius: 10px; background: var(--karte); width: 100%; min-width: 0; }
 .admin-zeile input:focus, .admin-zeile select:focus, .admin-feld input:focus { outline: none; border-color: var(--gold); }
-.admin-zeile .ungueltig { border-color: var(--rot); background: #fff5f5; }
+.admin-zeile .ungueltig { border-color: var(--rot); background: var(--tint-rot); }
 .zeilen-knoepfe { display: flex; gap: 4px; }
-.zeilen-knoepfe button { width: 42px; height: 42px; border: 2px solid var(--rand); border-radius: 10px; background: #fff; font-size: 1.1rem; }
+.zeilen-knoepfe button { width: 42px; height: 42px; border: 2px solid var(--rand); border-radius: 10px; background: var(--karte); font-size: 1.1rem; }
 .zeilen-knoepfe .loeschen { border-color: #f3c0c0; }
 .admin-werkzeuge { display: grid; gap: 10px; }
 .admin-werkzeuge h2 { margin: 0; }
@@ -400,23 +429,23 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .start-admin { text-align: center; margin-top: 4px; }
 .start-admin a { color: #9a9a9a; font-size: .9rem; }
 
-.snack-box { background: #f6f2ea; border: 2px dashed var(--gold); border-radius: 12px; padding: 8px 12px; display: grid; gap: 4px; }
+.snack-box { background: var(--gold-hell); border: 2px dashed var(--gold); border-radius: 12px; padding: 8px 12px; display: grid; gap: 4px; }
 .snack-box h4 { margin: 2px 0; font-size: .95rem; color: var(--gold-text); }
 .snack-box .kasse-zeile:first-of-type { border-top: 0; }
 .snack-box .gross { margin-top: 6px; border-color: var(--gold); color: var(--gold-text); }
 
 /* ---------- Eigenverzehr ---------- */
-.eigen-titel { margin-top: 14px; color: #5b21b6; }
-.tisch-knopf.eigen { border-color: #c4b5fd; background: #f5f3ff; }
-.tisch-knopf.eigen.aktiv { border-color: #6d28d9; background: #ede9fe; }
+.eigen-titel { margin-top: 14px; color: var(--lila-text); }
+.tisch-knopf.eigen { border-color: #c4b5fd; background: var(--tint-lila); }
+.tisch-knopf.eigen.aktiv { border-color: #6d28d9; background: var(--tint-lila); }
 .tisch-knopf.eigen b { font-size: 1.2rem; }
-.tisch-gewaehlt.eigen { background: #ede9fe; border-color: #6d28d9; }
-.eigen-hinweis { margin: 0; background: #ede9fe; color: #4c1d95; border-radius: 10px; padding: 8px 12px; font-weight: 800; }
+.tisch-gewaehlt.eigen { background: var(--tint-lila); border-color: #6d28d9; }
+.eigen-hinweis { margin: 0; background: var(--tint-lila); color: var(--lila-text); border-radius: 10px; padding: 8px 12px; font-weight: 800; }
 .eigen-band { margin: -14px -14px 10px; padding: 6px 14px; background: #6d28d9; color: #fff; font-weight: 800; letter-spacing: .05em; border-radius: var(--radius) var(--radius) 0 0; }
-.eigen-ueberschrift { grid-column: 1 / -1; margin: 14px 0 0; color: #5b21b6; }
+.eigen-ueberschrift { grid-column: 1 / -1; margin: 14px 0 0; color: var(--lila-text); }
 .eigen-karte { border: 2px dashed #c4b5fd; }
-.eigen-wert { color: #5b21b6; }
-.eigen-klein { color: #5b21b6 !important; }
+.eigen-wert { color: var(--lila-text); }
+.eigen-klein { color: var(--lila-text) !important; }
 .admin-zeile label.haken { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--text); padding-bottom: 10px; }
 .admin-zeile label.haken input { width: 22px; height: 22px; }
 
@@ -428,3 +457,43 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
   #artikel-tabelle { font-size: .9rem; }
   #artikel-tabelle th, #artikel-tabelle td { padding: 6px 3px; }
 }
+
+/* Dunkelmodus: Feinheiten */
+:root[data-theme="dunkel"] .kommentar, :root[data-theme="dunkel"] .pos-notiz { color: #111; }
+:root[data-theme="dunkel"] .ziel-theke { color: #8ab4ff; }
+:root[data-theme="dunkel"] .ziel-kueche { color: #fdba74; }
+:root[data-theme="dunkel"] .overlay { background: rgba(0,0,0,.8); }
+:root[data-theme="dunkel"] .favoriten { background: var(--gold-hell); }
+:root[data-theme="dunkel"] .karte { box-shadow: none; border-color: var(--linie); }
+:root[data-theme="dunkel"] .karte.alt { border-color: var(--orange); }
+:root[data-theme="dunkel"] .karte.sehr-alt { border-color: var(--rot); }
+:root[data-theme="dunkel"] .karte.neu { border-color: var(--gold); }
+:root[data-theme="dunkel"] .stepper .plus { color: #fff; }
+:root[data-theme="dunkel"] .demo { background: #4a3410; color: #ffd89a; }
+:root[data-theme="dunkel"] .startseite .demo { color: #ffd89a; }
+:root[data-theme="dunkel"] input, :root[data-theme="dunkel"] select, :root[data-theme="dunkel"] textarea { color: var(--text); background: var(--karte); }
+:root[data-theme="dunkel"] .logo-knopf { background: #fff; }
+@keyframes neu-dunkel { 50% { background: #3a2f12; } }
+:root[data-theme="dunkel"] .karte.neu { animation-name: neu-dunkel; }
+
+/* Design-Umschalter */
+.design-wahl { display: flex; gap: 6px; justify-content: center; }
+.design-wahl button { flex: 1; max-width: 120px; padding: 10px 8px; border-radius: 10px; border: 2px solid var(--rand); background: var(--karte); color: var(--text); font-weight: 600; }
+.design-wahl button.aktiv { border-color: var(--gold); background: var(--gold-hell); }
+.startseite .design-wahl button { background: #3a3a3a; color: #fff; border-color: rgba(255,255,255,.15); }
+.startseite .design-wahl button.aktiv { border-color: var(--gold); background: #4a3d20; }
+.kopf .design-knopf { background: none; border: 0; color: #e9d29b; font-size: 1.2rem; padding: 0 4px; }
+
+/* ---------- Durchsagen ---------- */
+.durchsage-overlay { z-index: 300; background: rgba(0,0,0,.85); }
+.durchsage { width: 100%; max-width: 620px; background: var(--kopf); color: #fff; border: 4px solid var(--gold); border-radius: 22px;
+  padding: 22px; display: grid; gap: 14px; text-align: center; animation: durchsage-rein .35s ease-out; }
+.durchsage-kopf { color: var(--gold); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.durchsage-text { font-size: clamp(1.6rem, 6vw, 2.8rem); font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+.durchsage-von { color: #bbb; }
+@keyframes durchsage-rein { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+.vorlagen { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.vorlagen button { padding: 10px 8px; border: 2px solid var(--rand); border-radius: 10px; background: var(--karte); text-align: left; font-size: .9rem; }
+.dialog textarea { font-size: 1.1rem; }
+#design-platz { margin-top: 4px; }
+.station #design-platz { margin: 4px 0; }

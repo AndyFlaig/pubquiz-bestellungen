@@ -11,6 +11,8 @@ Kassiert wird nicht über die App (Strichliste auf Papier).
 - **Auswertung:** `auswertung.html` – Umsatz pro Tisch, verkaufte Artikel, Bestellungen und Kassenstand pro Kellner
 - **Kasse:** Reiter in der Kellner-Ansicht – Tisch ganz oder pro Artikel abrechnen (nur bar)
 - **Admin:** `admin.html` – Artikel, Preise, Tische, Kellner und Reviere im Browser pflegen (in Supabase gespeichert)
+- **Beamer:** `beamer.html` – Bier-Barometer und „Durstigstes Team“ für Leinwand/Fernseher
+- **Durchsagen** an alle Geräte (📢), **Dunkelmodus** pro Gerät
 - **Eigenverzehr:** im Admin Tische als „Eigenverzehr“ markieren – zählt in der Inventur, nicht im Umsatz, nicht in der Kasse
 - **Ausverkauft-Schalter** in Küche/Theke, **Excel-Export** in der Auswertung (eigener .xlsx-Schreiber, `js/xlsx.js`)
 

@@ -73,6 +73,7 @@ Mit deiner Adresse (Beispiel):
 | Theke (iPad/Handy) | `https://pubquiz-bestellungen.vercel.app/theke.html` |
 | Auswertung (Orga) | `https://pubquiz-bestellungen.vercel.app/auswertung.html` |
 | Admin (Orga) | `https://pubquiz-bestellungen.vercel.app/admin.html` |
+| Beamer / Fernseher | `https://pubquiz-bestellungen.vercel.app/beamer.html` |
 
 Tipp: Link per WhatsApp verschicken oder als QR-Code ausdrucken. Auf dem iPhone in Safari: Teilen → **Zum Home-Bildschirm**.
 
@@ -165,6 +166,29 @@ Im **Admin → Tische** Einträge anlegen und **„👤 Eigenverzehr“** ankreu
 - Im **Excel-Export**: Blatt „Artikel (Inventur)“ mit denselben Spalten und ein eigenes Blatt „Eigenverzehr“.
 
 Voraussetzung: einmal [`supabase/update-v5.sql`](supabase/update-v5.sql) ausführen.
+
+## Beamer: Bier-Barometer und Durstigstes Team
+
+`beamer.html` am Laptop/Fernseher öffnen, unten rechts **⛶ Vollbild**.
+- **Bier-Barometer:** Liter Bier (alle Artikel mit Pils/Weizen/Bier im Namen, nach Menge), mit Glas, das sich bis zum
+  nächsten Ziel füllt (10 / 25 / 50 Liter-Schritte). Beim Erreichen eines Ziels: Konfetti.
+  Test des Konfettis: `beamer.html#feiern`.
+- **Durstigstes Team:** Siegertreppchen (Top 3) und Plätze 4–8 nach Anzahl Getränke. Eigenverzehr zählt nicht mit.
+- Aktualisiert sich von selbst; zeigt keine Preise oder Umsätze.
+
+## Durchsage an alle Geräte
+
+**📢** oben in Küche, Theke, Auswertung und Admin → Vorlage antippen (z. B. „🔔 Letzte Runde!“) oder eigenen Text →
+**Senden**. Innerhalb von ca. 10 Sekunden erscheint die Durchsage groß auf allen Kellner-Handys, in Küche, Theke,
+Auswertung und Admin – mit Ton und (Android) Vibration. „OK“ schließt sie. Voraussetzung: einmal
+[`supabase/update-v6.sql`](supabase/update-v6.sql) ausführen.
+
+## Dunkelmodus
+
+Pro Gerät einstellbar: **🌓 Auto** (wie am Handy eingestellt), **☀️ Hell**, **🌙 Dunkel**.
+- Startseite: Auswahl unter den Knöpfen.
+- Küche/Theke: im Start-Fenster.
+- Kellner: Symbol 🌓 / 🌙 / ☀️ oben neben „wechseln“ (tippen schaltet weiter).
 
 ## Nach dem Test: Testdaten löschen
 

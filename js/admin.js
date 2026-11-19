@@ -281,6 +281,8 @@
     speichern(null, "✓ Zurückgesetzt – es gilt wieder config.js");
   };
 
+  $("#durchsage").onclick = () => App.durchsageDialog("Orga");
+
   // ---------- Reiter ----------
   document.querySelectorAll(".admin-reiter button").forEach((b) => {
     b.onclick = () => {
