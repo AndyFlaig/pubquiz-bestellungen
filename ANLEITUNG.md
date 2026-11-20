@@ -213,7 +213,8 @@ Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden 
 | 🏃 Kellner-Rennen | Bestellungen pro Kellner |
 | 📊 Der Abend in Zahlen | Summen, alkoholfrei-Quote, Early Bird, Ø Wartezeit Theke/Küche |
 
-- Ranglisten zählen nur Gäste (kein Eigenverzehr); die Liter-Anzeigen zählen alles, was gezapft wurde.
+- **Alle Folien zählen nur Gäste** – Eigenverzehr erscheint ausschließlich im „Gutholz-Eigenbedarf – Highscore“
+  (die Folie läuft immer mit; ohne Eigenverzehr zeigt sie „Noch kein Eigenbedarf – Prost aufs Team!“).
 - Konfetti, wenn Bier oder Spritz ein Ziel erreichen (10/25/50-Liter-Schritte). Test: `beamer.html#feiern`.
 - Bedienung: Klick oder → = nächste Folie, ← = zurück, **P** = Pause.
 - Optionen: `beamer.html?sekunden=15` (andere Dauer), `beamer.html?folie=spritz` (nur eine Folie).
