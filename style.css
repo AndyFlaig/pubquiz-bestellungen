@@ -580,3 +580,7 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .startseite .demo-start { background: #4c1d95 !important; border-color: #6d28d9 !important; }
 body.beamer .uebung-band { font-size: 14px; }
 body.uebung #demo-hinweis { display: none !important; }
+
+/* ---------- Abend zurücksetzen ---------- */
+.abend-reset { border: 2px solid #f3c0c0; }
+.loesch-knopf { background: var(--rot) !important; border-color: var(--rot) !important; color: #fff !important; }

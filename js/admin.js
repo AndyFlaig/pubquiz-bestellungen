@@ -1,7 +1,7 @@
 /* Admin-Seite: Artikel, Preise, Tische, Kellner, Reviere und Veranstaltung pflegen */
 (function () {
   "use strict";
-  const { CFG, DB, DEMO, $, esc, euro, toast, uhrzeit } = App;
+  const { CFG, DB, DEMO, $, esc, euro, toast, uhrzeit } = App; // DEMO auch für den Reset-Dialog
   const verbindung = App.verbindungsAnzeige($("#verbindung"));
   const ZIELE = [["theke", "Theke (Getränk)"], ["kueche", "Küche (Speise)"], ["kasse", "Nur Strichliste"]];
 
@@ -320,6 +320,57 @@
   };
 
   $("#durchsage").onclick = () => App.durchsageDialog("Orga");
+
+  // ---------- Abend zurücksetzen ----------
+  $("#abend-reset").onclick = () => {
+    const ov = document.createElement("div");
+    ov.className = "overlay";
+    ov.innerHTML = '<form class="dialog"><h2>🧹 Abend zurücksetzen</h2>' +
+      (App.UEBUNG ? '<p class="eigen-hinweis">🧪 Übungsmodus: Es werden nur die Übungsdaten auf diesem Gerät zurückgesetzt.</p>' : "") +
+      '<p><b>Wird gelöscht:</b> alle Bestellungen, Zahlungen (Kassenstände), Durchsagen; Ausverkauft, Pause und Personenzahlen werden zurückgesetzt.</p>' +
+      '<p><b>Bleibt:</b> Artikel, Preise, Tische, Kellner, Zitate, Startgeld.</p>' +
+      '<p class="klein-hinweis">1. Schritt: Die Excel-Sicherung wird heruntergeladen. Erst danach wird gelöscht.</p>' +
+      '<label class="admin-feld">Zur Bestätigung <b>ZURÜCKSETZEN</b> eintippen<input id="reset-wort" autocomplete="off" autocapitalize="characters"></label>' +
+      (DEMO ? "" : '<label class="admin-feld">Reset-Code (aus Supabase, update-v8.sql)<input id="reset-code" type="password" autocomplete="off"></label>') +
+      '<div class="knopf-reihe"><button type="button" class="gross" data-ab>Abbrechen</button>' +
+      '<button type="submit" class="gross loesch-knopf">Sichern & zurücksetzen</button></div></form>';
+    document.body.appendChild(ov);
+    ov.addEventListener("click", (e) => { if (e.target === ov || e.target.closest("[data-ab]")) ov.remove(); });
+    ov.querySelector("form").onsubmit = async (e) => {
+      e.preventDefault();
+      const wort = ov.querySelector("#reset-wort").value.trim().toUpperCase();
+      const codeFeld = ov.querySelector("#reset-code");
+      const code = codeFeld ? codeFeld.value : "";
+      if (wort !== "ZURÜCKSETZEN" && wort !== "ZURUECKSETZEN") { toast("Bitte „ZURÜCKSETZEN“ eintippen", { art: "fehler" }); return; }
+      if (codeFeld && !code) { toast("Bitte den Reset-Code eingeben", { art: "fehler" }); codeFeld.focus(); return; }
+      const knopf = ov.querySelector('[type="submit"]');
+      knopf.disabled = true;
+      // 1) Sicherung
+      knopf.textContent = "Sichere …";
+      try { await App.excelExport("pubquiz_SICHERUNG"); }
+      catch (err) {
+        knopf.disabled = false; knopf.textContent = "Sichern & zurücksetzen";
+        toast("Sicherung fehlgeschlagen – es wurde NICHTS gelöscht. (" + (err.message || "keine Verbindung") + ")", { art: "fehler", bleibt: true });
+        return;
+      }
+      // 2) Zurücksetzen
+      knopf.textContent = "Setze zurück …";
+      try {
+        await DB.abendZuruecksetzen(code);
+      } catch (err) {
+        knopf.disabled = false; knopf.textContent = "Sichern & zurücksetzen";
+        const m = err.message || "";
+        toast(/Reset-Code/i.test(m) ? "Falscher Reset-Code – es wurde nichts gelöscht."
+          : /abend_zuruecksetzen|function|schema cache/i.test(m) ? "Funktion fehlt in Supabase – bitte supabase/update-v8.sql ausführen. Es wurde nichts gelöscht."
+          : "Nicht zurückgesetzt: " + (m || "keine Verbindung"), { art: "fehler", bleibt: true });
+        return;
+      }
+      // 3) Alle Geräte informieren
+      try { await DB.sendeDurchsage("🔄 Neuer Abend – bitte Seite neu laden (Küche/Theke danach wieder „Start“)", "Orga"); } catch (err) { /* egal */ }
+      ov.remove();
+      toast("✓ Abend zurückgesetzt. Sicherung liegt in den Downloads. Alle Geräte bitte neu laden.", { art: "ok", bleibt: true });
+    };
+  };
 
   // ---------- Reiter ----------
   document.querySelectorAll(".admin-reiter button").forEach((b) => {

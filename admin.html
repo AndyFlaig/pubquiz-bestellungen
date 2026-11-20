@@ -76,6 +76,13 @@
         <button class="gross" id="json-export">⬇ Sicherung herunterladen (JSON)</button>
         <label class="gross datei-knopf">⬆ Sicherung einspielen (JSON)<input id="json-import" type="file" accept="application/json,.json" hidden></label>
         <button class="gross warnung-knopf" id="zuruecksetzen">↺ Auf Standard aus config.js zurücksetzen</button>
+      </div>
+      <div class="block admin-werkzeuge abend-reset">
+        <h2>🧹 Neuer Abend</h2>
+        <p class="klein-hinweis">Löscht alle Bestellungen, Zahlungen und Durchsagen, gibt ausverkaufte Artikel frei und setzt Pause und
+          Personenzahlen zurück. <b>Artikel, Preise, Tische, Kellner, Zitate und Startgeld bleiben.</b>
+          Vorher wird automatisch eine Excel-Sicherung heruntergeladen.</p>
+        <button class="gross loesch-knopf" id="abend-reset">🧹 Abend zurücksetzen …</button>
         <p class="klein-hinweis">Änderungen gelten auf allen Geräten nach dem Neuladen der Seite. Geöffnete Seiten
           zeigen innerhalb einer Minute einen Hinweis „Neu laden“.</p>
       </div>
@@ -91,6 +98,6 @@
   <script src="config.js"></script>
   <script src="vendor/supabase-js-2.117.3.js"></script>
   <script src="js/common.js"></script>
-  <script>App.starte(["js/admin.js"], { ohneBeobachter: true });</script>
+  <script>App.starte(["js/xlsx.js", "js/export.js", "js/admin.js"], { ohneBeobachter: true });</script>
 </body>
 </html>
