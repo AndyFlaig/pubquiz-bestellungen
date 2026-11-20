@@ -172,3 +172,7 @@ body.beamer .overlay { font-size: 18px; color: var(--text); }
 .b-zitat-text.lang { font-size: 2em; }
 .b-zitat-von { margin-top: 1.2em; font-size: 2em; font-weight: 800; color: var(--gold); opacity: 0; animation: b-name .9s ease-out forwards; }
 @keyframes b-name { from { opacity: 0; transform: translateY(.6em); } to { opacity: 1; transform: none; } }
+
+/* Gutholz-Eigenbedarf */
+.eigen-folie .b-folien-titel { color: #c9b8ff; }
+.eigen-folie .b-anzahl, .eigen-folie .b-weitere li b { color: #c9b8ff; }
