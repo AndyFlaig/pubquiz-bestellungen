@@ -59,7 +59,8 @@
       }));
       return [...m.entries()].sort((a, b) => b[1] - a[1]);
     }
-    const summeAlle = (wert) => ok.reduce((s, r) => s + r.positionen.reduce((t, p) => t + (wert(r, p) || 0), 0), 0);
+    // Alle Statistiken außer dem Eigenbedarf-Highscore zählen nur Gäste (kein Eigenverzehr)
+    const summeAlle = (wert) => gast.reduce((s, r) => s + r.positionen.reduce((t, p) => t + (wert(r, p) || 0), 0), 0);
 
     const bierL = (r, p) => r.ziel === "theke" && IST_BIER.test(p.name) ? p.anzahl * liter(p.menge) : 0;
     const spritzL = (r, p) => r.ziel === "theke" && IST_SPRITZ.test(p.name) ? p.anzahl * liter(p.menge) : 0;
@@ -69,7 +70,7 @@
     const zeit = (r) => r.geaendert_am && r.status === "erledigt"
       ? (new Date(r.geaendert_am) - new Date(r.erstellt_am)) / 60000 : null;
     const schnitt = (ziel) => {
-      const z = ok.filter((r) => r.ziel === ziel).map(zeit).filter((x) => x !== null && x >= 0 && x < 120);
+      const z = gast.filter((r) => r.ziel === ziel).map(zeit).filter((x) => x !== null && x >= 0 && x < 120);
       return z.length ? z.reduce((s, x) => s + x, 0) / z.length : null;
     };
     const ersteBestellung = gast.filter((r) => r.ziel !== "kasse").sort((a, b) => a.id - b.id)[0] || null;
@@ -78,7 +79,7 @@
     const alkfrei = summeAlle((r, p) => r.ziel === "theke" && /alkoholfrei/i.test(kategorieVon(p.id)) ? p.anzahl : 0);
 
     const kellner = new Map();
-    ok.filter((r) => r.ziel !== "kasse").forEach((r) => {
+    gast.filter((r) => r.ziel !== "kasse").forEach((r) => {
       const k = kellner.get(r.kellner) || new Set(); k.add(r.gruppe); kellner.set(r.kellner, k);
     });
 
@@ -102,7 +103,7 @@
       eigenGetraenke, eigenBier, eigenEssen,
       getraenke: alleGetraenke,
       speisen: summeAlle(speise),
-      bestellungen: new Set(ok.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size,
+      bestellungen: new Set(gast.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size,
       alkfreiQuote: alleGetraenke ? Math.round(alkfrei / alleGetraenke * 100) : 0,
       erste: ersteBestellung,
       schnittTheke: schnitt("theke"),
@@ -178,10 +179,14 @@
     { id: "pilsweizen", html: (d) => d.pils + d.weizen > 0 ? folie("⚔️", "Bier-Duell", "Pils oder Weizen – wer hat die Nase vorn?",
       duell({ emoji: "🍺", name: "Pils", wert: d.pils, text: fmt1(d.pils) + " Liter" },
             { emoji: "🌾", name: "Weizen", wert: d.weizen, text: fmt1(d.weizen) + " Liter" })) : null },
-    { id: "eigenbedarf", html: (d) => d.eigenRang.length ? folie("🏅", "Gutholz-Eigenbedarf – Highscore",
-      "Das Team hält durch: " + d.eigenGetraenke + " Getränke" + (d.eigenBier ? " · " + fmt1(d.eigenBier) + " l Bier" : "") +
-        (d.eigenEssen ? " · " + d.eigenEssen + " Portionen Essen" : ""),
-      podest(d.eigenRang, "Getränke", null, { name: d.eigenName, ohneTisch: true }), "eigen-folie") : null },
+    { id: "eigenbedarf", html: (d) => folie("🏅", "Gutholz-Eigenbedarf – Highscore",
+      d.eigenRang.length
+        ? "Das Team hält durch: " + d.eigenGetraenke + " Getränke" + (d.eigenBier ? " · " + fmt1(d.eigenBier) + " l Bier" : "") +
+          (d.eigenEssen ? " · " + d.eigenEssen + " Portionen Essen" : "")
+        : "Wer vom Gutholz-Team hat den größten Durst?",
+      d.eigenRang.length
+        ? podest(d.eigenRang, "Getränke", null, { name: d.eigenName, ohneTisch: true })
+        : '<p class="b-leer b-eigen-leer">🍻 Noch kein Eigenbedarf – Prost aufs Team!</p>', "eigen-folie") },
     { id: "kellner", html: (d) => d.kellner.length ? folie("🏃", "Kellner-Rennen", "Wer flitzt am meisten? Bestellungen pro Kellner",
       '<div class="b-rennen">' + d.kellner.map(([k, n], i) => '<div class="b-bahn"><div class="b-bahn-name">' + (i === 0 ? "🥇 " : "") + esc(k) +
         '</div><div class="b-bahn-spur"><div class="b-bahn-balken" data-breite="' + (n / d.kellner[0][1] * 100) + '"><span>' + n + "</span></div></div></div>").join("") + "</div>") : null },
