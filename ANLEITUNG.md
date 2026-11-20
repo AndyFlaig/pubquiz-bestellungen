@@ -186,6 +186,8 @@ Im **Admin → Tische** Einträge anlegen und **„👤 Eigenverzehr“** ankreu
 
 - Kellner sehen diese Einträge in einem eigenen Bereich „👤 Eigenverzehr“ unter den Tischen und bestellen ganz normal.
 - Küche/Theke sehen die Bestellung mit lila Band **„EIGENVERZEHR“**.
+- Eigenverzehr erscheint in **keiner Übersicht der normalen Tische** (Kasse, Auswertung „Pro Tisch“/„Kellner“, Kacheln,
+  Excel-Übersichten, Beamer-Statistiken) – erkannt am Kennzeichen der Bestellung **oder** am als Eigenverzehr markierten Tisch.
 - In der **Kasse** tauchen sie nicht auf – es wird nichts kassiert, der Kassenstand bleibt unberührt.
 - In der **Auswertung** zählt Eigenverzehr **nicht zum Umsatz**. Unter „Artikel“ stehen die Spalten
   Verkauft / Eigenverzehr / **Gesamt (Inventur)**, dazu die Kachel „Eigenverzehr (Warenwert)“.
@@ -209,7 +211,7 @@ Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden 
 | 🥨 Snack-Monster | Snacks |
 | 🥊 Wurstsalat-Duell | Straßburger gegen Schwäbischen |
 | ⚔️ Bier-Duell | Liter Pils gegen Weizen |
-| 🏅 Gutholz-Eigenbedarf – Highscore | Getränke pro Person/Bereich aus dem Eigenverzehr (Siegertreppchen), dazu Summen fürs Team |
+| 🏅 Gutholz-Eigenbedarf – Highscore | **Alkoholspiegel in Litern** pro Person/Bereich aus dem Eigenverzehr (Bier, Radler, Russ, Aperol, Wein …) und als Team-Summe |
 | 🏃 Kellner-Rennen | Bestellungen pro Kellner |
 | 📊 Der Abend in Zahlen | Summen, alkoholfrei-Quote, Early Bird, Ø Wartezeit Theke/Küche |
 

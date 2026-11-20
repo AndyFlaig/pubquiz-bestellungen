@@ -738,7 +738,11 @@
   }
 
   // Eigenverzehr: zählt für die Inventur (Stückzahl), aber nicht zum Umsatz
-  const istEigen = (r) => r && r.eigenverzehr === true;
+  // Eine Bestellung gilt als Gutholz-Eigenverzehr, wenn sie so gekennzeichnet ist ODER
+  // an einem Tisch hängt, der im Admin als Eigenverzehr markiert ist. Solche Bestellungen
+  // tauchen in keiner Übersicht der normalen Tische auf (Auswertung, Kasse, Excel, Beamer).
+  const istEigen = (r) => !!r && (r.eigenverzehr === true ||
+    !!(CFG.TISCHE.find((t) => t.nr === r.tisch) || {}).eigen);
 
   window.App = {
     UEBUNG, demoStarten, demoBeenden,

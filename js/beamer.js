@@ -28,26 +28,27 @@
   }
   const fmt1 = (x) => x.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const team = (nr) => { const t = CFG.TISCHE.find((x) => x.nr === nr); return t ? t.team : "Tisch " + nr; };
-  const istEigenTisch = (nr) => !!(CFG.TISCHE.find((x) => x.nr === nr) || {}).eigen;
   const kategorieVon = (id) => (CFG.ARTIKEL.find((a) => a.id === id) || {}).kategorie || "";
 
   // ---------- Daten aufbereiten ----------
   let D = null;
   function auswerten(rows) {
     const ok = rows.filter((r) => r.status !== "storniert");
-    const gast = ok.filter((r) => !App.istEigen(r) && !istEigenTisch(r.tisch));
+    const gast = ok.filter((r) => !App.istEigen(r));
     // Gutholz-Eigenbedarf: Personal/Helfer (Eigenverzehr), gruppiert nach Person bzw. Bereich
-    const eigen = ok.filter((r) => App.istEigen(r) || istEigenTisch(r.tisch));
+    const eigen = ok.filter(App.istEigen);
     const eigenName = new Map();
     eigen.forEach((r) => { if (!eigenName.has(r.tisch)) eigenName.set(r.tisch, (CFG.TISCHE.find((t) => t.nr === r.tisch) || {}).team || r.team || ("Nr. " + r.tisch)); });
+    // Alkoholspiegel in Litern: Bier, Radler, Russ, Weizen-Mixe, Aperol, Wein, Schorlen
+    const istAlkohol = (p) => (IST_BIER.test(p.name) || IST_SPRITZ.test(p.name)) && !/alkoholfrei/i.test(p.name + " " + kategorieVon(p.id));
     const eigenProKopf = new Map();
-    let eigenGetraenke = 0, eigenBier = 0, eigenEssen = 0;
+    let eigenLiter = 0;
     eigen.forEach((r) => r.positionen.forEach((p) => {
-      if (r.ziel === "theke") {
-        eigenProKopf.set(r.tisch, (eigenProKopf.get(r.tisch) || 0) + p.anzahl);
-        eigenGetraenke += p.anzahl;
-        if (IST_BIER.test(p.name)) eigenBier += p.anzahl * liter(p.menge);
-      } else if (r.ziel === "kueche") eigenEssen += p.anzahl;
+      if (r.ziel !== "theke" || !istAlkohol(p)) return;
+      const l = p.anzahl * liter(p.menge);
+      if (!l) return;
+      eigenProKopf.set(r.tisch, (eigenProKopf.get(r.tisch) || 0) + l);
+      eigenLiter += l;
     }));
 
     // Summe pro Tisch (nur Gäste): bedingung(r, p) -> Wert
@@ -100,7 +101,7 @@
       kellner: [...kellner.entries()].map(([k, s]) => [k, s.size]).sort((a, b) => b[1] - a[1]),
       eigenRang: [...eigenProKopf.entries()].sort((a, b) => b[1] - a[1]),
       eigenName: (nr) => eigenName.get(nr) || ("Nr. " + nr),
-      eigenGetraenke, eigenBier, eigenEssen,
+      eigenLiter: Math.round(eigenLiter * 100) / 100,
       getraenke: alleGetraenke,
       speisen: summeAlle(speise),
       bestellungen: new Set(gast.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size,
@@ -181,11 +182,10 @@
             { emoji: "🌾", name: "Weizen", wert: d.weizen, text: fmt1(d.weizen) + " Liter" })) : null },
     { id: "eigenbedarf", html: (d) => folie("🏅", "Gutholz-Eigenbedarf – Highscore",
       d.eigenRang.length
-        ? "Das Team hält durch: " + d.eigenGetraenke + " Getränke" + (d.eigenBier ? " · " + fmt1(d.eigenBier) + " l Bier" : "") +
-          (d.eigenEssen ? " · " + d.eigenEssen + " Portionen Essen" : "")
-        : "Wer vom Gutholz-Team hat den größten Durst?",
+        ? "🍺 Alkoholspiegel des Teams: <b>" + fmt1(d.eigenLiter) + " Liter</b>"
+        : "Wer vom Gutholz-Team hat den höchsten Alkoholspiegel?",
       d.eigenRang.length
-        ? podest(d.eigenRang, "Getränke", null, { name: d.eigenName, ohneTisch: true })
+        ? podest(d.eigenRang, "Liter", fmtL, { name: d.eigenName, ohneTisch: true })
         : '<p class="b-leer b-eigen-leer">🍻 Noch kein Eigenbedarf – Prost aufs Team!</p>', "eigen-folie") },
     { id: "kellner", html: (d) => d.kellner.length ? folie("🏃", "Kellner-Rennen", "Wer flitzt am meisten? Bestellungen pro Kellner",
       '<div class="b-rennen">' + d.kellner.map(([k, n], i) => '<div class="b-bahn"><div class="b-bahn-name">' + (i === 0 ? "🥇 " : "") + esc(k) +
