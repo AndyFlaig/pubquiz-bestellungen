@@ -36,6 +36,19 @@
   function auswerten(rows) {
     const ok = rows.filter((r) => r.status !== "storniert");
     const gast = ok.filter((r) => !App.istEigen(r) && !istEigenTisch(r.tisch));
+    // Gutholz-Eigenbedarf: Personal/Helfer (Eigenverzehr), gruppiert nach Person bzw. Bereich
+    const eigen = ok.filter((r) => App.istEigen(r) || istEigenTisch(r.tisch));
+    const eigenName = new Map();
+    eigen.forEach((r) => { if (!eigenName.has(r.tisch)) eigenName.set(r.tisch, (CFG.TISCHE.find((t) => t.nr === r.tisch) || {}).team || r.team || ("Nr. " + r.tisch)); });
+    const eigenProKopf = new Map();
+    let eigenGetraenke = 0, eigenBier = 0, eigenEssen = 0;
+    eigen.forEach((r) => r.positionen.forEach((p) => {
+      if (r.ziel === "theke") {
+        eigenProKopf.set(r.tisch, (eigenProKopf.get(r.tisch) || 0) + p.anzahl);
+        eigenGetraenke += p.anzahl;
+        if (IST_BIER.test(p.name)) eigenBier += p.anzahl * liter(p.menge);
+      } else if (r.ziel === "kueche") eigenEssen += p.anzahl;
+    }));
 
     // Summe pro Tisch (nur Gäste): bedingung(r, p) -> Wert
     function proTisch(wert) {
@@ -84,6 +97,9 @@
       pils: summeAlle((r, p) => r.ziel === "theke" && /pils|radler/i.test(p.name) ? p.anzahl * liter(p.menge) : 0),       // Radler = Pils-Basis
       weizen: summeAlle((r, p) => r.ziel === "theke" && /weizen|russ/i.test(p.name) ? p.anzahl * liter(p.menge) : 0),    // Russ/Cola-Weizen = Weizen-Basis
       kellner: [...kellner.entries()].map(([k, s]) => [k, s.size]).sort((a, b) => b[1] - a[1]),
+      eigenRang: [...eigenProKopf.entries()].sort((a, b) => b[1] - a[1]),
+      eigenName: (nr) => eigenName.get(nr) || ("Nr. " + nr),
+      eigenGetraenke, eigenBier, eigenEssen,
       getraenke: alleGetraenke,
       speisen: summeAlle(speise),
       bestellungen: new Set(ok.filter((r) => r.ziel !== "kasse").map((r) => r.gruppe)).size,
@@ -95,19 +111,21 @@
   }
 
   // ---------- Bausteine ----------
-  function podest(liste, einheit, format) {
+  function podest(liste, einheit, format, opts) {
     format = format || ((x) => String(x));
+    const name = (opts && opts.name) || team;
+    const unterzeile = (nr) => opts && opts.ohneTisch ? "" : '<div class="b-tischnr">Tisch ' + nr + "</div>";
     if (!liste.length) return '<p class="b-leer">Noch keine Daten – das kann sich schnell ändern!</p>';
     const platz = (i, medaille) => {
       const e = liste[i];
       return '<div class="b-platz p' + (i + 1) + '"><div class="b-medaille">' + medaille + "</div>" +
-        (e ? '<div class="b-team">' + esc(team(e[0])) + '</div><div class="b-anzahl">' + format(e[1]) + " <small>" + einheit +
-          '</small></div><div class="b-tischnr">Tisch ' + e[0] + "</div>" : '<div class="b-team leer">–</div>') +
+        (e ? '<div class="b-team">' + esc(name(e[0])) + '</div><div class="b-anzahl">' + format(e[1]) + " <small>" + einheit +
+          "</small></div>" + unterzeile(e[0]) : '<div class="b-team leer">–</div>') +
         '<div class="b-sockel">' + (i + 1) + "</div></div>";
     };
     return '<div class="b-podest">' + platz(1, "🥈") + platz(0, "🥇") + platz(2, "🥉") + "</div>" +
       (liste.length > 3 ? '<ol class="b-weitere" start="4">' + liste.slice(3, 5).map((e) =>
-        "<li><span>" + esc(team(e[0])) + "</span><b>" + format(e[1]) + " " + einheit + "</b></li>").join("") + "</ol>" : "");
+        "<li><span>" + esc(name(e[0])) + "</span><b>" + format(e[1]) + " " + einheit + "</b></li>").join("") + "</ol>" : "");
   }
 
   function schrittFuer(l) { return l < 20 ? 10 : l < 100 ? 25 : 50; }
@@ -160,6 +178,10 @@
     { id: "pilsweizen", html: (d) => d.pils + d.weizen > 0 ? folie("⚔️", "Bier-Duell", "Pils oder Weizen – wer hat die Nase vorn?",
       duell({ emoji: "🍺", name: "Pils", wert: d.pils, text: fmt1(d.pils) + " Liter" },
             { emoji: "🌾", name: "Weizen", wert: d.weizen, text: fmt1(d.weizen) + " Liter" })) : null },
+    { id: "eigenbedarf", html: (d) => d.eigenRang.length ? folie("🏅", "Gutholz-Eigenbedarf – Highscore",
+      "Das Team hält durch: " + d.eigenGetraenke + " Getränke" + (d.eigenBier ? " · " + fmt1(d.eigenBier) + " l Bier" : "") +
+        (d.eigenEssen ? " · " + d.eigenEssen + " Portionen Essen" : ""),
+      podest(d.eigenRang, "Getränke", null, { name: d.eigenName, ohneTisch: true }), "eigen-folie") : null },
     { id: "kellner", html: (d) => d.kellner.length ? folie("🏃", "Kellner-Rennen", "Wer flitzt am meisten? Bestellungen pro Kellner",
       '<div class="b-rennen">' + d.kellner.map(([k, n], i) => '<div class="b-bahn"><div class="b-bahn-name">' + (i === 0 ? "🥇 " : "") + esc(k) +
         '</div><div class="b-bahn-spur"><div class="b-bahn-balken" data-breite="' + (n / d.kellner[0][1] * 100) + '"><span>' + n + "</span></div></div></div>").join("") + "</div>") : null },

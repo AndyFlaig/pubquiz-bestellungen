@@ -209,6 +209,7 @@ Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden 
 | 🥨 Snack-Monster | Snacks |
 | 🥊 Wurstsalat-Duell | Straßburger gegen Schwäbischen |
 | ⚔️ Bier-Duell | Liter Pils gegen Weizen |
+| 🏅 Gutholz-Eigenbedarf – Highscore | Getränke pro Person/Bereich aus dem Eigenverzehr (Siegertreppchen), dazu Summen fürs Team |
 | 🏃 Kellner-Rennen | Bestellungen pro Kellner |
 | 📊 Der Abend in Zahlen | Summen, alkoholfrei-Quote, Early Bird, Ø Wartezeit Theke/Küche |
 

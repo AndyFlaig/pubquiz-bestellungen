@@ -60,6 +60,7 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 54 | … mit richtigem Code | Sicherung geladen; Kasse zeigt nur Startgeld, Auswertung 0; Durchsage „Neuer Abend“ auf allen Geräten | |
 | 55 | Auswertung → 💸 Ausgaben: 2–3 Ausgaben mit „bezahlt von“ erfassen | Liste und Summe stimmen; Gesamtübersicht: Einnahmen − Ausgaben = Ergebnis; „Ausgelegt von“ pro Person | |
 | 56 | Ausgabe ändern (✎) und löschen (🗑); danach ⬇ Excel | Werte aktualisiert; Excel: Blatt „Ausgaben“, Ergebnis in der „Übersicht“ | |
+| 57 | Eigenverzehr für 2–3 Personen bestellen, `beamer.html?folie=eigenbedarf` | Highscore mit Siegertreppchen; Personal erscheint nicht beim „Durstigsten Team“ | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.
