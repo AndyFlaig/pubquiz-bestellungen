@@ -167,10 +167,46 @@
           "<b>" + euro(Number(z.betrag)) + (Number(z.trinkgeld) ? '<small class="tg-klein"> + ' + euro(Number(z.trinkgeld)) + " TG</small>" : "") + "</b>" +
           (z.kellner === kellner() ? '<button class="link warnung" data-storno-zahlung="' + z.id + '">stornieren</button>' : "") +
           "</li>").join("") + "</ul>" : "") +
+        verlaufHtml() +
       "</article>";
     if ($("#gegeben")) $("#gegeben").value = behalten.gegeben;
     if ($("#trinkgeld")) $("#trinkgeld").value = behalten.trinkgeld;
     rueckgeldRechnen();
+  }
+
+  // ---------- Bestellverlauf: auch erledigte Bestellungen wieder herausnehmen ----------
+  const ZIEL_TEXT = { kueche: "🍽 Küche", theke: "🍺 Theke", kasse: "🥨 Strichliste" };
+  let verlaufOffen = false;
+  function verlaufHtml() {
+    const liste = rows.filter((r) => r.tisch === tisch).sort((a, b) => b.id - a.id);
+    return '<details class="verlauf"' + (verlaufOffen ? " open" : "") + "><summary>📜 Bestellverlauf (" + liste.length + ")</summary>" +
+      (liste.length
+        ? '<p class="klein-hinweis">Falsch gebucht? „✕ herausnehmen“ storniert die Bestellung – auch wenn sie schon erledigt ist.</p>' +
+          '<ul class="verlauf-liste">' + liste.map((r) =>
+            "<li><div><span>#" + r.id + " · " + uhrzeit(r.erstellt_am) + " · " + esc(r.kellner) + " · " + (ZIEL_TEXT[r.ziel] || r.ziel) +
+              (r.status === "offen" ? " · <b>offen</b>" : "") + "</span>" +
+              "<small>" + esc(r.positionen.map((p) => p.anzahl + "× " + posText(p) + (p.notiz ? " (" + p.notiz + ")" : "")).join(", ")) + "</small></div>" +
+              '<button class="raus-knopf" data-raus="' + r.id + '">✕ herausnehmen</button></li>').join("") + "</ul>"
+        : '<p class="klein-hinweis">Keine Bestellungen.</p>') +
+      "</details>";
+  }
+  async function herausnehmen(id) {
+    const r = rows.find((x) => x.id === id);
+    if (!r) return;
+    const wert = r.positionen.reduce((s, p) => s + cent(p.preis) * p.anzahl, 0);
+    const bezahlt = bezahltCent(tisch), rest = bestelltCent(tisch) - bezahlt;
+    const warnung = bezahlt > 0 && rest - wert < 0
+      ? "\n\n⚠️ Für diesen Tisch wurde schon kassiert. Danach steht er auf „zu viel bezahlt“ – die Zahlung unten stornieren und neu kassieren (bzw. Geld zurückgeben)." : "";
+    if (!confirm("Bestellung #" + r.id + " von Tisch " + r.tisch + " herausnehmen?\n\n" +
+      r.positionen.map((p) => p.anzahl + "× " + posText(p)).join("\n") + "\n(" + euro(wert / 100) + ")" +
+      "\n\nSie verschwindet aus Rechnung, Auswertung und Beamer." + (r.status === "offen" ? " Küche/Theke bekommen eine Storno-Meldung." : "") + warnung)) return;
+    try {
+      const ok = await DB.setStatus(r.id, r.status, "storniert");
+      toast(ok ? "✓ Bestellung #" + r.id + " herausgenommen" : "Wurde inzwischen schon geändert – bitte neu prüfen.", { art: ok ? "ok" : "fehler" });
+    } catch (e) {
+      toast("Nicht herausgenommen – keine Verbindung.", { art: "fehler" });
+    }
+    await laden();
   }
 
   // Startgeld-Zeile: Personen am Tisch einstellen, Anteile auswählen
@@ -332,7 +368,7 @@
     const tb = e.target.closest("[data-kasse-nr]");
     if (tb) {
       const neu = Number(tb.dataset.kasseNr);
-      if (neu !== tisch) { auswahl = new Map(); snackWahl = new Map(); }
+      if (neu !== tisch) { auswahl = new Map(); snackWahl = new Map(); verlaufOffen = false; }
       tisch = neu; render();
       $("#kasse-inhalt").scrollIntoView({ behavior: "smooth", block: "start" });
       return;
@@ -370,6 +406,8 @@
       const pos = stand.filter((x) => x.offen > 0).map((x) => alsPosition(x, x.offen));
       return kassieren(pos, bestelltCent(tisch) - bezahltCent(tisch));
     }
+    const raus = e.target.closest("[data-raus]");
+    if (raus) { herausnehmen(Number(raus.dataset.raus)); return; }
     const sz = e.target.closest("[data-storno-zahlung]");
     if (sz) {
       const z = zahlungen.find((y) => y.id === Number(sz.dataset.stornoZahlung));
@@ -381,6 +419,9 @@
       laden();
     }
   });
+  $("#seite-kasse").addEventListener("toggle", (e) => {
+    if (e.target.classList && e.target.classList.contains("verlauf")) verlaufOffen = e.target.open;
+  }, true);
   $("#seite-kasse").addEventListener("input", (e) => { if (e.target.id === "gegeben" || e.target.id === "trinkgeld") rueckgeldRechnen(); });
 
   // Reiter-Wechsel aus kellner.js

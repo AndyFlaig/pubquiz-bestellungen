@@ -136,6 +136,10 @@ alle Artikel mit „x offen / y bezahlt“, darunter Bestellt / Bezahlt / **Offe
   **Anteile** geteilt. Wer einzeln zahlt, wählt bei „Anteile zahlen“ **1** (oder mehr) zusammen mit seinen Getränken.
   Cent-Rundung geht immer genau auf den Gesamtbetrag auf. Die Personenzahl ist für alle Kellner gleich (gespeichert).
 - **„✓ Alles bezahlt“** verbucht alle noch offenen Artikel inklusive des restlichen Startgelds.
+- **📜 Bestellverlauf** (unten beim Tisch, aufklappbar): alle Bestellungen des Tisches. **„✕ herausnehmen“** storniert eine
+  falsche Bestellung – **auch wenn sie schon erledigt ist**. Sie verschwindet aus Rechnung, Auswertung und Beamer (im Excel
+  als „storniert“ sichtbar). War noch offen, bekommen Küche/Theke eine Storno-Meldung. Wurde schon kassiert, warnt die
+  Abfrage: danach die Zahlung stornieren und neu kassieren.
 - **Gegeben:** zeigt das Rückgeld (für die Auswahl, sonst für den ganzen offenen Betrag).
 - **Trinkgeld:** Betrag eintippen oder **„Stimmt so“** (Rest vom gegebenen Geld wird Trinkgeld) bzw.
   **„Aufrunden auf 5 €“**. Das Rückgeld wird mit Trinkgeld berechnet. Trinkgeld zählt zum **Kassenstand** des Kellners
