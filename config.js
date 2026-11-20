@@ -85,6 +85,10 @@ window.APP_CONFIG = {
     { id: "pils033",   kategorie: "Bier & Aperitif", name: "Pils vom Fass",   menge: "0,33 l", preis: 3.00, ziel: "theke" },
     { id: "pils05",    kategorie: "Bier & Aperitif", name: "Pils vom Fass",   menge: "0,5 l",  preis: 4.00, ziel: "theke" },
     { id: "weizen05",  kategorie: "Bier & Aperitif", name: "Weizen vom Fass", menge: "0,5 l",  preis: 4.00, ziel: "theke" },
+    { id: "radlersuess", kategorie: "Bier & Aperitif", name: "Radler süß",    menge: "0,5 l",  preis: 4.00, ziel: "theke" },
+    { id: "radlersauer", kategorie: "Bier & Aperitif", name: "Radler sauer",  menge: "0,5 l",  preis: 4.00, ziel: "theke" },
+    { id: "russ",        kategorie: "Bier & Aperitif", name: "Russ",          menge: "0,5 l",  preis: 4.00, ziel: "theke" },
+    { id: "colaweizen",  kategorie: "Bier & Aperitif", name: "Cola-Weizen",   menge: "0,5 l",  preis: 4.00, ziel: "theke" },
     { id: "aperol",    kategorie: "Bier & Aperitif", name: "Aperol",          menge: "0,3 l",  preis: 5.50, ziel: "theke" },
 
     { id: "wschorle",  kategorie: "Wein", name: "Weinschorle", menge: "0,25 l", preis: 3.00, ziel: "theke" },

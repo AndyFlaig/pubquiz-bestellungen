@@ -14,10 +14,11 @@
   const NUR_FOLIE = PARAM.get("folie");
 
   // ---------- Was zählt wozu (über den Artikelnamen) ----------
-  const IST_BIER = /pils|weizen|weiß?bier|bier|radler|helles|export|lager/i;
+  const IST_BIER = /pils|weizen|weiß?bier|bier|radler|russ|helles|export|lager/i;
   const IST_SPRITZ = /aperol|spritz|wein|prosecco|sekt|hugo|lillet/i;   // Aperol + alle Weine/Schorlen
   const IST_WASSER = /sprudel|wasser|mineral/i;
   const IST_KOFFEIN = /cola|spezi|mezzo|energy/i;
+  const IST_BIERMIX = /weizen|bier|radler|russ/i;   // z. B. Cola-Weizen zählt nicht zum Koffein-Kommando
 
   function liter(menge) {
     const m = String(menge || "").replace(",", ".").match(/([\d.]+)\s*(ml|cl|l)\b/i);
@@ -76,12 +77,12 @@
       durst: proTisch(getraenk),
       hunger: proTisch(speise),
       wasser: proTisch((r, p) => r.ziel === "theke" && IST_WASSER.test(p.name) ? p.anzahl : 0),
-      koffein: proTisch((r, p) => r.ziel === "theke" && IST_KOFFEIN.test(p.name) ? p.anzahl : 0),
+      koffein: proTisch((r, p) => r.ziel === "theke" && IST_KOFFEIN.test(p.name) && !IST_BIERMIX.test(p.name) ? p.anzahl : 0),
       snacks: proTisch((r, p) => r.ziel === "kasse" ? p.anzahl : 0),
       strassburger: summeAlle((r, p) => /straßburger|strassburger/i.test(p.name) ? p.anzahl : 0),
       schwaebisch: summeAlle((r, p) => /schwäbisch|schwaebisch/i.test(p.name) ? p.anzahl : 0),
-      pils: summeAlle((r, p) => r.ziel === "theke" && /pils/i.test(p.name) ? p.anzahl * liter(p.menge) : 0),
-      weizen: summeAlle((r, p) => r.ziel === "theke" && /weizen/i.test(p.name) ? p.anzahl * liter(p.menge) : 0),
+      pils: summeAlle((r, p) => r.ziel === "theke" && /pils|radler/i.test(p.name) ? p.anzahl * liter(p.menge) : 0),       // Radler = Pils-Basis
+      weizen: summeAlle((r, p) => r.ziel === "theke" && /weizen|russ/i.test(p.name) ? p.anzahl * liter(p.menge) : 0),    // Russ/Cola-Weizen = Weizen-Basis
       kellner: [...kellner.entries()].map(([k, s]) => [k, s.size]).sort((a, b) => b[1] - a[1]),
       getraenke: alleGetraenke,
       speisen: summeAlle(speise),
