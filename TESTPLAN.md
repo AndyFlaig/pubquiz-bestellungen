@@ -63,6 +63,7 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 57 | Eigenverzehr für 2–3 Personen bestellen, `beamer.html?folie=eigenbedarf` | Highscore mit Siegertreppchen; Personal erscheint nicht beim „Durstigsten Team“ | |
 | 58 | Kasse → Tisch → 📜 Bestellverlauf → erledigte Bestellung „✕ herausnehmen“ | Offen-Betrag sinkt, Bestellung weg aus Auswertung; Excel zeigt sie als „storniert“ | |
 | 59 | … bei schon bezahltem Tisch | Warnung in der Abfrage; danach „zu viel bezahlt“ | |
+| 60 | Admin → Tische: „🎟 kein Startgeld“ bei einem Gästetisch, speichern | Kasse: Tisch ohne Startgeld-Zeile; Auswertung/Excel: Startgeld-Soll um 20 € kleiner | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

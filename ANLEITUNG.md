@@ -171,7 +171,7 @@ und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit ei
 
 - **Artikel:** Name, Menge, Preis, Kategorie und Ziel (Theke / Küche / Nur Strichliste) ändern, Reihenfolge mit ↑ ↓,
   neue Artikel anlegen, Artikel löschen.
-- **Tische:** Nummer und Teamname.
+- **Tische:** Nummer und Teamname; **🎟 kein Startgeld** für Gäste-/Zuschauertische ohne Quiz-Teilnahme.
 - **Kellner:** Namen und Revier (z. B. `1-5, 9`).
 - **Zitate:** je ein Feld für das Zitat und den Namen; Reihenfolge mit ↑ ↓. Auf dem Beamer kommt nach je 2 Statistik-Folien
   ein Zitat: erst das Zitat allein (5 Sekunden), dann blendet der Name ein (3 Sekunden). Nach dem Speichern sind neue
