@@ -128,6 +128,38 @@ grant select, insert on public.durchsagen to anon, authenticated;
 -- Trinkgeld bei der Zahlung (zählt zum Gesamtumsatz und zum Kassenstand, nicht zum Warenbetrag)
 alter table public.zahlungen add column if not exists trinkgeld numeric(8,2) not null default 0 check (trinkgeld >= 0);
 
+-- Abend zurücksetzen (Knopf im Admin) – geschützt durch einen geheimen Reset-Code.
+-- Der Code liegt in einer Tabelle, die über die App NICHT lesbar ist.
+create table if not exists public.admin_geheim (
+  id          int  primary key default 1 check (id = 1),
+  reset_code  text not null
+);
+alter table public.admin_geheim enable row level security;   -- keine Regeln = kein Zugriff über die App
+revoke all on public.admin_geheim from anon, authenticated;
+
+create or replace function public.abend_zuruecksetzen(code text) returns json
+language plpgsql security definer set search_path = public as $$
+declare
+  richtig boolean;
+begin
+  select reset_code = code into richtig from public.admin_geheim where id = 1;
+  if not coalesce(richtig, false) then
+    perform pg_sleep(2);                       -- Raten bremsen
+    raise exception 'Falscher Reset-Code';
+  end if;
+  truncate table public.bestellungen, public.zahlungen restart identity;
+  delete from public.durchsagen;               -- Nummerierung bleibt (wichtig für die Geräte)
+  update public.ausverkauft set ausverkauft = false, geaendert_am = now();
+  delete from public.einstellungen where schluessel in ('pause', 'personen');
+  return json_build_object('ok', true, 'zeit', now());
+end $$;
+
+revoke all on function public.abend_zuruecksetzen(text) from public;
+grant execute on function public.abend_zuruecksetzen(text) to anon, authenticated;
+-- Reset-Code: nur beim ersten Mal anlegen – danach mit update-v8.sql ändern
+insert into public.admin_geheim (id, reset_code) values (1, 'BITTE-AENDERN-' || substr(md5(random()::text), 1, 8))
+  on conflict (id) do nothing;
+
 -- Live-Updates (Realtime) für die Tabelle einschalten
 do $$
 begin

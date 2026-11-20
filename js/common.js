@@ -107,6 +107,12 @@
           .order("id", { ascending: true }).limit(5000));
       },
       // ---- Zahlungen (Kasse) ----
+      // ---- Abend zurücksetzen (Funktion in der Datenbank, prüft den Reset-Code) ----
+      async abendZuruecksetzen(code) {
+        const res = await client.rpc("abend_zuruecksetzen", { code });
+        if (res.error) throw new Error(res.error.message || "Fehler");
+        return res.data;
+      },
       // ---- Durchsagen ----
       async neueDurchsagen(abId) {
         return check(await client.from("durchsagen").select("*").gt("id", abId || 0).order("id", { ascending: true }).limit(10));
@@ -217,13 +223,24 @@
         return Object.keys(load().ausverkauft || {}).filter((k) => load().ausverkauft[k]);
       },
       async ladeStammdaten() { return load().stammdaten || null; },
+      async abendZuruecksetzen() {
+        const db = load();
+        // wie in der Datenbank: Abend-Daten weg, Stammdaten und Zitate bleiben
+        const einst = Object.assign({}, db.einst || {}); delete einst.pause; delete einst.personen;
+        const nextDid = (db.durchsagen || []).reduce((m, x) => Math.max(m, x.id + 1), db.nextDid || 1);
+        save({ nextId: 1, rows: [], zahlungen: [], nextZid: 1, durchsagen: [], nextDid,
+          ausverkauft: {}, stammdaten: db.stammdaten, einst });
+        notify();
+        return { ok: true };
+      },
       async ladeEinstellung(k) { return (load().einst || {})[k] || null; },
       async speichereEinstellung(k, w) { const db = load(); db.einst = db.einst || {}; db.einst[k] = w; save(db); notify(); },
       async neueDurchsagen(abId) { return (load().durchsagen || []).filter((d) => d.id > (abId || 0)); },
       async letzteDurchsageId() { const l = load().durchsagen || []; return l.length ? l[l.length - 1].id : 0; },
       async sendeDurchsage(text, von) {
         const db = load(); db.durchsagen = db.durchsagen || [];
-        const d = { id: db.durchsagen.length + 1, text, von, erstellt_am: new Date().toISOString() };
+        db.nextDid = Math.max(db.nextDid || 1, db.durchsagen.reduce((m, x) => Math.max(m, x.id + 1), 1));
+        const d = { id: db.nextDid++, text, von, erstellt_am: new Date().toISOString() };
         db.durchsagen.push(d); save(db); notify(); return d;
       },
       async speichereStammdaten(wert) {

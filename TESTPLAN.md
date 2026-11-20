@@ -56,6 +56,8 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 50 | Rest per „Alles bezahlt“ | Tisch ✓ bezahlt; Startgeld-Anteile summieren sich genau auf 20,00 €; Auswertung: Kachel Startgeld | |
 | 51 | Startseite → „Demo ausprobieren“ | Lila Band auf allen Seiten, Kasse/Auswertung/Beamer mit Beispieldaten; Bestellung kommt in der Küche im zweiten Tab an, aber nicht auf anderen Geräten | |
 | 52 | „Demo beenden“ | Band weg, wieder echte Daten | |
+| 53 | Admin → 🧹 Abend zurücksetzen mit falschem Reset-Code | „Falscher Reset-Code“, nichts gelöscht (Excel-Sicherung wurde trotzdem geladen) | |
+| 54 | … mit richtigem Code | Sicherung geladen; Kasse zeigt nur Startgeld, Auswertung 0; Durchsage „Neuer Abend“ auf allen Geräten | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

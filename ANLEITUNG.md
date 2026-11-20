@@ -234,6 +234,19 @@ Pro Gerät einstellbar: **🌓 Auto** (wie am Handy eingestellt), **☀️ Hell*
 - Küche/Theke: im Start-Fenster.
 - Kellner: Symbol 🌓 / 🌙 / ☀️ oben neben „wechseln“ (tippen schaltet weiter).
 
+## 🧹 Neuer Abend: System auf 0 setzen
+
+**Einmalig einrichten:** [`supabase/update-v8.sql`](supabase/update-v8.sql) öffnen, bei `MEIN-GEHEIMER-CODE` einen eigenen
+**Reset-Code** eintragen (mind. 8 Zeichen, nicht der Admin-PIN) und im SQL Editor ausführen. Der Code wird in der Datenbank
+geprüft und ist über die App nicht auslesbar.
+
+**Zurücksetzen:** Admin → Allgemein → **„🧹 Abend zurücksetzen …“** → „ZURÜCKSETZEN“ und Reset-Code eintippen →
+**„Sichern & zurücksetzen“**.
+1. Zuerst wird automatisch eine **Excel-Sicherung** heruntergeladen (`pubquiz_SICHERUNG_…xlsx`). Klappt das nicht, wird nichts gelöscht.
+2. Gelöscht: Bestellungen, Zahlungen, Durchsagen; zurückgesetzt: Ausverkauft, Pause, Personenzahlen.
+   **Bleibt:** Artikel, Preise, Tische, Kellner, Zitate, Startgeld.
+3. Alle Geräte bekommen die Durchsage „Neuer Abend – bitte Seite neu laden“. Küche/Theke danach wieder „Start“ tippen.
+
 ## Nach dem Test: Testdaten löschen
 
 Supabase → **SQL Editor** → `truncate table public.bestellungen, public.zahlungen restart identity;` → **Run**.
