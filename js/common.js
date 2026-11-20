@@ -3,7 +3,9 @@
   "use strict";
 
   const CFG = window.APP_CONFIG;
-  const DEMO = !CFG.SUPABASE_URL || !CFG.SUPABASE_KEY;
+  // Übungsmodus: vom Nutzer auf der Startseite eingeschaltet (nur dieses Gerät)
+  const UEBUNG = (() => { try { return localStorage.getItem("demo_modus") === "1"; } catch (e) { return false; } })();
+  const DEMO = UEBUNG || !CFG.SUPABASE_URL || !CFG.SUPABASE_KEY;
 
   // ------------------------------------------------------------------
   // Kleine Helfer
@@ -442,6 +444,16 @@
     return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error("Zeitüberschreitung")), ms))]);
   }
   async function stammdatenLaden() {
+    if (UEBUNG) {
+      // Übungsmodus: im Demo-Admin Gespeichertes, sonst die echten Artikel/Tische (letzte Kopie), sonst config.js.
+      // Die echte Kopie wird dabei nie verändert.
+      const r = await DB.ladeStammdaten();
+      const c = store.get(STAMM_CACHE, null);
+      if (r && stammdatenGueltig(r.wert)) { stammdatenAnwenden(r.wert); stammVersion = r.geaendert_am; stammQuelle = "Demo (Übungs-Admin)"; }
+      else if (c && stammdatenGueltig(c.wert)) { stammdatenAnwenden(c.wert); stammVersion = null; stammQuelle = "Demo (echte Artikel)"; }
+      else { stammdatenAnwenden(null); stammQuelle = "Demo (config.js)"; }
+      return;
+    }
     try {
       const r = await mitZeitlimit(DB.ladeStammdaten(), 5000);
       if (r && stammdatenGueltig(r.wert)) {
@@ -615,8 +627,88 @@
   }
 
   // Lädt die Stammdaten und danach die Skripte der Seite (der Reihe nach)
+  // ------------------------------------------------------------------
+  // Übungsmodus: ein-/ausschalten, Beispieldaten, Band auf jeder Seite
+  // ------------------------------------------------------------------
+  const DEMO_KEY = "pubquiz_demo_db";
+  function demoStarten() {
+    try { localStorage.setItem("demo_modus", "1"); localStorage.removeItem(DEMO_KEY); } catch (e) { /* egal */ }
+    location.reload();
+  }
+  function demoBeenden() {
+    try { localStorage.removeItem("demo_modus"); localStorage.removeItem(DEMO_KEY); localStorage.removeItem("durchsage_gesehen"); } catch (e) { /* egal */ }
+    location.href = "./";
+  }
+  function demoNeuStarten() {
+    try { localStorage.removeItem(DEMO_KEY); } catch (e) { /* egal */ }
+    location.reload();
+  }
+  // Füllt die leere Übungs-Datenbank mit Beispielen, damit Kasse, Auswertung und Beamer etwas zeigen
+  function demoDatenAnlegen() {
+    if (store.get(DEMO_KEY, null)) return;
+    const gaeste = CFG.TISCHE.filter((t) => !t.eigen).slice(0, 12);
+    const art = (re) => CFG.ARTIKEL.filter((a) => re.test(a.name + " " + a.kategorie));
+    const getraenke = CFG.ARTIKEL.filter((a) => a.ziel === "theke");
+    const speisen = CFG.ARTIKEL.filter((a) => a.ziel === "kueche");
+    const bier = art(/pils|weizen|bier/i), spritz = art(/aperol|wein/i), wasser = art(/sprudel|wasser/i);
+    const kellner = CFG.KELLNER.length ? CFG.KELLNER : ["Kellner"];
+    let seed = 7; const zufall = (n) => { seed = (seed * 9301 + 49297) % 233280; return Math.floor(seed / 233280 * n); };
+    const wahl = (l) => l[zufall(l.length)];
+    const rows = [], zahlungen = []; let id = 1;
+    const t0 = Date.now() - 100 * 60000;
+    const pos = (a, n) => ({ id: a.id, name: a.name, menge: a.menge, preis: a.preis, anzahl: n });
+    for (let i = 0; i < 42 && gaeste.length && getraenke.length; i++) {
+      const t = wahl(gaeste), k = wahl(kellner), zeit = new Date(t0 + i * 2.2 * 60000);
+      const quelle = i % 3 === 0 && bier.length ? bier : i % 4 === 1 && spritz.length ? spritz : i % 5 === 2 && wasser.length ? wasser : getraenke;
+      const offen = i >= 36;
+      const g = "demo" + i;
+      rows.push({ id: id++, gruppe: g, ziel: "theke", tisch: t.nr, team: t.team, kellner: k, positionen: [pos(wahl(quelle), 1 + zufall(4))],
+        kommentar: null, status: offen ? "offen" : "erledigt", erstellt_am: zeit.toISOString(),
+        geaendert_am: offen ? null : new Date(zeit.getTime() + (2 + zufall(6)) * 60000).toISOString() });
+      if (speisen.length && i % 4 === 0) {
+        rows.push({ id: id++, gruppe: g, ziel: "kueche", tisch: t.nr, team: t.team, kellner: k, positionen: [Object.assign(pos(wahl(speisen), 1 + zufall(2)), i === 8 ? { notiz: "1× ohne Zwiebeln" } : {})],
+          kommentar: null, status: i >= 32 ? "offen" : "erledigt", erstellt_am: zeit.toISOString(),
+          geaendert_am: i >= 32 ? null : new Date(zeit.getTime() + (5 + zufall(8)) * 60000).toISOString() });
+      }
+    }
+    // Zwei Tische schon bezahlt (Waren + Startgeld)
+    gaeste.slice(0, 2).forEach((t, j) => {
+      const tr = rows.filter((r) => r.tisch === t.nr && r.status !== "storniert");
+      const p = [];
+      tr.forEach((r) => r.positionen.forEach((x) => p.push(Object.assign({}, x))));
+      const start = Number(CFG.STARTGELD) || 0;
+      if (start) p.unshift({ id: "startgeld", name: "Startgeld", menge: "alle Anteile", preis: start, anzahl: 1, anteile: 1 });
+      const betrag = p.reduce((s, x) => s + x.preis * x.anzahl, 0);
+      if (betrag > 0) zahlungen.push({ id: j + 1, tisch: t.nr, kellner: kellner[j % kellner.length], betrag: Math.round(betrag * 100) / 100,
+        trinkgeld: j === 0 ? 3 : 0, positionen: p, status: "gueltig", erstellt_am: new Date().toISOString() });
+    });
+    store.set(DEMO_KEY, {
+      nextId: id, nextZid: zahlungen.length + 1, rows, zahlungen,
+      einst: { zitate: [
+        { text: "Wer nichts weiß, muss alles glauben.", von: "Marie von Ebner-Eschenbach" },
+        { text: "Bildung ist das, was übrig bleibt, wenn man vergessen hat, was man gelernt hat.", von: "Albert Einstein" },
+      ] },
+    });
+  }
+  function demoBand() {
+    if (document.querySelector(".uebung-band")) return;
+    document.body.classList.add("uebung"); // blendet die alten Demo-Hinweise per CSS aus
+    const b = document.createElement("div");
+    b.className = "uebung-band";
+    b.innerHTML = "<span>🧪 <b>DEMO</b> – Übungsmodus, nur auf diesem Gerät. Nichts geht an die echte Küche/Theke.</span>" +
+      '<button type="button" data-demo="neu">↺ Neu starten</button><button type="button" data-demo="ende">✕ Demo beenden</button>';
+    document.body.prepend(b);
+    b.addEventListener("click", (e) => {
+      const k = e.target.closest("[data-demo]");
+      if (!k) return;
+      if (k.dataset.demo === "ende") demoBeenden();
+      else if (confirm("Alle Übungsdaten löschen und mit frischen Beispielen neu beginnen?")) demoNeuStarten();
+    });
+  }
+
   async function starte(skripte, opts) {
     await stammdatenLaden();
+    if (UEBUNG) { demoDatenAnlegen(); demoBand(); }
     if (!(opts && opts.ohneBeobachter)) aufAenderungenAchten();
     if (!(opts && opts.ohneDurchsagen)) durchsagenEmpfangen();
     for (const src of skripte) {
@@ -632,6 +724,7 @@
   const istEigen = (r) => r && r.eigenverzehr === true;
 
   window.App = {
+    UEBUNG, demoStarten, demoBeenden,
     pauseKnopf,
     istEigen, durchsageDialog, designWahlHtml, designSetzen,
     starte, stammdatenLaden, stammdatenGueltig, STANDARD,

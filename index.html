@@ -22,6 +22,7 @@
     <a class="gross" href="auswertung.html">📊 Auswertung<span class="pfeil">›</span></a>
     <a class="gross" href="beamer.html">📺 Beamer (Bier-Barometer)<span class="pfeil">›</span></a>
     <a class="gross" href="hilfe.html">❓ Anleitung<span class="pfeil">›</span></a>
+    <button class="gross demo-start" id="demo-start" type="button">🧪 Demo ausprobieren<span class="pfeil">›</span></button>
     <div id="design-platz"></div>
     <p class="start-admin"><a href="admin.html">⚙️ Admin</a></p>
     <p class="start-fuss">gutholz Schiltach · since 2019</p>
@@ -31,7 +32,12 @@
   <script src="js/common.js"></script>
   <script>
     document.getElementById("veranstaltung").textContent = APP_CONFIG.VERANSTALTUNG;
-    if (App.DEMO) document.getElementById("demo-hinweis").hidden = false;
+    if (App.DEMO && !App.UEBUNG) document.getElementById("demo-hinweis").hidden = false;
+    var demoKnopf = document.getElementById("demo-start");
+    if (App.UEBUNG) { demoKnopf.innerHTML = "✕ Demo beenden<span class=\"pfeil\">›</span>"; demoKnopf.onclick = App.demoBeenden; }
+    else demoKnopf.onclick = function () {
+      if (confirm("Demo starten?\n\nAuf diesem Gerät wird in einen Übungsmodus mit Beispieldaten gewechselt. Nichts davon geht an die echte Küche, Theke oder Kasse. Beenden jederzeit über das Band oben.")) App.demoStarten();
+    };
     document.getElementById("design-platz").innerHTML = App.designWahlHtml();
     App.starte([], { ohneBeobachter: true, ohneDurchsagen: true }).then(function () {
       document.getElementById("veranstaltung").textContent = APP_CONFIG.VERANSTALTUNG;
