@@ -148,8 +148,9 @@ begin
     raise exception 'Falscher Reset-Code';
   end if;
   truncate table public.bestellungen, public.zahlungen restart identity;
-  delete from public.durchsagen;               -- Nummerierung bleibt (wichtig für die Geräte)
-  update public.ausverkauft set ausverkauft = false, geaendert_am = now();
+  -- Supabase verbietet DELETE/UPDATE ohne WHERE (Sicherheitssperre) – daher die ausdrücklichen Bedingungen
+  delete from public.durchsagen where id is not null;          -- Nummerierung bleibt (wichtig für die Geräte)
+  update public.ausverkauft set ausverkauft = false, geaendert_am = now() where ausverkauft;
   delete from public.einstellungen where schluessel in ('pause', 'personen');
   return json_build_object('ok', true, 'zeit', now());
 end $$;
