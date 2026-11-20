@@ -723,7 +723,37 @@
     });
   }
 
+  // ------------------------------------------------------------------
+  // Neue App-Version erkennen (nach einem Update auf Vercel)
+  // Prüft alle 2 Minuten die Kennung (ETag/Datum) der eigenen Dateien.
+  // ------------------------------------------------------------------
+  function versionBeobachten(skripte, autoNeuladen) {
+    const dateien = ["js/common.js", "style.css"].concat(skripte || []);
+    let start = null, gemeldet = false;
+    async function kennung() {
+      const teile = await Promise.all(dateien.map(async (f) => {
+        const r = await fetch(f, { method: "HEAD", cache: "no-store" });
+        return f + ":" + (r.headers.get("etag") || r.headers.get("last-modified") || r.headers.get("content-length") || "");
+      }));
+      return teile.join("|");
+    }
+    async function pruefen() {
+      if (gemeldet || document.visibilityState === "hidden") return;
+      try {
+        const k = await kennung();
+        if (start === null) { start = k; return; }
+        if (k === start) return;
+        gemeldet = true;
+        if (autoNeuladen && !document.fullscreenElement) { location.reload(); return; }
+        toast("🆕 Neue Version der App verfügbar.", { knopf: "Neu laden", bleibt: true, aktion: () => location.reload() });
+      } catch (e) { /* offline – später nochmal */ }
+    }
+    pruefen();
+    setInterval(pruefen, 2 * 60 * 1000);
+  }
+
   async function starte(skripte, opts) {
+    versionBeobachten(skripte, opts && opts.autoNeuladen);
     await stammdatenLaden();
     if (UEBUNG) { demoDatenAnlegen(); demoBand(); }
     if (!(opts && opts.ohneBeobachter)) aufAenderungenAchten();

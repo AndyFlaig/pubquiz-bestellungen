@@ -219,6 +219,9 @@ Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden 
   (die Folie läuft immer mit, auch bei 0 Litern).
 - Konfetti, wenn Bier oder Spritz ein Ziel erreichen (10/25/50-Liter-Schritte). Test: `beamer.html#feiern`.
 - Bedienung: Klick oder → = nächste Folie, ← = zurück, **P** = Pause.
+- **Updates:** Nach einer neuen Version lädt der Beamer innerhalb von 2 Minuten **von selbst** neu. Tipp: Statt „⛶ Vollbild“
+  das Vollbild des Browsers nutzen (**F11** unter Windows, **Ctrl + Cmd + F** am Mac) – das bleibt beim Neuladen erhalten.
+  Alle anderen Seiten zeigen bei einer neuen Version „🆕 Neue Version – Neu laden“.
 - Optionen: `beamer.html?sekunden=15` (andere Dauer), `beamer.html?folie=spritz` (nur eine Folie).
 
 **⏸ Pausen-Countdown:** Auf **„⏸ Pause“** tippen – entweder **direkt auf der Beamer-Seite** (unten links, neben
