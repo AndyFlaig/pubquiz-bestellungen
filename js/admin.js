@@ -327,7 +327,7 @@
     ov.className = "overlay";
     ov.innerHTML = '<form class="dialog"><h2>🧹 Abend zurücksetzen</h2>' +
       (App.UEBUNG ? '<p class="eigen-hinweis">🧪 Übungsmodus: Es werden nur die Übungsdaten auf diesem Gerät zurückgesetzt.</p>' : "") +
-      '<p><b>Wird gelöscht:</b> alle Bestellungen, Zahlungen (Kassenstände), Durchsagen; Ausverkauft, Pause und Personenzahlen werden zurückgesetzt.</p>' +
+      '<p><b>Wird gelöscht:</b> alle Bestellungen, Zahlungen (Kassenstände), Durchsagen, Ausgaben; Ausverkauft, Pause und Personenzahlen werden zurückgesetzt.</p>' +
       '<p><b>Bleibt:</b> Artikel, Preise, Tische, Kellner, Zitate, Startgeld.</p>' +
       '<p class="klein-hinweis">1. Schritt: Die Excel-Sicherung wird heruntergeladen. Erst danach wird gelöscht.</p>' +
       '<label class="admin-feld">Zur Bestätigung <b>ZURÜCKSETZEN</b> eintippen<input id="reset-wort" autocomplete="off" autocapitalize="characters"></label>' +
@@ -365,6 +365,7 @@
           : "Nicht zurückgesetzt: " + (m || "keine Verbindung"), { art: "fehler", bleibt: true });
         return;
       }
+      try { await DB.speichereEinstellung("ausgaben", []); } catch (err) { /* steht in der Sicherung */ }
       // 3) Alle Geräte informieren
       try { await DB.sendeDurchsage("🔄 Neuer Abend – bitte Seite neu laden (Küche/Theke danach wieder „Start“)", "Orga"); } catch (err) { /* egal */ }
       ov.remove();

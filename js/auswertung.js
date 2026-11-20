@@ -96,6 +96,10 @@
       }).join("");
 
     document.title = "Auswertung (" + uhrzeit(new Date().toISOString()) + ") – Pub-Quiz";
+    // Kennzahlen für den Reiter "Ausgaben" (Gesamtübersicht)
+    App.einnahmen = { waren: summeCent(alle), startSoll, startBez, trinkgeld: trinkgeldCent, bezahlt: bezahltCent,
+      eigen: summeCent(eigenPos), mitKasse: !!zahlungen };
+    window.dispatchEvent(new Event("einnahmen"));
   }
 
   // Inventur: pro Artikel verkauft + Eigenverzehr
@@ -156,7 +160,8 @@
   document.querySelectorAll(".auswertung-reiter button").forEach((b) => {
     b.onclick = () => {
       document.querySelectorAll(".auswertung-reiter button").forEach((x) => x.classList.toggle("aktiv", x === b));
-      ["tische", "artikel", "kellner"].forEach((s) => { $("#seite-" + s).hidden = b.dataset.seite !== s; });
+      ["tische", "artikel", "kellner", "ausgaben"].forEach((s) => { $("#seite-" + s).hidden = b.dataset.seite !== s; });
+      document.querySelector(".fuss-hinweis").hidden = b.dataset.seite === "ausgaben";
     };
   });
   $("#aktualisieren").onclick = laden;

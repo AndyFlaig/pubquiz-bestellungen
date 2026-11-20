@@ -152,6 +152,12 @@ alle Artikel mit „x offen / y bezahlt“, darunter Bestellt / Bezahlt / **Offe
 **Excel-Export:** In der Auswertung oben **⬇ Excel** → Datei `pubquiz_DATUM_UHRZEIT.xlsx` mit den Blättern
 Pro Tisch, Artikel, Kellner, Bestellpositionen (inkl. stornierter) und Zahlungen. Am iPhone landet sie unter „Dateien → Downloads“.
 
+**Ausgaben & Gesamtübersicht:** Auswertung → Reiter **„💸 Ausgaben“**. Jede Ausgabe mit „Wofür“, Betrag, Kategorie,
+„bezahlt von“ und optional Notiz/Beleg-Nr. erfassen; ✎ ändert, 🗑 löscht. Oben steht die **Gesamtübersicht**:
+Einnahmen (Waren, Startgeld, Trinkgeld) − Ausgaben (nach Kategorie) = **Gewinn/Verlust**, zusätzlich das Ergebnis nach
+tatsächlich kassiertem Geld und „Ausgelegt von“ zur Erstattung. Im Excel-Export: Blatt „Ausgaben“ und Ergebnis in der
+„Übersicht“. „Abend zurücksetzen“ leert die Ausgaben (sie stehen in der Sicherung).
+
 **Auswertung:** zeigt pro Tisch alles Bestellte mit Summe (Abgleich mit der Strichliste), die verkauften Artikel
 und die Bestellungen pro Kellner. Aktualisiert sich automatisch. Optional mit eigenem PIN (`PIN.auswertung` in `config.js`).
 

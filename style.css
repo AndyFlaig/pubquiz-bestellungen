@@ -584,3 +584,22 @@ body.uebung #demo-hinweis { display: none !important; }
 /* ---------- Abend zurücksetzen ---------- */
 .abend-reset { border: 2px solid #f3c0c0; }
 .loesch-knopf { background: var(--rot) !important; border-color: var(--rot) !important; color: #fff !important; }
+
+/* ---------- Ausgaben / Gesamtübersicht ---------- */
+.ausgabe-felder { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.ausgabe-felder label { display: grid; gap: 2px; flex: 1 1 130px; font-size: .8rem; color: var(--leise); min-width: 0; }
+.ausgabe-felder label.breit { flex: 2 1 220px; }
+.ausgabe-felder input, .ausgabe-felder select { font: inherit; font-size: 1rem; padding: 9px 10px; border: 2px solid var(--rand); border-radius: 10px;
+  background: var(--karte); color: var(--text); width: 100%; min-width: 0; }
+.ausgabe-felder input:focus, .ausgabe-felder select:focus { outline: none; border-color: var(--gold); }
+.ausgabe-form h2, .abschluss h2 { margin-top: 0; }
+.ausgaben-tabelle td small { color: var(--leise); }
+.ausgaben-tabelle .aktionen { white-space: nowrap; width: 1%; }
+.ausgaben-tabelle .aktionen button { border: 1px solid var(--rand); background: var(--karte); border-radius: 8px; padding: 6px 8px; margin-left: 4px; }
+.abschluss-tabelle .abschnitt td { padding-top: 14px; font-weight: 800; color: var(--gold-text); text-transform: uppercase; font-size: .8rem; letter-spacing: .05em; border-bottom: 0; }
+.abschluss-tabelle .ergebnis td { font-size: 1.25rem; border-top: 3px double var(--rand); }
+.abschluss-tabelle .ergebnis.plus td { color: var(--primaer); }
+.abschluss-tabelle .ergebnis.minus td { color: var(--rot); }
+.abschluss h3 { margin: 16px 0 6px; font-size: 1rem; }
+.auswertung-reiter { overflow-x: auto; scrollbar-width: none; }
+.auswertung-reiter button { flex: 1 0 auto; white-space: nowrap; }

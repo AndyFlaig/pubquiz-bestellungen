@@ -59,6 +59,9 @@
     const tgCent = zahl.reduce((s, z) => s + cent(z.trinkgeld || 0), 0);
     const bezCent = zahl.reduce((s, z) => s + cent(z.betrag), 0);
     const stSoll = startSollTisch() * gaesteTische().length, stBez = startKassiert(zahl);
+    let ausg = [];
+    try { const w = await DB.ladeEinstellung("ausgaben"); ausg = Array.isArray(w) ? w : []; } catch (e) { /* keine Ausgaben */ }
+    const ausgCent = ausg.reduce((s, a) => s + cent(a.betrag), 0);
     blaetter.push({
       name: "Übersicht",
       spalten: [{ titel: "Kennzahl", breite: 40 }, { titel: "Betrag", typ: "euro", breite: 14 }],
@@ -71,8 +74,22 @@
         ["Kassiert bar (inkl. Startgeld + Trinkgeld)", eur(bezCent + tgCent)],
         ["Noch offen (Waren + Startgeld)", eur(warenCent + stSoll - bezCent)],
         ["Eigenverzehr – Warenwert (nicht im Umsatz)", eur(summeCent(zusammenfassen(eigenRows)))],
+        ["", ""],
+        ["Ausgaben gesamt", eur(-ausgCent)],
+        ["ERGEBNIS (Umsatz gesamt − Ausgaben)", eur(warenCent + stSoll + tgCent - ausgCent)],
+        ["Ergebnis nach Kassenstand (kassiert − Ausgaben)", eur(bezCent + tgCent - ausgCent)],
       ],
     });
+    if (ausg.length) {
+      blaetter.push({
+        name: "Ausgaben",
+        spalten: [{ titel: "Datum", breite: 20 }, { titel: "Wofür", breite: 32 }, { titel: "Kategorie", breite: 22 },
+          { titel: "Betrag", typ: "euro", breite: 12 }, { titel: "Bezahlt von", breite: 18 }, { titel: "Notiz / Beleg", breite: 30 }],
+        zeilen: ausg.slice().sort((a, b) => (a.erstellt_am || "").localeCompare(b.erstellt_am || ""))
+          .map((a) => [zeit(a.erstellt_am), a.bezeichnung, (a.kategorie || "").replace(/^\S+\s/, ""), Number(a.betrag) || 0, a.von || "", a.notiz || ""])
+          .concat([["", "Summe", "", eur(ausgCent), "", ""]]),
+      });
+    }
 
     blaetter.push({
       name: "Pro Tisch",

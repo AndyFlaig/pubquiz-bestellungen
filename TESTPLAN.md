@@ -58,6 +58,8 @@ Vorher: Anleitung Schritte 1–4 erledigt, oben rechts steht überall **Live** (
 | 52 | „Demo beenden“ | Band weg, wieder echte Daten | |
 | 53 | Admin → 🧹 Abend zurücksetzen mit falschem Reset-Code | „Falscher Reset-Code“, nichts gelöscht (Excel-Sicherung wurde trotzdem geladen) | |
 | 54 | … mit richtigem Code | Sicherung geladen; Kasse zeigt nur Startgeld, Auswertung 0; Durchsage „Neuer Abend“ auf allen Geräten | |
+| 55 | Auswertung → 💸 Ausgaben: 2–3 Ausgaben mit „bezahlt von“ erfassen | Liste und Summe stimmen; Gesamtübersicht: Einnahmen − Ausgaben = Ergebnis; „Ausgelegt von“ pro Person | |
+| 56 | Ausgabe ändern (✎) und löschen (🗑); danach ⬇ Excel | Werte aktualisiert; Excel: Blatt „Ausgaben“, Ergebnis in der „Übersicht“ | |
 | 21 | `auswertung.html` öffnen | Summen pro Tisch stimmen mit den Testbestellungen überein, stornierte fehlen | |
 
 Danach: **Testdaten löschen** (Bestellungen **und** Zahlungen) (siehe Anleitung) und Kellnernamen/PINs final prüfen.

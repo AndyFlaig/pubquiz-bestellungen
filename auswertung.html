@@ -32,11 +32,29 @@
       <button class="aktiv" data-seite="tische">Pro Tisch</button>
       <button data-seite="artikel">Artikel</button>
       <button data-seite="kellner">Kellner</button>
+      <button data-seite="ausgaben">💸 Ausgaben</button>
     </nav>
 
     <section id="seite-tische"><div id="tische" class="liste"></div></section>
     <section id="seite-artikel" hidden><div class="block"><table class="tabelle" id="artikel-tabelle"></table></div></section>
     <section id="seite-kellner" hidden><div class="block"><table class="tabelle" id="kellner-tabelle"></table></div></section>
+    <section id="seite-ausgaben" hidden>
+      <div class="block abschluss" id="abschluss"></div>
+      <form class="block ausgabe-form" id="ausgabe-form" autocomplete="off">
+        <h2 id="ausgabe-titel">➕ Ausgabe erfassen</h2>
+        <div class="ausgabe-felder">
+          <label class="breit">Wofür?<input id="a-bezeichnung" maxlength="80" placeholder="z. B. Getränke Großhandel" required></label>
+          <label>Betrag €<input id="a-betrag" inputmode="decimal" maxlength="10" placeholder="0,00" required></label>
+          <label>Kategorie<select id="a-kategorie"></select></label>
+          <label>Bezahlt von<input id="a-von" maxlength="40" placeholder="Name" list="a-personen"></label>
+          <label class="breit">Notiz / Beleg-Nr. (optional)<input id="a-notiz" maxlength="120"></label>
+        </div>
+        <datalist id="a-personen"></datalist>
+        <div class="knopf-reihe"><button type="button" class="gross" id="a-abbrechen" hidden>Abbrechen</button>
+          <button type="submit" class="gross primaer" id="a-speichern">Ausgabe speichern</button></div>
+      </form>
+      <div class="block"><h2>📋 Erfasste Ausgaben</h2><div id="ausgaben-liste"></div></div>
+    </section>
 
     <p class="klein-hinweis fuss-hinweis">Enthält alle nicht stornierten Bestellungen (offen und erledigt). Aktualisiert sich automatisch.
       Snacks auf den Tischen (1,00 €) sind nicht enthalten.</p>
@@ -45,6 +63,6 @@
   <script src="config.js"></script>
   <script src="vendor/supabase-js-2.117.3.js"></script>
   <script src="js/common.js"></script>
-  <script>App.starte(["js/xlsx.js", "js/export.js", "js/auswertung.js"]);</script>
+  <script>App.starte(["js/xlsx.js", "js/export.js", "js/auswertung.js", "js/ausgaben.js"]);</script>
 </body>
 </html>
