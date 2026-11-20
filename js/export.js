@@ -9,8 +9,6 @@
 
   // Startgeld: Soll = Betrag × Gästetische; kassiert = Startgeld-Positionen in den Zahlungen
   const START_ID = "startgeld";
-  const startSollTisch = () => cent(CFG.STARTGELD || 0);
-  const gaesteTische = () => CFG.TISCHE.filter((t) => !t.eigen);
   const startKassiert = (zs, nr) => (zs || []).filter((z) => nr === undefined || z.tisch === nr)
     .reduce((s, z) => s + (z.positionen || []).filter((p) => p.id === START_ID).reduce((t, p) => t + cent(p.preis) * (p.anzahl || 1), 0), 0);
 
@@ -58,7 +56,8 @@
     const warenCent = summeCent(zusammenfassen(rows));
     const tgCent = zahl.reduce((s, z) => s + cent(z.trinkgeld || 0), 0);
     const bezCent = zahl.reduce((s, z) => s + cent(z.betrag), 0);
-    const stSoll = startSollTisch() * gaesteTische().length, stBez = startKassiert(zahl);
+    const stTische = App.startgeldTische();
+    const stSoll = stTische.reduce((s, t) => s + App.startgeldCentFuer(t.nr), 0), stBez = startKassiert(zahl);
     let ausg = [];
     try { const w = await DB.ladeEinstellung("ausgaben"); ausg = Array.isArray(w) ? w : []; } catch (e) { /* keine Ausgaben */ }
     const ausgCent = ausg.reduce((s, a) => s + cent(a.betrag), 0);
@@ -67,7 +66,7 @@
       spalten: [{ titel: "Kennzahl", breite: 40 }, { titel: "Betrag", typ: "euro", breite: 14 }],
       zeilen: [
         ["Warenumsatz (Gäste)", eur(warenCent)],
-        ["Startgeld (" + gaesteTische().length + " Tische × " + (CFG.STARTGELD || 0) + " €)", eur(stSoll)],
+        ["Startgeld (" + stTische.length + " Tische × " + (CFG.STARTGELD || 0) + " €)", eur(stSoll)],
         ["  davon kassiert", eur(stBez)],
         ["Trinkgeld", eur(tgCent)],
         ["Umsatz gesamt (Waren + Startgeld + Trinkgeld)", eur(warenCent + stSoll + tgCent)],
@@ -101,7 +100,7 @@
         const best = summeCent(pos);
         const bez = zahl.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.betrag), 0);
         const tgT = zahl.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.trinkgeld || 0), 0);
-        const st = startSollTisch();
+        const st = App.startgeldCentFuer(t.nr);
         return [t.nr, t.team, eur(best), eur(st), eur(bez), eur(best + st - bez), eur(tgT), pos.map((p) => p.anzahl + "× " + posText(p)).join(", ")];
       }),
     });

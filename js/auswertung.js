@@ -10,8 +10,6 @@
 
   // Startgeld: Soll = Betrag × Gästetische; kassiert = Startgeld-Positionen in den Zahlungen
   const START_ID = "startgeld";
-  const startSollTisch = () => cent(CFG.STARTGELD || 0);
-  const gaesteTische = () => CFG.TISCHE.filter((t) => !t.eigen);
   const startKassiert = (zs, nr) => (zs || []).filter((z) => nr === undefined || z.tisch === nr)
     .reduce((s, z) => s + (z.positionen || []).filter((p) => p.id === START_ID).reduce((t, p) => t + cent(p.preis) * (p.anzahl || 1), 0), 0);
 
@@ -28,7 +26,7 @@
     const snacks = summe(zusammenfassen(rows.filter((r) => r.ziel === "kasse")));
     const bezahltCent = zahlungen ? zahlungen.reduce((s, z) => s + cent(z.betrag), 0) : 0;
     const trinkgeldCent = zahlungen ? zahlungen.reduce((s, z) => s + cent(z.trinkgeld || 0), 0) : 0;
-    const startSoll = startSollTisch() * gaesteTische().length;
+    const startSoll = App.startgeldTische().reduce((s, t) => s + App.startgeldCentFuer(t.nr), 0);
     const startBez = startKassiert(zahlungen);
 
     $("#kacheln").innerHTML =
@@ -49,7 +47,7 @@
       const tr = rows.filter((r) => r.tisch === t.nr);
       const pos = zusammenfassen(tr);
       const off = tr.filter((r) => r.status === "offen").length;
-      const start = startSollTisch();
+      const start = App.startgeldCentFuer(t.nr);
       let zahlZeile = "";
       if (zahlungen && (pos.length || start)) {
         const bez = zahlungen.filter((z) => z.tisch === t.nr).reduce((s, z) => s + cent(z.betrag), 0);

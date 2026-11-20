@@ -22,10 +22,7 @@
   const START_ID = "startgeld";
   let personen = {};  // Tisch -> Anzahl Personen (geteilt über die Einstellung "personen")
   const personenVon = (nr) => Math.max(1, Number(personen[nr]) || 1);
-  const startgeldCent = (nr) => {
-    const t = CFG.TISCHE.find((x) => x.nr === nr);
-    return t && !t.eigen ? cent(CFG.STARTGELD || 0) : 0;
-  };
+  const startgeldCent = (nr) => App.startgeldCentFuer(nr);   // 0 bei "kein Startgeld" und Eigenverzehr
   // Zahlungen ohne Startgeld-Positionen (für die normale Artikelrechnung)
   const ohneStart = (zs) => zs.map((z) => Object.assign({}, z, { positionen: (z.positionen || []).filter((p) => p.id !== START_ID) }));
   function startStand(nr) {

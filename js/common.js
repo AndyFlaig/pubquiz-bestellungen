@@ -693,7 +693,7 @@
       const tr = rows.filter((r) => r.tisch === t.nr && r.status !== "storniert");
       const p = [];
       tr.forEach((r) => r.positionen.forEach((x) => p.push(Object.assign({}, x))));
-      const start = Number(CFG.STARTGELD) || 0;
+      const start = startgeldCentFuer(t.nr) / 100;
       if (start) p.unshift({ id: "startgeld", name: "Startgeld", menge: "alle Anteile", preis: start, anzahl: 1, anteile: 1 });
       const betrag = p.reduce((s, x) => s + x.preis * x.anzahl, 0);
       if (betrag > 0) zahlungen.push({ id: j + 1, tisch: t.nr, kellner: kellner[j % kellner.length], betrag: Math.round(betrag * 100) / 100,
@@ -774,7 +774,15 @@
   const istEigen = (r) => !!r && (r.eigenverzehr === true ||
     !!(CFG.TISCHE.find((t) => t.nr === r.tisch) || {}).eigen);
 
+  // Startgeld eines Tisches in Cent: 0 für Eigenverzehr-Tische und Tische mit "kein Startgeld"
+  function startgeldCentFuer(nr) {
+    const t = CFG.TISCHE.find((x) => x.nr === nr);
+    return t && !t.eigen && !t.ohneStart ? Math.round((Number(CFG.STARTGELD) || 0) * 100) : 0;
+  }
+  const startgeldTische = () => CFG.TISCHE.filter((t) => !t.eigen && !t.ohneStart);
+
   window.App = {
+    startgeldCentFuer, startgeldTische,
     UEBUNG, demoStarten, demoBeenden,
     pauseKnopf,
     istEigen, durchsageDialog, designWahlHtml, designSetzen,

@@ -22,7 +22,7 @@
       VERANSTALTUNG: w.VERANSTALTUNG || "",
       STARTGELD: String(w.STARTGELD !== undefined ? w.STARTGELD : 0).replace(".", ","),
       ARTIKEL: w.ARTIKEL.map((a) => Object.assign({}, a, { preisText: String(a.preis).replace(".", ",") })),
-      TISCHE: w.TISCHE.map((t) => ({ nr: t.nr, team: t.team, eigen: !!t.eigen })),
+      TISCHE: w.TISCHE.map((t) => ({ nr: t.nr, team: t.team, eigen: !!t.eigen, ohneStart: !!t.ohneStart })),
       KELLNER: w.KELLNER.map((k) => ({ name: k, revier: revierText((w.REVIERE || {})[k] || []) })),
     };
   }
@@ -83,6 +83,7 @@
         '<label class="schmal">Nr.<input data-feld="nr" value="' + esc(t.nr) + '" inputmode="numeric" maxlength="3"></label>' +
         '<label class="breit">' + (t.eigen ? "Bereich / Person" : "Teamname") + '<input data-feld="team" value="' + esc(t.team) + '" maxlength="60"></label>' +
         '<label class="haken"><input type="checkbox" data-feld="eigen"' + (t.eigen ? " checked" : "") + "> 👤 Eigenverzehr</label>" +
+        (t.eigen ? "" : '<label class="haken"><input type="checkbox" data-feld="ohneStart"' + (t.ohneStart ? " checked" : "") + "> 🎟 kein Startgeld</label>") +
         '<div class="zeilen-knoepfe"><button data-aktion="loeschen" class="loeschen" aria-label="löschen">🗑</button></div>' +
       "</div>").join("");
   }
@@ -219,7 +220,8 @@
       else if (nrs.has(nr)) { fehler.push("Tischnummer " + nr + " gibt es doppelt."); markiere("tische-liste", i, "nr"); }
       if (!t.team.trim()) { fehler.push("Tisch " + t.nr + ": Teamname fehlt."); markiere("tische-liste", i, "team"); }
       nrs.add(nr);
-      return t.eigen ? { nr, team: t.team.trim(), eigen: true } : { nr, team: t.team.trim() };
+      return t.eigen ? { nr, team: t.team.trim(), eigen: true }
+        : Object.assign({ nr, team: t.team.trim() }, t.ohneStart ? { ohneStart: true } : {});
     }).sort((a, b) => a.nr - b.nr);
 
     if (!d.KELLNER.length) fehler.push("Mindestens ein Kellner ist nötig.");
