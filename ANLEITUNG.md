@@ -80,6 +80,12 @@ Tipp: Link per WhatsApp verschicken oder als QR-Code ausdrucken. Auf dem iPhone 
 Oben rechts in jeder Ansicht steht der Verbindungsstatus: **Live** (grün) = alles gut, **Keine Verbindung** (rot, blinkt) = WLAN/Mobilfunk prüfen.
 Steht dort **Demo**, sind die Supabase-Daten in `config.js` noch nicht eingetragen.
 
+**🧪 Demo zum Üben:** Auf der Startseite **„Demo ausprobieren“** schaltet das Gerät in einen Übungsmodus mit Beispieldaten
+(echte Artikel und Tische, ausgedachte Bestellungen und Zahlungen). Alles bleibt auf diesem Gerät – nichts geht an die echte
+Küche, Theke, Kasse oder Auswertung. Ein lila Band oben auf jeder Seite zeigt den Modus; dort **„Neu starten“** (frische
+Beispieldaten) oder **„Demo beenden“**. Zum Durchspielen Kellner und Küche/Theke in zwei Browser-Tabs auf demselben Gerät öffnen.
+**Vor dem Abend auf allen Geräten prüfen, dass kein lila Band zu sehen ist!**
+
 **Anleitung in der App:** https://pubquiz-bestellungen.vercel.app/hilfe.html – auch über „❓ Anleitung“ auf der Startseite
 und das ❓ in jeder Ansicht. Kellner bekommen beim ersten Öffnen eine Kurz-Tour (4 Schritte).
 

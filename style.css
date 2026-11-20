@@ -571,3 +571,12 @@ body.start { background: var(--kopf); color: #fff; min-height: 100vh; }
 .tour-punkte { display: flex; justify-content: center; gap: 6px; }
 .tour-punkte i { width: 9px; height: 9px; border-radius: 50%; background: var(--rand); }
 .tour-punkte i.an { background: var(--gold); }
+
+/* ---------- Übungsmodus ---------- */
+.uebung-band { position: relative; z-index: 90; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  padding: 8px 12px; background: repeating-linear-gradient(45deg, #6d28d9 0 14px, #5b21b6 14px 28px); color: #fff; font-size: .9rem; }
+.uebung-band span { flex: 1 1 220px; }
+.uebung-band button { border: 0; border-radius: 8px; padding: 7px 10px; font-weight: 700; background: rgba(255,255,255,.95); color: #4c1d95; white-space: nowrap; }
+.startseite .demo-start { background: #4c1d95 !important; border-color: #6d28d9 !important; }
+body.beamer .uebung-band { font-size: 14px; }
+body.uebung #demo-hinweis { display: none !important; }
