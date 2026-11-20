@@ -136,7 +136,7 @@
   function messglas(art, l) {
     const ziel = zielFuer(l), schritt = schrittFuer(l);
     const anteil = Math.max(0.03, Math.min(1, (l - (ziel - schritt)) / schritt));
-    const glas = art === "bier"
+    const glas = art !== "spritz"   // Bier-Barometer und Gutholz-Barometer nutzen das Bierglas
       ? '<div class="b-glas"><div class="b-fuellung" data-hoehe="' + (anteil * 100) + '"><div class="b-schaum"></div>' + blasen() + '</div><div class="b-henkel"></div></div>'
       : '<div class="b-weinglas"><div class="b-kelch"><div class="b-fuellung spritz" data-hoehe="' + (anteil * 100) + '">' + blasen() +
         '</div><div class="b-orange"></div></div><div class="b-stiel"></div><div class="b-fuss"></div></div>';
@@ -180,13 +180,9 @@
     { id: "pilsweizen", html: (d) => d.pils + d.weizen > 0 ? folie("⚔️", "Bier-Duell", "Pils oder Weizen – wer hat die Nase vorn?",
       duell({ emoji: "🍺", name: "Pils", wert: d.pils, text: fmt1(d.pils) + " Liter" },
             { emoji: "🌾", name: "Weizen", wert: d.weizen, text: fmt1(d.weizen) + " Liter" })) : null },
-    { id: "eigenbedarf", html: (d) => folie("🏅", "Gutholz-Eigenbedarf – Highscore",
-      d.eigenRang.length
-        ? "🍺 Alkoholspiegel des Teams: <b>" + fmt1(d.eigenLiter) + " Liter</b>"
-        : "Wer vom Gutholz-Team hat den höchsten Alkoholspiegel?",
-      d.eigenRang.length
-        ? podest(d.eigenRang, "Liter", fmtL, { name: d.eigenName, ohneTisch: true })
-        : '<p class="b-leer b-eigen-leer">🍻 Noch kein Eigenbedarf – Prost aufs Team!</p>', "eigen-folie") },
+    { id: "eigenbedarf", html: (d) => folie("🏅", "Gutholz-Eigenbedarf",
+      "Der Alkoholspiegel des Gutholz-Teams – Bier, Radler, Aperol, Wein …",
+      '<div class="b-eigen-meter">' + messglas("eigen", d.eigenLiter) + "</div>", "eigen-folie") },
     { id: "kellner", html: (d) => d.kellner.length ? folie("🏃", "Kellner-Rennen", "Wer flitzt am meisten? Bestellungen pro Kellner",
       '<div class="b-rennen">' + d.kellner.map(([k, n], i) => '<div class="b-bahn"><div class="b-bahn-name">' + (i === 0 ? "🥇 " : "") + esc(k) +
         '</div><div class="b-bahn-spur"><div class="b-bahn-balken" data-breite="' + (n / d.kellner[0][1] * 100) + '"><span>' + n + "</span></div></div></div>").join("") + "</div>") : null },

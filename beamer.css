@@ -177,3 +177,8 @@ body.beamer .overlay { font-size: 18px; color: var(--text); }
 .eigen-folie .b-folien-titel { color: #c9b8ff; }
 .eigen-folie .b-anzahl, .eigen-folie .b-weitere li b { color: #c9b8ff; }
 .b-eigen-leer { font-size: 2.4em; color: #c9b8ff; }
+.b-liter.eigen { color: #c9b8ff; }
+.eigen-folie .b-fuellung:not(.spritz) { background: linear-gradient(180deg, #c9b8ff 0%, #7c4dff 100%); }
+.b-eigen-meter .b-glas-zeile { gap: 3em; }
+.b-eigen-meter .b-glas { width: 11em; height: 18em; }
+.b-eigen-meter .b-liter { font-size: 6.5em; }

@@ -211,12 +211,12 @@ Dauerschleife** (Fortschrittsbalken und Punkte unten). Folien ohne Daten werden 
 | 🥨 Snack-Monster | Snacks |
 | 🥊 Wurstsalat-Duell | Straßburger gegen Schwäbischen |
 | ⚔️ Bier-Duell | Liter Pils gegen Weizen |
-| 🏅 Gutholz-Eigenbedarf – Highscore | **Alkoholspiegel in Litern** pro Person/Bereich aus dem Eigenverzehr (Bier, Radler, Russ, Aperol, Wein …) und als Team-Summe |
+| 🏅 Gutholz-Eigenbedarf | **Alkoholspiegel des Teams in Litern** (Bier, Radler, Russ, Aperol, Wein …) als lila Glas mit nächstem Ziel – wie das Bier-Barometer |
 | 🏃 Kellner-Rennen | Bestellungen pro Kellner |
 | 📊 Der Abend in Zahlen | Summen, alkoholfrei-Quote, Early Bird, Ø Wartezeit Theke/Küche |
 
 - **Alle Folien zählen nur Gäste** – Eigenverzehr erscheint ausschließlich im „Gutholz-Eigenbedarf – Highscore“
-  (die Folie läuft immer mit; ohne Eigenverzehr zeigt sie „Noch kein Eigenbedarf – Prost aufs Team!“).
+  (die Folie läuft immer mit, auch bei 0 Litern).
 - Konfetti, wenn Bier oder Spritz ein Ziel erreichen (10/25/50-Liter-Schritte). Test: `beamer.html#feiern`.
 - Bedienung: Klick oder → = nächste Folie, ← = zurück, **P** = Pause.
 - Optionen: `beamer.html?sekunden=15` (andere Dauer), `beamer.html?folie=spritz` (nur eine Folie).
